@@ -1,0 +1,7 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npm run lint || {
+  echo "ESLint errors detected. Please fix them before pushing."
+  exit 1
+}
