@@ -1,7 +1,11 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run lint || {
+echo "Running ESLint check..."
+
+if npm run lint; then
+  echo "ESLint tests passed. Pushing to branch..."
+else
   echo "ESLint errors detected. Please fix them before pushing."
   exit 1
-}
+fi
