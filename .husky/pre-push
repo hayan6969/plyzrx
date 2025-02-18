@@ -9,3 +9,4 @@ else
   echo "ESLint errors detected. Please fix them before pushing."
   exit 1
 fi
+# es lint setup for pre push checkup
