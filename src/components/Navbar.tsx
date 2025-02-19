@@ -8,7 +8,7 @@ import { Menu, X } from "lucide-react";
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const navlinks  = [
+  const navlinks = [
     { name: "Home", href: "/" },
     { name: "Tournaments", href: "/tournaments" },
     { name: "How to Play", href: "/howtoplay" },
@@ -60,20 +60,17 @@ function Navbar() {
       </nav>
       {isOpen && (
         <div className="md:hidden bg-white p-4 rounded-lg shadow-md flex flex-col items-center absolute top-[12%] left-0 w-full z-50">
-        
-        {navlinks.map((link, index) => (
-      <Link
-      href={link.href} 
-      className="block py-2 text-black text-lg w-full text-center hover:bg-gray-200"
-      onClick={() => setIsOpen(false)}
-    >
-      {link.name}
-    </Link>
+          {navlinks.map((link, index) => (
+            <Link
+            key={index}
+              href={link.href}
+              className="block py-2 text-black text-lg w-full text-center hover:bg-gray-200"
+              onClick={() => setIsOpen(false)}
+            >
+              {link.name}
+            </Link>
+          ))}
 
-        ))
-        }
-
-          
           <div className="w-full flex flex-col items-center mt-2">
             <Button
               variant={"pinkbtn"}
