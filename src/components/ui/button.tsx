@@ -14,7 +14,7 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+          "border border-custompink  text-custompink  shadow-sm hover:bg-custompink hover:text-white",
         secondary:
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
@@ -22,12 +22,13 @@ const buttonVariants = cva(
         pinkbtn:
           "bg-custompink text-white shadowds",
           whitebtn:
-          "bg-white text-custompink  shadow font-bodyfont font-regular  ",
+          "bg-white text-custompink  shadow font-bodyfont font-regular   ",
+          
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
+        lg: "h-12 rounded-md px-10 text-[1rem]",
         icon: "h-9 w-9",
         authheight:"h-[85%] w-[39%] rounded-3xl text-[1rem] "
       },

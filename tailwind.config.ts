@@ -57,7 +57,10 @@ export default {
   				'Heading-Font',
   				'sans-serif'
   			],
-  			bodyfont: 'var(--font-gabarito)'
+  			bodyfont: 'var(--font-gabarito)',
+			dripfont:["dripfont",
+				'sans-serif'
+			]
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

@@ -7,6 +7,11 @@
   src: url("/font/MonumentExtended-Regular.otf") format("opentype");
 }
 
+@font-face {
+  font-family: "dripfont";
+  src: url("/font/ADrippingMarker-Ddw1.ttf") format("truetype");
+}
+
 body {
   background-color: #040811;
   color: #FFFFFF;

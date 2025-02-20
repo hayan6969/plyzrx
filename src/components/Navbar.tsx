@@ -17,10 +17,10 @@ function Navbar() {
 
   return (
     <>
-      <nav className=" h-[12%] flex justify-between items-center w-full py-3 px-4 md:px-6 lg:px-8 mt-3">
+      <nav className="  h-[12%] flex justify-between items-center w-full py-3 px-4 md:px-6 lg:px-8 mt-3">
         <div className="w-[20%] md:w-[15%] lg:w-[20%]"></div>
 
-        <div className="hidden md:flex h-[55px] w-[55%] lg:w-[50%] justify-center items-center">
+        <div className="hidden md:flex h-[50px] w-[55%] lg:w-[50%] justify-center items-center">
           <ul className="p-3 flex justify-around font-bodyfont font-medium items-center rounded-3xl bg-white text-black h-full w-full md:text-[.9rem] lg:text-[1rem]">
             {navlinks.map((link, index) => (
               <Link
@@ -90,3 +90,4 @@ function Navbar() {
 }
 
 export default Navbar;
+
