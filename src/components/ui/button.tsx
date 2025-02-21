@@ -30,7 +30,7 @@ const buttonVariants = cva(
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-12 rounded-md px-10 text-[1rem]",
         icon: "h-9 w-9",
-        authheight:"h-[85%] w-[39%] rounded-3xl text-[1rem] "
+        authheight:"h-[85%] w-[39%] rounded-3xl text-[1rem]"
       },
     },
     defaultVariants: {
