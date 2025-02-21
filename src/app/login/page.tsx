@@ -11,6 +11,7 @@ import {
   FaEnvelope,
   FaLock,
 } from "react-icons/fa";
+import Link from "next/link";
 
 function Page() {
   return (
@@ -75,7 +76,7 @@ function Page() {
             </Button>
           </div>
           <p className="text-center text-gray-400 font-bodyfont">
-            Don't have an account? <a href="#" className="text-blue-500 hover:underline">Sign up</a>
+          Don&apos;t have an account? <Link href="/signup" className="text-blue-500 hover:underline">Sign up</Link>
           </p>
         </CardContent>
       </Card>
