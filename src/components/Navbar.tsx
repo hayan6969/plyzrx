@@ -12,7 +12,7 @@ function Navbar() {
     { name: "Home", href: "/" },
     { name: "Tournaments", href: "/tournaments" },
     { name: "How to Play", href: "/howtoplay" },
-    { name: "Policies & Terms", href: "/policies" },
+    { name: "Help Center", href: "/policies" },
   ];
 
   return (
@@ -35,20 +35,11 @@ function Navbar() {
         </div>
 
         <div className="hidden md:flex justify-evenly items-center  w-[22%] sm:w-[20%] md:w-[24%] lg:w-[24%] h-[55px] px-2 lg:px-4">
-          <Button
-            variant={"pinkbtn"}
-            size={"authheight"}
-            className="text-sm lg:text-base"
-          >
-            Log in
-          </Button>
-          <Button
-            variant={"whitebtn"}
-            size={"authheight"}
-            className="text-sm lg:text-base"
-          >
-            Sign Up
-          </Button>
+         <Link href={"/login"} className=" flex justify-center items-center text-sm lg:text-base bg-custompink text-white shadowds h-[85%] w-[39%] rounded-3xl text-[1rem]">Log in</Link>
+         
+         <Link href={"/signup"} className=" flex justify-center items-center text-sm lg:text-base bg-white text-custompink  shadow font-bodyfont font-regular h-[85%] w-[39%] rounded-3xl text-[1rem] ">Sign Up</Link>
+
+
         </div>
 
         <button
