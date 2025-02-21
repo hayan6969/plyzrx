@@ -61,8 +61,7 @@ const Footer = () => {
           <FaWordpress className="text-2xl hover:text-blue-600 transition" />
         </div>
       </div>
-      
-      {/* Copyright Section */}
+    
       <div className="w-full max-w-[90%] 2xl:max-w-[86%] border-t-2 border-[rgba(255,255,255,0.5)] flex justify-center items-center mt-6 pt-4">
         <p>&copy; 2019 Lift Media | All Rights Reserved</p>
       </div>

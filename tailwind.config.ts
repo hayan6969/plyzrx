@@ -14,6 +14,7 @@ export default {
   			foreground: 'hsl(var(--foreground))',
 			custompink:"#F5004F",
 			footercolor:"#0D111C",
+			formcolor:"#040811",
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'

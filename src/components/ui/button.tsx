@@ -23,7 +23,7 @@ const buttonVariants = cva(
           "bg-custompink text-white shadowds",
           whitebtn:
           "bg-white text-custompink  shadow font-bodyfont font-regular   ",
-          
+whitesocial:"border bg-white shadow-sm hover:opacity-90"
       },
       size: {
         default: "h-9 px-4 py-2",
