@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import Tournaments from "@/components/Tournaments_conn"
 import Image from "next/image";
+import Footer from "@/components/Footer";
 export default function Home() {
   return (
 <>
@@ -37,7 +38,7 @@ style={{background: `radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 
 <Tournaments/>
 
 {/* action section */}
-<main className=" w-full min-h-screen pt-1 lg:pt-3 2xl:pt-5 flex flex-col">
+<main className=" w-full lg:mt-10 min-h-screen pt-1 lg:pt-3 2xl:pt-5 flex flex-col">
 <div className=" flex justify-center items-center">
 <h1 className=" text-[2rem] sm:text-[3rem] w-full leading-tight lg:text-[3.3rem] 2xl:text-[4rem] font-headingfont text-white outline-text  text-center">
 <span className="opacity-85">Join The</span> <span className="font-dripfont text-[4rem] sm:text-[5rem] lg:text-[6rem] 2xl:text-[7rem] opacity-100  text-custompink">Action</span>
@@ -58,8 +59,8 @@ PlyzRX lets you turn your sports expertise into real money action. Simply choose
 <div className=" h-[40vh] md:h-[75vh] w-[100%] relative flex justify-center items-center">
   <Image 
     src="/img/actionimg.png" 
- layout="fill"
-    objectFit="contain" 
+ fill
+ style={{ objectFit: "contain" }}
     alt="ActionImg"
   />
 </div>
@@ -76,6 +77,37 @@ Join Now and Earn Real <span className="font-dripfont text-[4rem] sm:text-[5rem]
 </main>
 
 
+{/* {where i play} */}
+
+<main className=" w-full lg:mt-10 lg:mb-10 min-h-screen pt-1 lg:pt-5 2xl:pt-5 flex flex-col">
+<div className=" flex justify-center items-center font-headingfont">
+<h1 className=" text-[2rem] sm:text-[3rem] w-full leading-tight lg:text-[3.5rem] 2xl:text-[4rem]  text-white outline-text  text-center">
+Where can I play <span className="text-custompink">PlyzRX</span>
+?
+</h1>
+</div>
+  
+<div className=" flex mb-5 justify-center items-center p-3 ">
+<p className="text-center text-[1rem] md:text-[1.2rem] lg:text-[1.5rem] 2xl:text-[1rem] font-bodyfont font-normal">
+PlyzRX is available in <span className="text-custompink">150</span> Countries , <span className="text-custompink">42</span> US States , <span className="text-custompink">5</span> Australian Regions
+
+</p>
+
+</div>
+
+<div className=" h-[40vh] mt-5 md:h-[85vh] w-[100%] relative flex justify-center items-center">
+<Image 
+  src="/img/Map.png" 
+  fill 
+  alt="ActionImg"
+  style={{ objectFit: "contain" }}
+/>
+</div>
+
+</main>
+
+
+<Footer/>
 </>
   );
 }
