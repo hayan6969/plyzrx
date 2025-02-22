@@ -61,7 +61,7 @@ const FAQSection = () => {
           Frequently Asked Questions
         </h2>
         <p className="text-md text-custompink mb-4">
-          Have any questions? We're here to assist you.
+          Have any questions? We&lsquo;re here to assist you.
         </p>
         
 
@@ -112,7 +112,7 @@ const FAQSection = () => {
        <div className='border-2 w-[90%] flex justify-between items-center p-6 rounded-md bg-white'>
        <div >
         <p className=" text-custompink">Still have questions?</p>
-        <p className="text-sm text-black">Can't find the answer you're looking for? Please refer to our Friendly team.</p>
+        <p className="text-sm text-black">Can&lsquo;t find the answer you&lsquo;re looking for? Please refer to our Friendly team.</p>
         </div>
         <Button className="bg-custompink text-white px-6 py-2 rounded-lg hover:bg-[#d4004d]">
           Get in Touch
