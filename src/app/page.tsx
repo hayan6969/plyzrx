@@ -8,15 +8,16 @@ export default function Home() {
   return (
 <>
 {/* main */}
-<main className="flex flex-col w-full min-h-screen">
+<main className="flex flex-col w-full h-[100vh] lg:min-h-screen px-2"
+   style={{
+    background: `radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 300px)`,
+  }}>
   <Navbar />
   <section
     className="flex flex-col gap-4 justify-center items-center w-full min-h-[70vh] lg:min-h-[80vh] text-center px-0 lg:px-4"
-    style={{
-      background: `radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 300px)`,
-    }}
+ 
   >
-    <h1 className="relative opacity-90 text-3xl sm:text-4xl md:text-4xl lg:text-4xl font-bold mb-4 font-headingfont leading-tight">
+    <h1 className="relative opacity-90 text-xl sm:text-4xl md:text-4xl lg:text-4xl font-bold mb-4 font-headingfont leading-tight">
       Welcome to 
       <span className="text-custompink opacity-100"> PlyzRX </span>— The
       <span className="relative inline-block mx-2">
@@ -30,7 +31,7 @@ export default function Home() {
       </span>
       Platform!
     </h1>
-    <p className="tracking-wide text-base sm:text-lg md:text-xl font-headingfont opacity-75 text-white mb-4">
+    <p className="tracking-wide text-[.9rem] sm:text-lg md:text-xl font-headingfont opacity-75 text-white mb-4">
       Real Money Sports Action Made Easy
     </p>
     <Button className="mt-5" size={"lg"} variant={"outline"}>
@@ -43,7 +44,7 @@ export default function Home() {
 <Tournaments/>
 
 {/* action section */}
-<main className=" w-full lg:mt-10 min-h-screen pt-1 lg:pt-3 2xl:pt-5 flex flex-col">
+<main className=" w-full lg:mt-10 min-h-screen px-2 pt-1 lg:pt-3 2xl:pt-5 flex flex-col">
 <div className=" flex justify-center items-center">
 <h1 className=" text-[2rem] sm:text-[3rem] w-full leading-tight lg:text-[3.3rem] 2xl:text-[4rem] font-headingfont text-white outline-text  text-center">
 <span className="opacity-85">Join The</span> <span className="font-dripfont text-[4rem] sm:text-[5rem] lg:text-[6rem] 2xl:text-[7rem] opacity-100  text-custompink">Action</span>
@@ -84,7 +85,7 @@ Join Now and Earn Real <span className="font-dripfont text-[4rem] sm:text-[5rem]
 
 {/* {where i play} */}
 
-<main className=" w-full lg:mt-10 lg:mb-10 min-h-screen pt-1 lg:pt-5 2xl:pt-5 flex flex-col">
+<main className=" px-2 w-full lg:mt-10 lg:mb-10 min-h-screen pt-1 lg:pt-5 2xl:pt-5 flex flex-col">
 <div className=" flex justify-center items-center font-headingfont">
 <h1 className=" text-[2rem] sm:text-[3rem] w-full leading-tight lg:text-[3.5rem] 2xl:text-[4rem]  text-white outline-text  text-center">
 Where can I play <span className="text-custompink">PlyzRX</span>
