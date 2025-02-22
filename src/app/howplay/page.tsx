@@ -45,7 +45,7 @@ function Play() {
                     the discard pile.
                   </li>
                   <li>
-                    The first player's turn begins, with turns proceeding in the
+                    The first player&rsquo;s turn begins, with turns proceeding in the
                     indicated direction.
                   </li>
                   <li>
