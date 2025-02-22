@@ -4,8 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
-  FaFacebook,
-  FaInstagram,
   FaGoogle,
   FaEnvelope,
   FaLock,

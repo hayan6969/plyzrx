@@ -62,7 +62,9 @@ PlyzRX lets you turn your sports expertise into real money action. Simply choose
 
 </div>
 
-<div className=" h-[40vh] md:h-[75vh] w-[100%] relative flex justify-center items-center">
+<div className=" h-[40vh] md:h-[75vh] w-[100%] relative flex justify-center items-center" style={{
+    background: `radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 220px)`,
+  }}>
   <Image 
     src="/img/actionimg.png" 
  fill
