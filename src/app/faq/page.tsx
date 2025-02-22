@@ -57,10 +57,10 @@ const FAQSection = () => {
         <h1 className="text-6xl lg:text-[6rem] text-custompink font-dripfont">
           FAQ
         </h1>
-        <h2 className="text-lg text-gray-300">
+        <h2 className="text-lg lg:text-2xl text-white font-headingfont">
           Frequently Asked Questions
         </h2>
-        <p className="text-sm text-custompink mb-4">
+        <p className="text-md text-custompink mb-4">
           Have any questions? We're here to assist you.
         </p>
         
@@ -81,7 +81,7 @@ const FAQSection = () => {
 
 <div className=' w-full flex justify-center items-center flex-col font-bodyfont p-4'>
 
-      <div className=' w-[90%] shadow-[0_0_15px_5px_rgba(255,255,255,0.5)] '>
+      <div className=' w-[90%] shadow-[0_0_15px_5px_rgba(255,255,255,0.2)] '>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-formcolor w-full">
         {faqs.map((faq, index) => (
           <Card key={index} className="bg-formcolor rounded-lg overflow-hidden">
