@@ -49,10 +49,9 @@ const termination:string[]=[
 
 
 const disclamer:string[]=[
-    "Plyzrx is provided on an ' AS IS 'and ' AS AVAILABLE ' basis.",
-"We do not guarantee uninterrupted or error-free operation of the Platform.",
-"Plyzrx disclaims all warranties, express or implied, including merchantability and fitness for a particular purpose.",
-
+'Plyzrx is provided on an "AS IS" and "AS AVAILABLE" basis.',
+    "We do not guarantee uninterrupted or error-free operation of the Platform.",
+    "Plyzrx disclaims all warranties, express or implied, including merchantability and fitness for a particular purpose.",
 ]
 
 const liabilityClauses: string[] = [

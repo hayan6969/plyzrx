@@ -42,14 +42,15 @@ function page() {
             <h2 className="text-xl font-bold mt-5 font-headingfont text-custompink">
               1. Introduction
             </h2>
-            <p>
-              This End-User License Agreement ("Agreement") is a legally binding
-              contract between you ("User," "Player," or "you") and Tributo
-              Capital LLC ("Company," "we," "our," or "us") governing your
-              access to and use of the Plyzrx platform, including but not
-              limited to its software, mobile application, website, and related
-              services (collectively, the "Platform").
-            </p>
+       <p>
+    This End-User License Agreement (&quot;Agreement&quot;) is a legally binding
+    contract between you (&quot;User&quot;, &quot;Player,&quot; or &quot;you&quot;) and Tributo
+    Capital LLC (&quot;Company,&quot; &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) governing your
+    access to and use of the Plyzrx platform, including but not
+    limited to its software, mobile application, website, and related
+    services (collectively, the &quot;Platform&quot;).
+</p>
+
             <p>
               By installing, accessing, or using the Platform, you expressly
               agree to comply with this Agreement. If you do not agree to these
