@@ -11,7 +11,7 @@ function Navbar() {
   const navlinks = [
     { name: "Home", href: "/" },
     { name: "Tournaments", href: "/about" },
-    { name: "How to Play", href: "/eula" },
+    { name: "How to Play", href: "/howplay" },
     { name: "Help Center", href: "/policies" },
   ];
 
@@ -35,11 +35,19 @@ function Navbar() {
         </div>
 
         <div className="hidden md:flex justify-evenly items-center  w-[22%] sm:w-[20%] md:w-[24%] lg:w-[24%] h-[55px] px-2 lg:px-4">
-         <Link href={"/login"} className=" flex justify-center items-center text-sm lg:text-base bg-custompink text-white shadowds h-[85%] w-[39%] rounded-3xl text-[1rem]">Log in</Link>
-         
-         <Link href={"/signup"} className=" flex justify-center items-center text-sm lg:text-base bg-white text-custompink  shadow font-bodyfont font-regular h-[85%] w-[39%] rounded-3xl text-[1rem] ">Sign Up</Link>
+          <Link
+            href={"/login"}
+            className=" flex justify-center items-center text-sm lg:text-base bg-custompink text-white shadowds h-[85%] w-[39%] rounded-3xl text-[1rem]"
+          >
+            Log in
+          </Link>
 
-
+          <Link
+            href={"/signup"}
+            className=" flex justify-center items-center text-sm lg:text-base bg-white text-custompink  shadow font-bodyfont font-regular h-[85%] w-[39%] rounded-3xl text-[1rem] "
+          >
+            Sign Up
+          </Link>
         </div>
 
         <button
@@ -53,7 +61,7 @@ function Navbar() {
         <div className="md:hidden bg-white p-4 rounded-lg shadow-md flex flex-col items-center absolute top-[12%] left-0 w-full z-50">
           {navlinks.map((link, index) => (
             <Link
-            key={index}
+              key={index}
               href={link.href}
               className="block py-2 text-black text-lg w-full text-center hover:bg-gray-200"
               onClick={() => setIsOpen(false)}
@@ -81,4 +89,3 @@ function Navbar() {
 }
 
 export default Navbar;
-

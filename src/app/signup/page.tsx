@@ -20,10 +20,14 @@ function Page() {
           <h2 className="text-2xl lg:text-4xl font-bold text-center text-custompink font-headingfont">
             Sign Up
           </h2>
-          <p className="text-center text-gray-400 text-sm">Sign up to enjoy PlyzRX</p>
+          <p className="text-center text-gray-400 text-sm">
+            Sign up to enjoy PlyzRX
+          </p>
           <div className="space-y-3 font-bodyfont w-full">
             <div>
-              <Label htmlFor="full-name" className="text-sm">Full Name</Label>
+              <Label htmlFor="full-name" className="text-sm">
+                Full Name
+              </Label>
               <div className="relative flex items-center">
                 <FaUser className="absolute left-3 text-gray-400" size={16} />
                 <Input
@@ -35,9 +39,14 @@ function Page() {
               </div>
             </div>
             <div>
-              <Label htmlFor="dob" className="text-sm">Date of Birth</Label>
+              <Label htmlFor="dob" className="text-sm">
+                Date of Birth
+              </Label>
               <div className="relative flex items-center">
-                <FaCalendarAlt className="absolute left-3 text-gray-400" size={16} />
+                <FaCalendarAlt
+                  className="absolute left-3 text-gray-400"
+                  size={16}
+                />
                 <Input
                   id="dob"
                   type="date"
@@ -46,9 +55,14 @@ function Page() {
               </div>
             </div>
             <div>
-              <Label htmlFor="email" className="text-sm">Email</Label>
+              <Label htmlFor="email" className="text-sm">
+                Email
+              </Label>
               <div className="relative flex items-center">
-                <FaEnvelope className="absolute left-3 text-gray-400" size={16} />
+                <FaEnvelope
+                  className="absolute left-3 text-gray-400"
+                  size={16}
+                />
                 <Input
                   id="email"
                   type="email"
@@ -58,7 +72,9 @@ function Page() {
               </div>
             </div>
             <div>
-              <Label htmlFor="password" className="text-sm">Password</Label>
+              <Label htmlFor="password" className="text-sm">
+                Password
+              </Label>
               <div className="relative flex items-center">
                 <FaLock className="absolute left-3 text-gray-400" size={16} />
                 <Input
@@ -74,14 +90,19 @@ function Page() {
             </Button>
           </div>
           <Separator className="my-3 bg-gray-700" />
-          <p className="text-center text-gray-400 text-sm font-bodyfont">Or sign up with</p>
+          <p className="text-center text-gray-400 text-sm font-bodyfont">
+            Or sign up with
+          </p>
           <div className="flex justify-center font-bodyfont w-full">
             <Button className="flex items-center w-full bg-white text-black border-gray-300 hover:bg-gray-100 px-4 py-2 h-10 text-base">
               <FaGoogle className="w-4 h-4 mr-2 text-red-500" /> Google
             </Button>
           </div>
           <p className="text-center text-gray-400 text-sm font-bodyfont">
-            Already have an account? <Link href="/signin" className="text-blue-500 hover:underline">Login</Link>
+            Already have an account?{" "}
+            <Link href="/signin" className="text-blue-500 hover:underline">
+              Login
+            </Link>
           </p>
         </CardContent>
       </Card>

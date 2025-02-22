@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Gabarito} from "next/font/google";
+import { Gabarito } from "next/font/google";
 import "./globals.css";
 
 const gabarito = Gabarito({
@@ -19,9 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${gabarito.variable}`}>
-        {children}
-      </body>
+      <body className={`${gabarito.variable}`}>{children}</body>
     </html>
   );
 }
