@@ -10,8 +10,8 @@ function Navbar() {
 
   const navlinks = [
     { name: "Home", href: "/" },
-    { name: "Tournaments", href: "/tournaments" },
-    { name: "How to Play", href: "/howtoplay" },
+    { name: "Tournaments", href: "/about" },
+    { name: "How to Play", href: "/eula" },
     { name: "Help Center", href: "/policies" },
   ];
 

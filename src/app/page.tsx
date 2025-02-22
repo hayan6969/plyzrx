@@ -8,37 +8,43 @@ export default function Home() {
   return (
 <>
 {/* main */}
-<main className=" flex w-full flex-col  h-[100vh]">
-<Navbar/>
-<section className="  flex flex-col gap-3 justify-center items-center w-full h-full text-center"
-style={{background: `radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 291px)`}}>
-    <h1 className=" relative opacity-90 text-4xl tracking-wider  md:text-[2rem]/[3.3rem] lg:text-[2.3rem] 2xl:text-[3rem]/[5rem] font-bold mb-2 lg:mb-1 font-headingfont  w-[100%]  lg:w-[100%]  2xl:min-w-[60%] px-3">
-        Welcome to <span className="text-custompink opacity-100">PlyzRX</span> — The 
-
-       <div className="relative inline-block  ml-3"> Ultimate
-       <div className="absolute lg:right-[-1rem] lg:top-[-4.6rem] h-24 w-24 bg-[url(/img/Cards.png)] bg-contain"></div>
-         </div>
-
-
-
-        <br className="hidden lg:block" /> 
-        <div className="relative inline-block   mr-3"> Gaming
-       <div className="  absolute lg:left-[-5rem] lg:top-[1rem] h-24 w-24 bg-[url(/img/Dice.png)] bg-contain"></div>
-         </div>
-          Platform!
-      </h1>
-      <p className=" tracking-wide  text-lg md:text-[1rem] font-headingfont opacity-75 text-white mb-3">
-        Real Money Sports Action Made Easy
-      </p>
-
-      <Button className="mt-5" size={"lg"} variant={"outline"}>Play Now</Button>
-</section>
+<main className="flex flex-col w-full h-[100vh] lg:min-h-screen px-2"
+   style={{
+    background: `radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 300px)`,
+  }}>
+  <Navbar />
+  <section
+    className="flex flex-col gap-4 justify-center items-center w-full min-h-[70vh] lg:min-h-[80vh] text-center px-0 lg:px-4"
+ 
+  >
+    <h1 className="relative opacity-90 text-xl sm:text-4xl md:text-4xl lg:text-4xl font-bold mb-4 font-headingfont leading-tight">
+      Welcome to 
+      <span className="text-custompink opacity-100"> PlyzRX </span>— The
+      <span className="relative inline-block mx-2">
+        Ultimate
+        <span className="absolute -right-2 sm:right-[-1rem] -top-6 sm:top-[-4rem] h-14 w-14 sm:h-20 sm:w-20 bg-[url(/img/Cards.png)] bg-contain"></span>
+      </span>
+      <br className="hidden lg:block" />
+      <span className="relative inline-block mx-2">
+        Gaming
+        <span className="absolute -left-2 sm:left-[-3rem] top-4 sm:top-[1rem] h-14 w-14 sm:h-20 sm:w-20 bg-[url(/img/Dice.png)] bg-contain"></span>
+      </span>
+      Platform!
+    </h1>
+    <p className="tracking-wide text-[.9rem] sm:text-lg md:text-xl font-headingfont opacity-75 text-white mb-4">
+      Real Money Sports Action Made Easy
+    </p>
+    <Button className="mt-5" size={"lg"} variant={"outline"}>
+      Play Now
+    </Button>
+  </section>
 </main>
+
 
 <Tournaments/>
 
 {/* action section */}
-<main className=" w-full lg:mt-10 min-h-screen pt-1 lg:pt-3 2xl:pt-5 flex flex-col">
+<main className=" w-full lg:mt-10 min-h-screen px-2 pt-1 lg:pt-3 2xl:pt-5 flex flex-col">
 <div className=" flex justify-center items-center">
 <h1 className=" text-[2rem] sm:text-[3rem] w-full leading-tight lg:text-[3.3rem] 2xl:text-[4rem] font-headingfont text-white outline-text  text-center">
 <span className="opacity-85">Join The</span> <span className="font-dripfont text-[4rem] sm:text-[5rem] lg:text-[6rem] 2xl:text-[7rem] opacity-100  text-custompink">Action</span>
@@ -56,7 +62,9 @@ PlyzRX lets you turn your sports expertise into real money action. Simply choose
 
 </div>
 
-<div className=" h-[40vh] md:h-[75vh] w-[100%] relative flex justify-center items-center">
+<div className=" h-[40vh] md:h-[75vh] w-[100%] relative flex justify-center items-center" style={{
+    background: `radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 220px)`,
+  }}>
   <Image 
     src="/img/actionimg.png" 
  fill
@@ -79,7 +87,7 @@ Join Now and Earn Real <span className="font-dripfont text-[4rem] sm:text-[5rem]
 
 {/* {where i play} */}
 
-<main className=" w-full lg:mt-10 lg:mb-10 min-h-screen pt-1 lg:pt-5 2xl:pt-5 flex flex-col">
+<main className=" px-2 w-full lg:mt-10 lg:mb-10 min-h-screen pt-1 lg:pt-5 2xl:pt-5 flex flex-col">
 <div className=" flex justify-center items-center font-headingfont">
 <h1 className=" text-[2rem] sm:text-[3rem] w-full leading-tight lg:text-[3.5rem] 2xl:text-[4rem]  text-white outline-text  text-center">
 Where can I play <span className="text-custompink">PlyzRX</span>

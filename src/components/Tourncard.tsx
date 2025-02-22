@@ -17,7 +17,7 @@ export default function Tourncard() {
     <>
     {
       packages.map((pack)=>(
-        <div key={pack.id} className="w-72   2xl:w-80 h-[60vh] lg:h-[85vh] py-4 bg-[rgba(255,255,255,0.18)] border-1 border-[rgba(255,255,255,0.18)] backdrop-blur-[6.6px] text-white rounded-3xl shadow-lg border border-gray-700 flex flex-col font-bodyfont">
+        <div key={pack.id} className="w-70   2xl:w-80 h-[70vh] lg:h-[85vh] py-4 bg-[rgba(255,255,255,0.18)] border-1 border-[rgba(255,255,255,0.18)] backdrop-blur-[6.6px] text-white rounded-3xl shadow-lg border border-gray-700 flex flex-col font-bodyfont">
 
         <div className=" mx-2  h-[15%] px-2 flex flex-col justify-center">
           <div className="border-b-2 border-[rgba(255,255,255,0.6)] pb-2">
@@ -27,7 +27,7 @@ export default function Tourncard() {
         </div>
   
   
-        <div className="mx-0 h-[10%] px-4 flex items-center">
+        <div className="mt-2 lg:mt-0 h-[10%] px-4 flex items-center">
           <p className="text-[#B9F566] text-3xl lg:text-4xl 2xl:text-5xl font-bold">${pack.price}</p>
         </div>
   
@@ -91,7 +91,7 @@ export default function Tourncard() {
   
   
         <div className="mx-1 h-[10%] p-4 flex items-center">
-          <Button className="w-full" size={"lg"}>
+          <Button variant={"tournamentvarient"} className="rounded-3xl overflow-hidden" size={"md"}>
             Start
           </Button>
         </div>
