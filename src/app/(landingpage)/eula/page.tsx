@@ -29,7 +29,6 @@ function page() {
         `,
         }}
       >
-        <Navbar />
 
         <section className="pt-10 px-5 mt-5 flex flex-col font-bodyfont">
           <h1 className=" text-[2rem] font-headingfont text-custompink">

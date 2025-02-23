@@ -44,7 +44,6 @@ function page() {
         `,
         }}
       >
-        <Navbar />
 
         <section className="pt-10  mt-5">
           <Heading headingname={"About Us"} />

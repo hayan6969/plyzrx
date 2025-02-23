@@ -19,7 +19,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${gabarito.variable}`}>{children}</body>
+      <body className={`${gabarito.variable}`}>
+        
+        {children}
+        
+        
+        
+        </body>
     </html>
   );
 }

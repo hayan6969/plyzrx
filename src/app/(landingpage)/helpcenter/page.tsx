@@ -41,7 +41,6 @@ const HelpCenter = () => {
                   #040811
                 `,
             }}>
-            <Navbar />
             <div className='py-8 px-4 md:px-8'>
                 <Heading headingname='Help Center' />
                 <div className="flex flex-col lg:flex-row w-full max-w-6xl mx-auto mt-5 bg-black rounded-xl overflow-hidden ">

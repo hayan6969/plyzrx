@@ -51,7 +51,6 @@ const FAQSection = () => {
           #040811
         `
       }}>
-        <Navbar/>
    
       <div className="flex flex-col items-center justify-center space-y-2 p-8 font-bodyfont">
         <h1 className="text-6xl lg:text-[6rem] text-custompink font-dripfont">

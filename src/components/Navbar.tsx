@@ -12,7 +12,7 @@ function Navbar() {
     { name: "Home", href: "/" },
     { name: "Tournaments", href: "/about" },
     { name: "How to Play", href: "/howplay" },
-    { name: "Help Center", href: "/policies" },
+    { name: "Help Center", href: "/helpcenter" },
   ];
 
   return (

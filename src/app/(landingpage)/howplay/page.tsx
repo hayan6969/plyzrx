@@ -18,7 +18,6 @@ function Play() {
           `,
         }}
       >
-        <Navbar />
         <section className="mt-10 py-6 w-[90%] lg:w-[85%] mx-auto rounded-xl">
           <Heading headingname="How to Play" />
           <div className="bg-formcolor flex flex-col justify-center items-center py-5 mt-10 px-5">
