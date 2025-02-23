@@ -1,5 +1,4 @@
 import React from "react";
-import Navbar from "@/components/Navbar";
 import Heading from "@/components/Heading";
 import specialcards from "./data";
 import Image from "next/image";

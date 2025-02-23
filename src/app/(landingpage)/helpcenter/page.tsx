@@ -7,7 +7,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import Navbar from '@/components/Navbar';
 import Heading from '@/components/Heading';
 
 const HelpCenter = () => {

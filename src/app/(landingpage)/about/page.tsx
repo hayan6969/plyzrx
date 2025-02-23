@@ -1,5 +1,4 @@
 import Heading from "@/components/Heading";
-import Navbar from "@/components/Navbar";
 import React from "react";
 import Aboutcontent from "./components/Aboutcontent";
 import Footer from "@/components/Footer";
