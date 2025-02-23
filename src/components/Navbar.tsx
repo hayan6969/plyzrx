@@ -17,7 +17,7 @@ function Navbar() {
 
   return (
     <>
-      <nav className="  h-[12%] flex justify-between items-center w-full py-3 px-4 md:px-6 lg:px-8 mt-3">
+      <nav className=" bg-transparent  h-[12%] flex justify-between items-center w-full py-3 px-4 md:px-6 lg:px-8">
         <div className="w-[20%] md:w-[15%] lg:w-[20%]"></div>
 
         <div className="hidden md:flex h-[50px] w-[55%] lg:w-[50%] justify-center items-center">

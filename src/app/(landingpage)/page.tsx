@@ -10,9 +10,8 @@ export default function Home() {
       <main
         className="flex flex-col w-full h-[100vh] lg:min-h-screen px-2"
         style={{
-          background: `radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 300px)`,
-        }}
-      >
+          background: `radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 400px)`,
+        }}>
         <section className="flex flex-col gap-4 justify-center items-center w-full min-h-[70vh] lg:min-h-[80vh] text-center px-0 lg:px-4">
           <h1 className="relative opacity-90 text-xl sm:text-4xl md:text-4xl lg:text-4xl font-bold mb-4 font-headingfont leading-tight">
             Welcome to
