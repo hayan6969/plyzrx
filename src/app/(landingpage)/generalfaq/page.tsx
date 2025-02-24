@@ -96,10 +96,10 @@ function page() {
             </p>
 
             <h2 className="text-xl font-thin mt-5 font-headingfont text-white">
-              7. What is the Losers' Raffle?
+              7. What is the Losers Raffle?
             </h2>
             <p>
-              Subscribed players who don’t win cash prizes are automatically
+              Subscribed players who don&apos;t win cash prizes are automatically
               entered into a monthly raffle to win additional rewards. Five
               random losers win each month{" "}
             </p>
@@ -117,7 +117,7 @@ function page() {
               <li>Action cards (Skip, Reverse, Draw Two) = 20 points</li>
               <li>Wild cards (Wild, Wild Draw Four) = 50 points</li>
               <li>
-                The winner of a match gets the sum of points left in opponents'
+                The winner of a match gets the sum of points left in opponents
                 hands.
               </li>
             </ul>
