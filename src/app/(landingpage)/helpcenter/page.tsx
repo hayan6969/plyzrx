@@ -5,7 +5,6 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger,
 } from "@/components/ui/accordion";
 import Heading from '@/components/Heading';
 import Link from 'next/link';

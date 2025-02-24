@@ -33,12 +33,12 @@ function page() {
               1. Introduction
             </h2>
             <p>
-              This Cookies Policy & Data Retention Policy ("Policy") outlines
-              how Plyzrx, operated by Tributo Capital LLC ("Company," "we,"
-              "our," or "us"), collects, stores, and retains user data,
+              This Cookies Policy & Data Retention Policy (&quot;Policy&quot;) outlines
+              how Plyzrx, operated by Tributo Capital LLC (&quot;Company,&quot; &quot;we,&quot;
+              &quot;our,&quot; or &quot;us&quot;), collects, stores, and retains user data,
               including the use of cookies and tracking technologies. By using
-              the Plyzrx platform ("Platform"), you ("User," "Player," or
-              "you") agree to the collection and retention of your data under
+              the Plyzrx platform (&quot;Platform&quot;), you (&quot;User,&quot; &quot;Player,&quot; or
+              &quot;you&quot;) agree to the collection and retention of your data under
               this Policy. Plyzrx is committed to transparency, data
               protection, and compliance with privacy laws, including GDPR,
               CCPA, and other applicable regulations.
@@ -225,7 +225,7 @@ function page() {
             <p>For California residents, Plyzrx complies with CCPA by providing:</p>
             <ul className="list-disc pl-5">
             {
-  gdprCompliance.map((item,index)=>(
+  ccpaCompliance.map((item,index)=>(
     <li key={index}>{item}</li>
   ))
 }
