@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Heading from '@/components/Heading';
+import Link from 'next/link';
 
 const HelpCenter = () => {
     const sidebarCategories = [
@@ -75,14 +76,12 @@ const HelpCenter = () => {
                                     className="w-full pl-10 pr-4 py-2 bg-white rounded-md text-black focus:outline-none"
                                 />
                             </div>
-                            
-                            {/* FAQ Section */}
                             <Accordion type="single" collapsible className="w-full space-y-2">
                                 {policies.map((policy, index) => (
-                                    <AccordionItem key={index} value={`item-${index}`} className="rounded-lg overflow-hidden">
-                                        <AccordionTrigger className="text-left px-4">
+                                    <AccordionItem key={index} value={`item-${index}`} className=" border rounded-lg overflow-hidden">
+                                        <Link href={"/eula"} className="   text-left px-4 flex flex-1 items-center justify-between py-4 text-sm">
                                             {policy}
-                                        </AccordionTrigger>
+                                        </Link>
                                         <AccordionContent className="px-4">
                                             This is the {policy} content. You can replace this with actual policy details.
                                         </AccordionContent>

@@ -30,7 +30,7 @@ tournamentvarient:"border border-custompink  text-white  shadow-sm backdrop-blur
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         md:"h-10 rounded-md px-8 text-[1rem]",
-        lg: "h-12 rounded-md px-10 text-[1rem]",
+        lg: "lg:h-12 rounded-md lg:px-10 text-[1rem] px-7 h-10 ",
         icon: "h-9 w-9",
         authheight:"h-[85%] w-[39%] rounded-3xl text-[1rem]"
       },

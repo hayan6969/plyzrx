@@ -14,7 +14,7 @@ import Link from "next/link";
 
 function Page() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[url('/img/stars.png')] bg-cover bg-center px-4">
+    <div className="flex items-center justify-center min-h-screen bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
       <Card className="w-full max-w-md bg-formcolor text-white p-4 rounded-2xl shadow-lg">
         <CardContent className="space-y-3 w-full">
           <h2 className="text-2xl lg:text-4xl font-bold text-center text-custompink font-headingfont">
@@ -100,7 +100,7 @@ function Page() {
           </div>
           <p className="text-center text-gray-400 text-sm font-bodyfont">
             Already have an account?{" "}
-            <Link href="/signin" className="text-blue-500 hover:underline">
+            <Link href="/login" className="text-blue-500 hover:underline">
               Login
             </Link>
           </p>

@@ -56,9 +56,10 @@ function Navbar() {
         >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
+
       </nav>
       {isOpen && (
-        <div className="md:hidden bg-white p-4 rounded-lg shadow-md flex flex-col items-center absolute top-[12%] left-0 w-full z-50">
+        <div className="md:hidden bg-white p-4 rounded-lg shadow-md flex flex-col items-center absolute mx-auto top-[12%]  w-[100%] z-50">
           {navlinks.map((link, index) => (
             <Link
               key={index}
@@ -74,11 +75,11 @@ function Navbar() {
             <Button
               variant={"pinkbtn"}
               size={"authheight"}
-              className="w-3/4 mb-2"
+              className="w-2/4 py-2 mb-2"
             >
               Log in
             </Button>
-            <Button variant={"whitebtn"} size={"authheight"} className="w-3/4">
+            <Button variant={"whitebtn"} size={"authheight"} className="w-2/4 py-2 mb-2 border border-custompink">
               Sign Up
             </Button>
           </div>

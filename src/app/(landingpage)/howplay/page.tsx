@@ -6,9 +6,27 @@ import Image from "next/image";
 
 function Play() {
   const pricedata = [
-    { title: "Tier 1", con1: "Player who lands on the top 10", con11: "win $5,000 Each.", con2: "Players 11 - 100", con3: "Each Win $555" },
-    { title: "Tier 2", con1: "Player who lands on the top 10", con11: "win $12,500 Each.", con2: "Players 11 - 100", con3: "Each Win $1,388" },
-    { title: "Tier 3", con1: "Player who lands on the top 10", con11: "win $250k Each.", con2: "Players 11 - 100", con3: "Each Win $25,000" },
+    {
+      title: "Tier 1",
+      con1: "Player who lands on the top 10",
+      con11: "win $5,000 Each.",
+      con2: "Players 11 - 100",
+      con3: "Each Win $555",
+    },
+    {
+      title: "Tier 2",
+      con1: "Player who lands on the top 10",
+      con11: "win $12,500 Each.",
+      con2: "Players 11 - 100",
+      con3: "Each Win $1,388",
+    },
+    {
+      title: "Tier 3",
+      con1: "Player who lands on the top 10",
+      con11: "win $250k Each.",
+      con2: "Players 11 - 100",
+      con3: "Each Win $25,000",
+    },
   ];
 
   const rules = [
@@ -33,11 +51,15 @@ function Play() {
       >
         <section className="pt-10 w-[90%] lg:w-[85%] mx-auto rounded-xl">
           <Heading headingname="How to Play" />
-          
+
           <div className="flex flex-col w-full">
             <div className="p-6 flex flex-col justify-center items-center text-center">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-headingfont">Tournament Prize</h1>
-              <p className="text-lg">Each tournament tier allows players a chance to win cash prizes</p>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-headingfont">
+                Tournament Prize
+              </h1>
+              <p className="text-lg">
+                Each tournament tier allows players a chance to win cash prizes
+              </p>
             </div>
 
             <div className="w-full flex flex-wrap justify-center gap-6 p-6">
@@ -48,14 +70,23 @@ function Play() {
                 >
                   <div
                     className="absolute -top-3 left-4 text-white text-sm px-3 py-1 rounded-md"
-                    style={{ background: `linear-gradient(90deg, #5797D1 0%, #0F3782 100%)` }}
+                    style={{
+                      background: `linear-gradient(90deg, #5797D1 0%, #0F3782 100%)`,
+                    }}
                   >
                     {data.title}
                   </div>
                   <div className="flex items-center justify-start mb-4">
-                    <Image width={40} height={40} src={"/svgs/Frame.svg"} alt="logo" />
+                    <Image
+                      width={40}
+                      height={40}
+                      src={"/svgs/Frame.svg"}
+                      alt="logo"
+                    />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-left mb-4">{data.title}</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-left mb-4">
+                    {data.title}
+                  </h2>
                   <ul className="space-y-2 text-md">
                     <li className="flex items-center gap-2 ">
                       <FaCheckCircle className="text-green-500" />
@@ -79,13 +110,19 @@ function Play() {
 
           <div className="p-6 flex flex-col gap-5">
             <div className="p-6 flex flex-col justify-center items-center text-center">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-headingfont text-custompink">Tournament Rules</h1>
-              <p className="text-lg">Each tournament tier allows players a chance to win cash prizes</p>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-headingfont text-custompink">
+                Tournament Rules
+              </h1>
+              <p className="text-lg">
+                Each tournament tier allows players a chance to win cash prizes
+              </p>
             </div>
 
             <div className="bg-black rounded-lg p-6 sm:p-10 flex flex-col items-start">
               {rules.map((rule, index) => (
-                <li className="mx-5 text-lg md:text-xl lg:text-2xl" key={index}>{rule}</li>
+                <li className="mx-5 text-lg md:text-xl lg:text-2xl" key={index}>
+                  {rule}
+                </li>
               ))}
             </div>
           </div>
