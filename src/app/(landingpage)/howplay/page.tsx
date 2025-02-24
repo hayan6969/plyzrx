@@ -8,24 +8,24 @@ function Play() {
   const pricedata = [
     {
       title: "Tier 1",
-      con1: "Player who lands on the top 10",
-      con11: "win $5,000 Each.",
+      con1: "Players Who land in the Top 10 ",
+      con11: " Each get a Payout Amount of $5,000",
       con2: "Players 11 - 100",
-      con3: "Each Win $555",
+      con3: "Players who Land in the Top 100 from 11-100 Each win $555",
     },
     {
       title: "Tier 2",
-      con1: "Player who lands on the top 10",
-      con11: "win $12,500 Each.",
+      con1: "Players Who land in the Top 10",
+      con11: " Each get a Payout Amount of $12,500.00",
       con2: "Players 11 - 100",
-      con3: "Each Win $1,388",
+      con3: "Players who Land in the Top 100 from 11-100 Each win $1,388",
     },
     {
       title: "Tier 3",
-      con1: "Player who lands on the top 10",
-      con11: "win $250k Each.",
+      con1: "Players Who land in the Top 10",
+      con11: " Each get a Payout Amount of $250,000",
       con2: "Players 11 - 100",
-      con3: "Each Win $25,000",
+      con3: "Players who Land in the Top 100 from 11-100 Each win $25,000",
     },
   ];
 
@@ -89,17 +89,17 @@ function Play() {
                   </h2>
                   <ul className="space-y-2 text-md">
                     <li className="flex items-center gap-2 ">
-                      <FaCheckCircle className="text-green-500" />
+                      <FaCheckCircle className="text-green-500 w-8 h-8" />
                       {data.con1}
                       <br className="hidden lg:block" />
                       {data.con11}
                     </li>
                     <li className="flex items-center gap-2">
-                      <FaCheckCircle className="text-green-500" />
+                      <FaCheckCircle className="text-green-500 w-4 h-4" />
                       {data.con2}
                     </li>
                     <li className="flex items-center gap-2">
-                      <FaCheckCircle className="text-green-500" />
+                      <FaCheckCircle className="text-green-500 w-8 h-8" />
                       {data.con3}
                     </li>
                   </ul>

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from 'next/image';
 import Footer from '@/components/Footer';
+import Link from 'next/link';
 
 const FAQSection = () => {
   const faqs = [
@@ -51,19 +52,15 @@ const FAQSection = () => {
         `
       }}>
    
-      <div className="flex flex-col items-center justify-center space-y-2 p-8 font-bodyfont">
+      <div className="flex flex-col items-center justify-center  space-y-2 lg:space-y-4 p-8 font-bodyfont">
         <h1 className="text-6xl lg:text-[6rem] text-custompink font-dripfont">
           FAQ
         </h1>
-        <h2 className="text-lg lg:text-2xl text-white font-headingfont">
-          Frequently Asked Questions
-        </h2>
+
         <p className="text-md text-custompink mb-4">
           Have any questions? We&lsquo;re here to assist you.
         </p>
-        
-
-        <div className="w-[30%] lg:w-[20%] max-w-xs relative">
+        <div className="w-[60%] sm:w-[30%] lg:w-[30%]  max-w-xs relative">
           <Input 
             type="search"
             placeholder="Search here..."
@@ -74,8 +71,27 @@ const FAQSection = () => {
             size={20}
           />
         </div>
+
+        
       </div>
 
+      <div className="flex flex-col items-center justify-center space-y-2 p-8 font-bodyfont">
+        <h2 className="text-lg lg:text-2xl text-white text-center font-headingfont">
+          Frequently Asked Questions
+        </h2>
+
+   <div className='flex flex-col md:flex-row border-2 w-full p-5 justify-center gap-6 items-center'>
+   <Link href={"/generalfaq"} className="bg-white text-custompink px-6 py-2 md:mr-5 rounded-lg hover:bg-[#d4004d] hover:text-white">
+   General FAQ
+        </Link>
+
+        <Link href={"/payoutfaq"} className="bg-white text-custompink px-6 md:ml-5 py-2 rounded-lg hover:bg-[#d4004d] hover:text-white">
+        Payout FAQ
+        </Link>
+   </div>
+
+        
+      </div>
 
 <div className=' w-full flex justify-center items-center flex-col font-bodyfont p-4'>
 
