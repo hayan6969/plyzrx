@@ -72,16 +72,17 @@ function Navbar() {
           ))}
 
           <div className="w-full flex flex-col items-center mt-2">
-            <Button
-              variant={"pinkbtn"}
-              size={"authheight"}
-              className="w-2/4 py-2 mb-2"
+            <Link
+href={"/login"}
+              className="bg-custompink text-white  shadow font-bodyfont font-regular flex justify-center items-center  w-2/4 py-2 mb-2 border  h-[85%]  rounded-3xl text-[1rem]"
             >
               Log in
-            </Button>
-            <Button variant={"whitebtn"} size={"authheight"} className="w-2/4 py-2 mb-2 border border-custompink">
+            </Link>
+            <Link 
+            href={"/signup"}
+             className="bg-white text-custompink  shadow font-bodyfont font-regular flex justify-center items-center  w-2/4 py-2 mb-2 border border-custompink h-[85%]  rounded-3xl text-[1rem]">
               Sign Up
-            </Button>
+            </Link>
           </div>
         </div>
       )}
