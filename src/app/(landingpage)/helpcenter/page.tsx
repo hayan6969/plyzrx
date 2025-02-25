@@ -20,15 +20,16 @@ const HelpCenter = () => {
     ];
 
     const policies = [
-        "End User License Agreement",
-        "Cookies Policies",
-        "Disclaimer & Provisions",
-        "Dispute Resolution",
-        "Fraud Prevention",
-        "Payment & Withdrawal",
-        "Privacy Policy",
-        "Refund & Chargeback",
-        "Terms & Condition"
+       { title:"End User License Agreement",link:"/eula"},
+       { title:"Cookies Policies",link:"/cookiespolicy"},
+       { title:"Disclaimer & Provisions",link:"/disclaimerprovisions"},
+       { title:"Dispute Resolution",link:"/cookiespolicy"},
+       { title:"Fraud Prevention",link:"/cookiespolicy"},
+       { title:"Payment & Withdrawal",link:"/cookiespolicy"},
+       { title:"Privacy Policy",link:"/cookiespolicy"},
+       { title:"Refund & Chargeback",link:"/cookiespolicy"},
+       { title:"Terms & Condition",link:"/cookiespolicy"}
+        
     ];
 
     return (
@@ -78,11 +79,10 @@ const HelpCenter = () => {
                             <Accordion type="single" collapsible className="w-full space-y-2">
                                 {policies.map((policy, index) => (
                                     <AccordionItem key={index} value={`item-${index}`} className=" border rounded-lg overflow-hidden">
-                                        <Link href={"/eula"} className="   text-left px-4 flex flex-1 items-center justify-between py-4 text-sm">
-                                            {policy}
+                                        <Link href={policy.link} className="   text-left px-4 flex flex-1 items-center justify-between py-4 text-sm">
+                                            {policy.title}
                                         </Link>
                                         <AccordionContent className="px-4">
-                                            This is the {policy} content. You can replace this with actual policy details.
                                         </AccordionContent>
                                     </AccordionItem>
                                 ))}
