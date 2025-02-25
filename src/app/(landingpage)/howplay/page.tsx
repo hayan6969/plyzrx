@@ -89,17 +89,17 @@ function Play() {
                   </h2>
                   <ul className="space-y-2 text-md">
                     <li className="flex items-center gap-2 ">
-                      <FaCheckCircle className="text-green-500 w-8 h-8" />
+                      <FaCheckCircle className="text-green-500 w-8 h-8 lg:w-6 lg:h-6" />
                       {data.con1}
                       <br className="hidden lg:block" />
                       {data.con11}
                     </li>
                     <li className="flex items-center gap-2">
-                      <FaCheckCircle className="text-green-500 w-4 h-4" />
+                      <FaCheckCircle className="text-green-500 w-4 h-4 lg:w-5 lg:h-5" />
                       {data.con2}
                     </li>
                     <li className="flex items-center gap-2">
-                      <FaCheckCircle className="text-green-500 w-8 h-8" />
+                      <FaCheckCircle className="text-green-500 w-8 h-8 lg:w-9 lg:h-9" />
                       {data.con3}
                     </li>
                   </ul>

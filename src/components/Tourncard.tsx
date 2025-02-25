@@ -1,7 +1,23 @@
 import React from "react";
 import { Button } from "./ui/button";
 
-export default function Tourncard(tournament) {
+type Tournament ={
+  tier: string;
+  price: string;
+  player1: string;
+  payout1: string;
+  player: string;
+  payout2: string;
+  time: string;
+  countdays: string;
+  counthr: string;
+  countmin: string;
+  countsec: string;
+  finalprice: string;
+  id?: string; // Optional since it's used as key but not in the component
+}
+
+export default function Tourncard(tournament:Tournament) {
   // Change from {tournament} to tournament as the prop is being passed directly
   const {
     tier,
