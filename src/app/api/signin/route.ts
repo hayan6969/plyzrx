@@ -1,14 +1,6 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 
-interface ApiError {
-  response?: {
-    data?: {
-      detail?: string;
-    };
-  };
-  message: string;
-}
 
 export async function POST(request: Request) {
   const {  username,  password } = await request.json();
@@ -35,7 +27,7 @@ try {
     
     //   return NextResponse.json({  }, { status: 201 });
       return NextResponse.json({ success: true,message: 'User logged in successfully' });  
-} catch (error: ApiError) {
+} catch (error:any) {
   console.log("Error Response:", error.response?.data || error.message);
   
   return NextResponse.json({ 
