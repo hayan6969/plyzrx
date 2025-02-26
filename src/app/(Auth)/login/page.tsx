@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useForm, SubmitHandler } from "react-hook-form";
+import SuccessFlashCard from "@/components/SuccessFlashCard";
+import FlashCard from "@/components/FlashCard";
 
 import {
   FaFacebook,
@@ -17,13 +19,18 @@ import {
 } from "react-icons/fa";
 import axios from "axios"; 
 import Link from "next/link";
+import { useState } from "react";
 
-type FormData = {
+type FormData={
   username: string;
   password: string;
 };
 
 function Page() {
+  const [errorstate,seterrorstate]=useState(false)
+  const [errorMSg,SeterroMSg]=useState("");
+  const [successtate,setsuccessstate]=useState(false)
+  const [SuccessMSg,SetSuccessMSg]=useState("");
   const {
     register,
     handleSubmit,
@@ -33,6 +40,27 @@ function Page() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
       const responce=await axios.post("/api/signin",data)
+
+      if(responce.data.success===false)
+        {
+         seterrorstate(true);
+         setsuccessstate(false);
+       
+         SeterroMSg(responce.data.message);
+        }
+        else{
+         setsuccessstate(true);
+         seterrorstate(false);
+       
+         SetSuccessMSg(responce.data.message);
+         
+         setTimeout(()=>
+           {
+         setsuccessstate(false);
+         
+           },4000)
+        }
+
 
 console.log(responce.data);
     } catch (error) {
@@ -51,6 +79,18 @@ console.log(responce.data);
           <p className="text-center text-gray-400">Login to continue PlyzRX</p>
           
           <form onSubmit={handleSubmit(onSubmit)} method="POST" className="space-y-4 font-bodyfont">
+        
+          {
+              errorstate&&
+      <FlashCard message={errorMSg} />
+
+            }
+
+{
+              successtate&&
+      <SuccessFlashCard message={SuccessMSg} />
+
+            }
             {/* Username */}
             <div>
               <Label htmlFor="username" className="text-sm">

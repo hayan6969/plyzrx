@@ -23,8 +23,8 @@ try {
       );
       console.log(api);
     
-    //   return NextResponse.json({ message: 'User created successfully' }, { status: 201 });
-      return NextResponse.json({ success: true });  
+    //   return NextResponse.json({  }, { status: 201 });
+      return NextResponse.json({ success: true,message: 'User logged in successfully' });  
 } catch (error:any) {
     console.log("Error Response:", error.response?.data || error.message);
    
