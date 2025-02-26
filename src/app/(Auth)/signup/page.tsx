@@ -10,7 +10,7 @@ import {
   FaEnvelope,
   FaLock,
   FaUser,
-  FaCalendarAlt,
+  // FaCalendarAlt,
 } from "react-icons/fa";
 import Link from "next/link";
 import axios from "axios"; 
@@ -33,11 +33,12 @@ function Page() {
 
   const onSubmit: SubmitHandler<FormData> = async(data) => {
 
-    // console.log();
     
 const responce=await axios.post("/api/signup",data)
 
 console.log(responce.data);
+ 
+
 
 
   };

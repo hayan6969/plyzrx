@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 export async function POST(request: Request) {
-  const { fullname, username, email, password } = await request.json();
+  const {  username,  password } = await request.json();
 
-  if (!fullname || !username || !email || !password) {
-    return NextResponse.json({ error: "Fields required" }, { status: 400 });
+  if ( !username ||  !password) {
+    return NextResponse.json({ error: "Fields required"}, { status: 400 });
   }
 
-
+  console.log(username, password);
+  console.log(process.env.PROJECTID);
   
 try {
     const api = await axios.post(
-        "https://player-auth.services.api.unity.com/v1/authentication/usernamepassword/sign-up",
+        "https://player-auth.services.api.unity.com/v1/authentication/usernamepassword/sign-in",
         { username, password },
         {
           headers: {
@@ -22,13 +23,13 @@ try {
       );
       console.log(api);
     
-      // return NextResponse.json({ message: 'User created successfully' }, { status: 201 });
+    //   return NextResponse.json({ message: 'User created successfully' }, { status: 201 });
       return NextResponse.json({ success: true });  
 } catch (error:any) {
-  console.log("Error Response:", error.response?.data || error.message);
-
-  
+    console.log("Error Response:", error.response?.data || error.message);
+   
     return NextResponse.json({ success: false,message:error.response?.data.detail || error.messageerror });  
+    
 
     
 
