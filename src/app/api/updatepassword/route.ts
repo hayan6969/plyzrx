@@ -1,21 +1,24 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import axios from "axios";
+import { cookies } from "next/headers";
+
 export async function POST(request: Request) {
-  const { fullname, username, email, password } = await request.json();
+
+  const { password,newPassword } = await request.json();
   const cookiesStore = cookies();
-  if (!fullname || !username || !email || !password) {
+  if (!password || !newPassword) {
     return NextResponse.json({ error: "Fields required" }, { status: 400 });
   }
 
   try {
     const api = await axios.post(
-      "https://player-auth.services.api.unity.com/v1/authentication/usernamepassword/sign-up",
-      { username, password },
+      "https://player-auth.services.api.unity.com/v1/authentication/usernamepassword/update-password",
+      { password, newPassword },
       {
         headers: {
           "Content-Type": "application/json",
           ProjectId: process.env.PROJECTID ?? "",
+          Authorization:""
         },
       }
     );
@@ -42,4 +45,6 @@ export async function POST(request: Request) {
       message: error.response?.data.detail || error.messageerror,
     });
   }
+  
+
 }

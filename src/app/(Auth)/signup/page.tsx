@@ -88,6 +88,11 @@ function Page() {
                     className="pl-9 h-10 text-base w-full"
                   />
                 </div>
+                {errors.fullname && (
+                <p className="text-red-500 text-[.8rem]">
+                  {"*" + errors.fullname.message}
+                </p>
+              )}
               </div>
 
               <div>
@@ -109,6 +114,11 @@ function Page() {
                     className="pl-9 h-10 text-base w-full"
                   />
                 </div>
+                {errors.username && (
+                <p className="text-red-500 text-[.8rem]">
+                  {"*" + errors.username.message}
+                </p>
+              )}
               </div>
 
               <div>
@@ -133,6 +143,11 @@ function Page() {
                     className="pl-9 h-10 text-base w-full"
                   />
                 </div>
+                {errors.email && (
+                <p className="text-red-500 text-[.8rem]">
+                  {"*" + errors.email.message}
+                </p>
+)}
               </div>
 
               <div>
@@ -167,6 +182,11 @@ function Page() {
                     className="pl-9 h-10 text-base w-full"
                   />
                 </div>
+                {errors.password && (
+                <p className="text-red-500 text-[.8rem]">
+                  {"*" + errors.password.message}
+                </p>
+)}
               </div>
 
               <Button

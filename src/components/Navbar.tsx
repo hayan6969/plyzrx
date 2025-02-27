@@ -10,7 +10,6 @@ function Navbar() {
   const [showProfile, SetProfile] = useState(false);
   useEffect(() => {
     const val = localStorage.getItem("Login");
-    console.log(val);
     if (val === "true") {
       SetProfile(true);
     } else {
@@ -46,7 +45,7 @@ function Navbar() {
 
         <div className="hidden md:flex justify-evenly items-center  w-[22%] sm:w-[20%] md:w-[24%] lg:w-[24%] h-[55px] px-2 lg:px-4">
           {showProfile ? (
-            <Link href={"/about"}>
+            <Link href={"/profile"}>
               <UserProfileIcon
               />
             </Link>
@@ -93,7 +92,7 @@ function Navbar() {
             {showProfile ? (
               <Link
                 className="flex items-center justify-center gap-2 w-2/4 py-2 mb-2 rounded-3xl border "
-                href={"/about"}
+                href={"/profile"}
               >
                 <UserProfileIcon />
                 <span className="text-sm text-black">Profile</span>
