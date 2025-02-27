@@ -28,7 +28,7 @@ type FormData = {
 
 function Page() {
   const [buttonState, SetButtonState] = useState(false);
-const router= useRouter();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -44,7 +44,8 @@ const router= useRouter();
         toast.error(responce.data.message);
       } else {
         toast.success(responce.data.message);
-        router.push("/")
+        localStorage.setItem("Login", "true");
+        router.push("/");
       }
 
       console.log(responce.data);

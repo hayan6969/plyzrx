@@ -44,6 +44,7 @@ function Page() {
         toast.error(response.data.message);
       } else {
         toast.success(response.data.message);
+        localStorage.setItem("Login","true");
         router.push("/")
 
       }

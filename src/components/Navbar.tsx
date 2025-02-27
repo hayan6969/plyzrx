@@ -1,11 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import UserProfileIcon from "@/app/(landingpage)/components/UserProfileIcon";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showProfile, SetProfile] = useState(false);
+  useEffect(() => {
+    const val = localStorage.getItem("Login");
+    console.log(val);
+    if (val === "true") {
+      SetProfile(true);
+    } else {
+      SetProfile(false);
+    }
+  }, []);
 
   const navlinks = [
     { name: "Home", href: "/" },
@@ -34,19 +45,28 @@ function Navbar() {
         </div>
 
         <div className="hidden md:flex justify-evenly items-center  w-[22%] sm:w-[20%] md:w-[24%] lg:w-[24%] h-[55px] px-2 lg:px-4">
-          <Link
-            href={"/login"}
-            className=" flex justify-center items-center text-sm lg:text-base bg-custompink text-white shadowds h-[85%] w-[39%] rounded-3xl text-[1rem]"
-          >
-            Log in
-          </Link>
+          {showProfile ? (
+            <Link href={"/about"}>
+              <UserProfileIcon
+              />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href={"/login"}
+                className=" flex justify-center items-center text-sm lg:text-base bg-custompink text-white shadowds h-[85%] w-[39%] rounded-3xl text-[1rem]"
+              >
+                Log in
+              </Link>
 
-          <Link
-            href={"/signup"}
-            className=" flex justify-center items-center text-sm lg:text-base bg-white text-custompink  shadow font-bodyfont font-regular h-[85%] w-[39%] rounded-3xl text-[1rem] "
-          >
-            Sign Up
-          </Link>
+              <Link
+                href={"/signup"}
+                className=" flex justify-center items-center text-sm lg:text-base bg-white text-custompink  shadow font-bodyfont font-regular h-[85%] w-[39%] rounded-3xl text-[1rem] "
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -55,7 +75,6 @@ function Navbar() {
         >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
-
       </nav>
       {isOpen && (
         <div className="md:hidden bg-white p-4 rounded-lg shadow-md flex flex-col items-center absolute mx-auto top-[12%]  w-[100%] z-50">
@@ -71,17 +90,30 @@ function Navbar() {
           ))}
 
           <div className="w-full flex flex-col items-center mt-2">
-            <Link
-href={"/login"}
-              className="bg-custompink text-white  shadow font-bodyfont font-regular flex justify-center items-center  w-2/4 py-2 mb-2 border  h-[85%]  rounded-3xl text-[1rem]"
-            >
-              Log in
-            </Link>
-            <Link 
-            href={"/signup"}
-             className="bg-white text-custompink  shadow font-bodyfont font-regular flex justify-center items-center  w-2/4 py-2 mb-2 border border-custompink h-[85%]  rounded-3xl text-[1rem]">
-              Sign Up
-            </Link>
+            {showProfile ? (
+              <Link
+                className="flex items-center justify-center gap-2 w-2/4 py-2 mb-2 rounded-3xl border "
+                href={"/about"}
+              >
+                <UserProfileIcon />
+                <span className="text-sm text-black">Profile</span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href={"/login"}
+                  className="bg-custompink text-white  shadow font-bodyfont font-regular flex justify-center items-center  w-2/4 py-2 mb-2 border  h-[85%]  rounded-3xl text-[1rem]"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href={"/signup"}
+                  className="bg-white text-custompink  shadow font-bodyfont font-regular flex justify-center items-center  w-2/4 py-2 mb-2 border border-custompink h-[85%]  rounded-3xl text-[1rem]"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
