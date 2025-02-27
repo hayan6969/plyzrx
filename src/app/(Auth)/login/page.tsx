@@ -6,15 +6,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useForm, SubmitHandler } from "react-hook-form";
-import SuccessFlashCard from "@/components/SuccessFlashCard";
-import FlashCard from "@/components/FlashCard";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 import {
   FaFacebook,
   FaInstagram,
   FaGoogle,
   FaUser,
-  // FaEnvelope,
   FaLock,
 } from "react-icons/fa";
 import axios from "axios"; 
@@ -22,17 +21,13 @@ import Link from "next/link";
 import { useState } from "react";
 import ButtonLoad from "@/components/ButtonLoad";
 
-type FormData={
+type FormData = {
   username: string;
   password: string;
 };
 
 function Page() {
-  const [errorstate,seterrorstate]=useState(false)
-  const [errorMSg,SeterroMSg]=useState("");
-  const [successtate,setsuccessstate]=useState(false)
-  const [SuccessMSg,SetSuccessMSg]=useState("");
-  const [buttonState,SetButtonState]=useState(false);
+  const [buttonState, setButtonState] = useState(false);
   const {
     register,
     handleSubmit,
@@ -40,47 +35,28 @@ function Page() {
   } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    SetButtonState(true)
+    setButtonState(true);
     try {
-      const responce=await axios.post("/api/signin",data)
+      const response = await axios.post("/api/signin", data);
 
-      if(responce.data.success===false)
-        {
-         seterrorstate(true);
-         setsuccessstate(false);
-      SetButtonState(false)
-       
-         SeterroMSg(responce.data.message);
-        }
-        else{
-         setsuccessstate(true);
-         seterrorstate(false);
-      SetButtonState(false)
-       
-         SetSuccessMSg(responce.data.message);
-         
-         setTimeout(()=>
-           {
-         setsuccessstate(false);
-         
-           },4000)
-        }
-
-
-console.log(responce.data);
+      if (!response.data.success) {
+        toast.error(response.data.message);
+      } else {
+        toast.success(response.data.message);
+        setTimeout(() => {
+          toast.dismiss();
+        }, 4000);
+      }
     } catch (error) {
-      console.log("error in sign in",error);
-      SetButtonState(false)
-      
-    }
-    finally{
-      SetButtonState(false)
-
+      console.error("Error in sign-in", error);
+    } finally {
+      setButtonState(false);
     }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
+      <Toaster />
       <Card className="w-full max-w-md bg-formcolor text-white p-6 rounded-2xl shadow-lg">
         <CardContent className="space-y-4">
           <h2 className="text-3xl lg:text-[2.8rem] font-bold text-center text-custompink font-headingfont">
@@ -89,19 +65,6 @@ console.log(responce.data);
           <p className="text-center text-gray-400">Login to continue PlyzRX</p>
           
           <form onSubmit={handleSubmit(onSubmit)} method="POST" className="space-y-4 font-bodyfont">
-        
-          {
-              errorstate&&
-      <FlashCard message={errorMSg} />
-
-            }
-
-{
-              successtate&&
-      <SuccessFlashCard message={SuccessMSg} />
-
-            }
-            {/* Username */}
             <div>
               <Label htmlFor="username" className="text-sm">
                 Username
@@ -125,7 +88,6 @@ console.log(responce.data);
               {errors.username && <p className="text-red-500">{"*" + errors.username.message}</p>}
             </div>
 
-            {/* Password */}
             <div>
               <Label htmlFor="password" className="text-sm">
                 Password
@@ -157,7 +119,6 @@ console.log(responce.data);
               {errors.password && <p className="text-red-500 text-[.8rem]">{"*" + errors.password.message}</p>}
             </div>
 
-            {/* Remember Me and Forgot Password */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Checkbox id="remember" />
@@ -170,16 +131,14 @@ console.log(responce.data);
               </a>
             </div>
 
-            {/* Submit Button */}
             <Button type="submit" className="w-full bg-custompink hover:bg-red-500 h-10 text-lg" disabled={buttonState}>
-             {buttonState?(<ButtonLoad buttonName="Signing In"/>):("Sign In")}
+              {buttonState ? <ButtonLoad buttonName="Signing In" /> : "Sign In"}
             </Button>
           </form>
 
           <Separator className="my-4 bg-gray-700" />
           <p className="text-center text-gray-400 font-bodyfont">Continue With</p>
 
-          {/* Social Login Buttons */}
           <div className="grid grid-cols-2 lg:flex lg:flex-nowrap justify-center gap-4 font-bodyfont">
             <Button className="flex items-center bg-white text-black border-gray-300 hover:bg-gray-100 px-4 py-2 w-full sm:w-auto">
               <FaGoogle className="w-5 h-5 mr-2 text-red-500" /> Google
@@ -192,7 +151,6 @@ console.log(responce.data);
             </Button>
           </div>
 
-          {/* Signup Link */}
           <p className="text-center text-gray-400 font-bodyfont">
             Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-blue-500 hover:underline">

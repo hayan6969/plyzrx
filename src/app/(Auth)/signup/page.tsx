@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import {
   FaGoogle,
   FaEnvelope,
@@ -26,10 +28,7 @@ type FormData = {
 };
 
 function Page() {
-  const [errorstate,seterrorstate]=useState(false)
-  const [errorMSg,SeterroMSg]=useState("");
-  const [successtate,setsuccessstate]=useState(false)
-  const [SuccessMSg,SetSuccessMSg]=useState("");
+
   const [buttonState,SetButtonState]=useState(false);
 
   const {
@@ -43,26 +42,15 @@ function Page() {
 
  try {
      const responce = await axios.post("/api/signup", data);
- if(responce.data.success===false)
+ if(!responce.data.success)
  {
-  seterrorstate(true);
-  setsuccessstate(false);
-  SetButtonState(false)
-
-  SeterroMSg(responce.data.message);
+  toast.error(responce.data.message);
  }
  else{
-  setsuccessstate(true);
-  seterrorstate(false);
-  SetButtonState(false)
-
-  SetSuccessMSg(responce.data.message);
-  
-  setTimeout(()=>
-    {
-  setsuccessstate(false);
-  
-    },4000)
+  toast.success(responce.data.message);
+  setTimeout(() => {
+    toast.dismiss();
+  }, 4000);
  }
 
 
@@ -78,6 +66,7 @@ function Page() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
+    <Toaster/>
       <Card className="w-full max-w-md bg-formcolor text-white p-4 rounded-2xl shadow-lg">
        
         <CardContent className="space-y-3 w-full">
@@ -87,8 +76,6 @@ function Page() {
               Sign Up
             </h2>
             <p className="text-center text-gray-400 text-sm">Sign up to enjoy PlyzRX</p>
-            {errorstate && <FlashCard message={errorMSg} />}
-            {successtate && <SuccessFlashCard message={SuccessMSg} />}
 
             <div className="space-y-3 font-bodyfont w-full">
               <div>
