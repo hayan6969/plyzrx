@@ -20,6 +20,7 @@ import {
 import axios from "axios"; 
 import Link from "next/link";
 import { useState } from "react";
+import ButtonLoad from "@/components/ButtonLoad";
 
 type FormData={
   username: string;
@@ -31,6 +32,7 @@ function Page() {
   const [errorMSg,SeterroMSg]=useState("");
   const [successtate,setsuccessstate]=useState(false)
   const [SuccessMSg,SetSuccessMSg]=useState("");
+  const [buttonState,SetButtonState]=useState(false);
   const {
     register,
     handleSubmit,
@@ -38,6 +40,7 @@ function Page() {
   } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
+    SetButtonState(true)
     try {
       const responce=await axios.post("/api/signin",data)
 
@@ -45,12 +48,14 @@ function Page() {
         {
          seterrorstate(true);
          setsuccessstate(false);
+      SetButtonState(false)
        
          SeterroMSg(responce.data.message);
         }
         else{
          setsuccessstate(true);
          seterrorstate(false);
+      SetButtonState(false)
        
          SetSuccessMSg(responce.data.message);
          
@@ -65,7 +70,12 @@ function Page() {
 console.log(responce.data);
     } catch (error) {
       console.log("error in sign in",error);
+      SetButtonState(false)
       
+    }
+    finally{
+      SetButtonState(false)
+
     }
   };
 
@@ -161,8 +171,8 @@ console.log(responce.data);
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full bg-custompink hover:bg-red-500 h-10 text-lg">
-              Sign in
+            <Button type="submit" className="w-full bg-custompink hover:bg-red-500 h-10 text-lg" disabled={buttonState}>
+             {buttonState?(<ButtonLoad buttonName="Signing In"/>):("Sign In")}
             </Button>
           </form>
 

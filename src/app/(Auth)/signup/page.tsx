@@ -17,6 +17,7 @@ import axios from "axios";
 import FlashCard from "@/components/FlashCard";
 import { useState } from "react";
 import SuccessFlashCard from "@/components/SuccessFlashCard";
+import ButtonLoad from "@/components/ButtonLoad";
 type FormData = {
   fullname: string;
   username: string;
@@ -29,6 +30,7 @@ function Page() {
   const [errorMSg,SeterroMSg]=useState("");
   const [successtate,setsuccessstate]=useState(false)
   const [SuccessMSg,SetSuccessMSg]=useState("");
+  const [buttonState,SetButtonState]=useState(false);
 
   const {
     register,
@@ -37,18 +39,22 @@ function Page() {
   } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
+    SetButtonState(true)
+
  try {
      const responce = await axios.post("/api/signup", data);
  if(responce.data.success===false)
  {
   seterrorstate(true);
   setsuccessstate(false);
+  SetButtonState(false)
 
   SeterroMSg(responce.data.message);
  }
  else{
   setsuccessstate(true);
   seterrorstate(false);
+  SetButtonState(false)
 
   SetSuccessMSg(responce.data.message);
   
@@ -65,6 +71,9 @@ function Page() {
   console.log(error);
   
  }
+ finally{
+  SetButtonState(false);
+ }
   };
 
   return (
@@ -73,36 +82,20 @@ function Page() {
        
         <CardContent className="space-y-3 w-full">
           
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 w-full">
             <h2 className="text-2xl lg:text-4xl font-bold text-center text-custompink font-headingfont">
               Sign Up
             </h2>
-            <p className="text-center text-gray-400 text-sm">
-              Sign up to enjoy PlyzRX
-            </p>
-            {
-              errorstate&&
-      <FlashCard message={errorMSg} />
-
-            }
-
-{
-              successtate&&
-      <SuccessFlashCard message={SuccessMSg} />
-
-            }
+            <p className="text-center text-gray-400 text-sm">Sign up to enjoy PlyzRX</p>
+            {errorstate && <FlashCard message={errorMSg} />}
+            {successtate && <SuccessFlashCard message={SuccessMSg} />}
 
             <div className="space-y-3 font-bodyfont w-full">
-              {/* Full Name */}
               <div>
-                <Label htmlFor="full-name" className="text-sm">
-                  Full Name
-                </Label>
+                <Label className="text-sm ">Full Name <span className="italic">(e.g., John Doe)</span></Label>
                 <div className="relative flex items-center">
                   <FaUser className="absolute left-3 text-gray-400" size={16} />
                   <Input
-                    id="full-name"
-                    type="text"
                     {...register("fullname", {
                       required: "Full name is required",
                       pattern: {
@@ -114,59 +107,35 @@ function Page() {
                     className="pl-9 h-10 text-base w-full"
                   />
                 </div>
-                {errors.fullname && (
-                  <p className="text-red-500 text-[.9rem]">
-                    {"*" + errors.fullname.message}
-                  </p>
-                )}
               </div>
 
-              {/* Username */}
               <div>
-                <Label htmlFor="username" className="text-sm">
-                  Username
-                </Label>
+                <Label className="text-sm ">UserName <span className="italic">(e.g., xyz_123 or xyz)</span></Label>
                 <div className="relative flex items-center">
                   <FaUser className="absolute left-3 text-gray-400" size={16} />
                   <Input
-                    id="username"
-                    type="text"
                     {...register("username", {
-                      required: "Username is required",
+                      required: "Handle is required",
                       pattern: {
                         value: /^[A-Za-z0-9_]+$/,
-                        message: "Invalid username format",
+                        message: "Invalid handle format",
                       },
                     })}
-                    placeholder="Enter your username"
+                    placeholder="Enter your handle"
                     className="pl-9 h-10 text-base w-full"
                   />
                 </div>
-                {errors.username && (
-                  <p className="text-red-500">
-                    {"*" + errors.username.message}
-                  </p>
-                )}
               </div>
 
-              {/* Email */}
               <div>
-                <Label htmlFor="email" className="text-sm">
-                  Email
-                </Label>
+                <Label className="text-sm ">Email <span className="italic">(e.g., example@mail.com)</span> </Label>
                 <div className="relative flex items-center">
-                  <FaEnvelope
-                    className="absolute left-3 text-gray-400"
-                    size={16}
-                  />
+                  <FaEnvelope className="absolute left-3 text-gray-400" size={16} />
                   <Input
-                    id="email"
-                    type="email"
                     {...register("email", {
                       required: "Email is required",
                       pattern: {
-                        value:
-                          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                         message: "Invalid email format",
                       },
                     })}
@@ -174,54 +143,34 @@ function Page() {
                     className="pl-9 h-10 text-base w-full"
                   />
                 </div>
-                {errors.email && (
-                  <p className="text-red-500">{"*" + errors.email.message}</p>
-                )}
               </div>
 
-              {/* Password */}
               <div>
-                <Label htmlFor="password" className="text-sm">
-                  Password
+                <Label className="text-sm ">
+                  Password <span className="italic">(1 uppercase, 1 lowercase, 1 digit, 1 symbol)</span> 
                 </Label>
                 <div className="relative flex items-center">
                   <FaLock className="absolute left-3 text-gray-400" size={16} />
                   <Input
-                    id="password"
-                    type="password"
                     {...register("password", {
                       required: "Password is required",
                       pattern: {
-                        value:
-                          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
-                        message:
-                          "Insert at least 1 uppercase, 1 lowercase, 1 digit, and 1 symbol.",
+                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+                        message: "Insert at least 1 uppercase, 1 lowercase, 1 digit, and 1 symbol.",
                       },
-                      minLength: {
-                        value: 8,
-                        message: "Must be at least 8 characters",
-                      },
-                      maxLength: {
-                        value: 30,
-                        message: "Must be less than 30 characters",
-                      },
+                      minLength: { value: 8, message: "Must be at least 8 characters" },
+                      maxLength: { value: 30, message: "Must be less than 30 characters" },
                     })}
+                    type="password"
                     placeholder="Enter your password"
                     className="pl-9 h-10 text-base w-full"
                   />
                 </div>
-                {errors.password && (
-                  <p className="text-red-500 text-[.8rem]">
-                    {"*" + errors.password.message}
-                  </p>
-                )}
               </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-custompink hover:bg-red-500 h-10 text-base mt-2"
-              >
-                Sign up
+              <Button type="submit" className="w-full bg-custompink hover:bg-red-500 h-10 text-base mt-2" disabled={buttonState}>
+              {buttonState?(<ButtonLoad buttonName="Signing Up"/>)
+        :("Sign Up")}
               </Button>
             </div>
           </form>
