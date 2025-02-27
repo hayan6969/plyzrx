@@ -16,10 +16,9 @@ import {
 } from "react-icons/fa";
 import Link from "next/link";
 import axios from "axios";
-import FlashCard from "@/components/FlashCard";
 import { useState } from "react";
-import SuccessFlashCard from "@/components/SuccessFlashCard";
 import ButtonLoad from "@/components/ButtonLoad";
+import { useRouter } from "next/navigation";
 type FormData = {
   fullname: string;
   username: string;
@@ -28,9 +27,8 @@ type FormData = {
 };
 
 function Page() {
-
-  const [buttonState,SetButtonState]=useState(false);
-
+  const [buttonState, SetButtonState] = useState(false);
+const router= useRouter();
   const {
     register,
     handleSubmit,
@@ -38,48 +36,43 @@ function Page() {
   } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    SetButtonState(true)
+    SetButtonState(true);
 
- try {
-     const responce = await axios.post("/api/signup", data);
- if(!responce.data.success)
- {
-  toast.error(responce.data.message);
- }
- else{
-  toast.success(responce.data.message);
-  setTimeout(() => {
-    toast.dismiss();
-  }, 4000);
- }
+    try {
+      const responce = await axios.post("/api/signup", data);
+      if (!responce.data.success) {
+        toast.error(responce.data.message);
+      } else {
+        toast.success(responce.data.message);
+        router.push("/")
+      }
 
-
-     console.log(responce.data);
- } catch (error) {
-  console.log(error);
-  
- }
- finally{
-  SetButtonState(false);
- }
+      console.log(responce.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      SetButtonState(false);
+    }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
-    <Toaster/>
+      <Toaster />
       <Card className="w-full max-w-md bg-formcolor text-white p-4 rounded-2xl shadow-lg">
-       
         <CardContent className="space-y-3 w-full">
-          
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 w-full">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 w-full">
             <h2 className="text-2xl lg:text-4xl font-bold text-center text-custompink font-headingfont">
               Sign Up
             </h2>
-            <p className="text-center text-gray-400 text-sm">Sign up to enjoy PlyzRX</p>
+            <p className="text-center text-gray-400 text-sm">
+              Sign up to enjoy PlyzRX
+            </p>
 
             <div className="space-y-3 font-bodyfont w-full">
               <div>
-                <Label className="text-sm ">Full Name <span className="italic">(e.g., John Doe)</span></Label>
+                <Label className="text-sm ">
+                  Full Name <span className="italic">(e.g., John Doe)</span>
+                </Label>
                 <div className="relative flex items-center">
                   <FaUser className="absolute left-3 text-gray-400" size={16} />
                   <Input
@@ -97,7 +90,10 @@ function Page() {
               </div>
 
               <div>
-                <Label className="text-sm ">UserName <span className="italic">(e.g., xyz_123 or xyz)</span></Label>
+                <Label className="text-sm ">
+                  UserName{" "}
+                  <span className="italic">(e.g., xyz_123 or xyz)</span>
+                </Label>
                 <div className="relative flex items-center">
                   <FaUser className="absolute left-3 text-gray-400" size={16} />
                   <Input
@@ -115,14 +111,20 @@ function Page() {
               </div>
 
               <div>
-                <Label className="text-sm ">Email <span className="italic">(e.g., example@mail.com)</span> </Label>
+                <Label className="text-sm ">
+                  Email <span className="italic">(e.g., example@mail.com)</span>{" "}
+                </Label>
                 <div className="relative flex items-center">
-                  <FaEnvelope className="absolute left-3 text-gray-400" size={16} />
+                  <FaEnvelope
+                    className="absolute left-3 text-gray-400"
+                    size={16}
+                  />
                   <Input
                     {...register("email", {
                       required: "Email is required",
                       pattern: {
-                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                        value:
+                          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                         message: "Invalid email format",
                       },
                     })}
@@ -134,7 +136,10 @@ function Page() {
 
               <div>
                 <Label className="text-sm ">
-                  Password <span className="italic">(1 uppercase, 1 lowercase, 1 digit, 1 symbol)</span> 
+                  Password{" "}
+                  <span className="italic">
+                    (1 uppercase, 1 lowercase, 1 digit, 1 symbol)
+                  </span>
                 </Label>
                 <div className="relative flex items-center">
                   <FaLock className="absolute left-3 text-gray-400" size={16} />
@@ -142,11 +147,19 @@ function Page() {
                     {...register("password", {
                       required: "Password is required",
                       pattern: {
-                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
-                        message: "Insert at least 1 uppercase, 1 lowercase, 1 digit, and 1 symbol.",
+                        value:
+                          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+                        message:
+                          "Insert at least 1 uppercase, 1 lowercase, 1 digit, and 1 symbol.",
                       },
-                      minLength: { value: 8, message: "Must be at least 8 characters" },
-                      maxLength: { value: 30, message: "Must be less than 30 characters" },
+                      minLength: {
+                        value: 8,
+                        message: "Must be at least 8 characters",
+                      },
+                      maxLength: {
+                        value: 30,
+                        message: "Must be less than 30 characters",
+                      },
                     })}
                     type="password"
                     placeholder="Enter your password"
@@ -155,9 +168,16 @@ function Page() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-custompink hover:bg-red-500 h-10 text-base mt-2" disabled={buttonState}>
-              {buttonState?(<ButtonLoad buttonName="Signing Up"/>)
-        :("Sign Up")}
+              <Button
+                type="submit"
+                className="w-full bg-custompink hover:bg-red-500 h-10 text-base mt-2"
+                disabled={buttonState}
+              >
+                {buttonState ? (
+                  <ButtonLoad buttonName="Signing Up" />
+                ) : (
+                  "Sign Up"
+                )}
               </Button>
             </div>
           </form>

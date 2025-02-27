@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-
+import { useRouter } from "next/navigation";
 import {
   FaFacebook,
   FaInstagram,
@@ -16,7 +16,7 @@ import {
   FaUser,
   FaLock,
 } from "react-icons/fa";
-import axios from "axios"; 
+import axios from "axios";
 import Link from "next/link";
 import { useState } from "react";
 import ButtonLoad from "@/components/ButtonLoad";
@@ -28,6 +28,7 @@ type FormData = {
 
 function Page() {
   const [buttonState, setButtonState] = useState(false);
+  const router= useRouter();
   const {
     register,
     handleSubmit,
@@ -43,9 +44,8 @@ function Page() {
         toast.error(response.data.message);
       } else {
         toast.success(response.data.message);
-        setTimeout(() => {
-          toast.dismiss();
-        }, 4000);
+        router.push("/")
+
       }
     } catch (error) {
       console.error("Error in sign-in", error);
@@ -63,8 +63,12 @@ function Page() {
             Login
           </h2>
           <p className="text-center text-gray-400">Login to continue PlyzRX</p>
-          
-          <form onSubmit={handleSubmit(onSubmit)} method="POST" className="space-y-4 font-bodyfont">
+
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            method="POST"
+            className="space-y-4 font-bodyfont"
+          >
             <div>
               <Label htmlFor="username" className="text-sm">
                 Username
@@ -85,7 +89,9 @@ function Page() {
                   className="pl-9 h-10 text-base w-full"
                 />
               </div>
-              {errors.username && <p className="text-red-500">{"*" + errors.username.message}</p>}
+              {errors.username && (
+                <p className="text-red-500">{"*" + errors.username.message}</p>
+              )}
             </div>
 
             <div>
@@ -100,8 +106,10 @@ function Page() {
                   {...register("password", {
                     required: "Password is required",
                     pattern: {
-                      value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
-                      message: "Insert at least 1 uppercase, 1 lowercase, 1 digit, and 1 symbol.",
+                      value:
+                        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+                      message:
+                        "Insert at least 1 uppercase, 1 lowercase, 1 digit, and 1 symbol.",
                     },
                     minLength: {
                       value: 8,
@@ -116,7 +124,11 @@ function Page() {
                   className="pl-9 h-10 text-base w-full"
                 />
               </div>
-              {errors.password && <p className="text-red-500 text-[.8rem]">{"*" + errors.password.message}</p>}
+              {errors.password && (
+                <p className="text-red-500 text-[.8rem]">
+                  {"*" + errors.password.message}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between">
@@ -126,18 +138,27 @@ function Page() {
                   Remember Me
                 </Label>
               </div>
-              <a href="#" className="text-white underline hover:underline mt-2 sm:mt-0">
+              <a
+                href="#"
+                className="text-white underline hover:underline mt-2 sm:mt-0"
+              >
                 Forgot Password?
               </a>
             </div>
 
-            <Button type="submit" className="w-full bg-custompink hover:bg-red-500 h-10 text-lg" disabled={buttonState}>
+            <Button
+              type="submit"
+              className="w-full bg-custompink hover:bg-red-500 h-10 text-lg"
+              disabled={buttonState}
+            >
               {buttonState ? <ButtonLoad buttonName="Signing In" /> : "Sign In"}
             </Button>
           </form>
 
           <Separator className="my-4 bg-gray-700" />
-          <p className="text-center text-gray-400 font-bodyfont">Continue With</p>
+          <p className="text-center text-gray-400 font-bodyfont">
+            Continue With
+          </p>
 
           <div className="grid grid-cols-2 lg:flex lg:flex-nowrap justify-center gap-4 font-bodyfont">
             <Button className="flex items-center bg-white text-black border-gray-300 hover:bg-gray-100 px-4 py-2 w-full sm:w-auto">
