@@ -77,27 +77,33 @@ function Play() {
             </div>
 
             {/* Mobile View - Only visible below sm screens */}
-            <div className="w-full block sm:hidden border-2 p-2 ">
-              <Swiper 
-         slidesPerView="auto" centeredSlides={true} spaceBetween={20} pagination={false} loop={false}
-                className="mySwiper"
-              >
-                {pricedata.map((data, index) => (
-                  <SwiperSlide key={index} className="!w-auto max-w-full">
-                    <PriceCard data={data} />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
+        {/* Mobile & Small Screen View - Visible only from sm till md */}
+<div className="w-full sm:block md:hidden border-2 p-2">
+  <Swiper 
+    slidesPerView="auto" 
+    centeredSlides={true} 
+    spaceBetween={20} 
+    pagination={false} 
+    loop={false} 
+    className="mySwiper"
+  >
+    {pricedata.map((data, index) => (
+      <SwiperSlide key={index} className="!w-auto max-w-full">
+        <PriceCard data={data} />
+      </SwiperSlide>
+    ))}
+  </Swiper>
+</div>
 
-            {/* Desktop/Tablet View - Hidden on mobile */}
-            <div className="hidden sm:flex flex-wrap justify-center gap-6 p-6">
-              {pricedata.map((data, index) => (
-                <div key={index} className="w-full sm:w-80">
-                  <PriceCard data={data} />
-                </div>
-              ))}
-            </div>
+{/* Desktop/Tablet View - Hidden on mobile & sm, visible from md and above */}
+<div className="hidden md:flex flex-wrap justify-center gap-6 p-6">
+  {pricedata.map((data, index) => (
+    <div key={index} className="w-full sm:w-80">
+      <PriceCard data={data} />
+    </div>
+  ))}
+</div>
+
           </div>
 
           <div className="p-6 flex flex-col gap-5">
