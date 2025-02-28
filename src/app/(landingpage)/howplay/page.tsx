@@ -1,41 +1,55 @@
+"use client";
 import React from "react";
 import Heading from "@/components/Heading";
 import Footer from "@/components/Footer";
 import { FaCheckCircle } from "react-icons/fa";
 import Image from "next/image";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { pricedata, rules } from "./data";
+import "swiper/css";
+import "swiper/css/pagination";
 
 function Play() {
-  const pricedata = [
-    {
-      title: "Tier 1",
-      con1: "Players Who land in the Top 10 ",
-      con11: " Each get a Payout Amount of $5,000",
-      con2: "Players 11 - 100",
-      con3: "Players who Land in the Top 100 from 11-100 Each win $555",
-    },
-    {
-      title: "Tier 2",
-      con1: "Players Who land in the Top 10",
-      con11: " Each get a Payout Amount of $12,500.00",
-      con2: "Players 11 - 100",
-      con3: "Players who Land in the Top 100 from 11-100 Each win $1,388",
-    },
-    {
-      title: "Tier 3",
-      con1: "Players Who land in the Top 10",
-      con11: " Each get a Payout Amount of $250,000",
-      con2: "Players 11 - 100",
-      con3: "Players who Land in the Top 100 from 11-100 Each win $25,000",
-    },
-  ];
-
-  const rules = [
-    "Tournament is for 7 Days",
-    "Must play once for each day for the 7 days",
-    "Once the tournament begins, you can't sign up until it's over",
-    "No Cheating",
-    "No bots",
-  ];
+  const PriceCard = ({ data }: { data: typeof pricedata[0] }) => (
+    <div className="bg-white bg-opacity-10 backdrop-blur-lg text-white rounded-2xl p-10 sm:p-6 w-full min-w-[260px] max-w-[300px] shadow-lg relative border border-white border-opacity-20">
+      <div
+        className="absolute top-[0rem] sm:-top-3 left-4 text-white text-sm px-3 py-1 rounded-md"
+        style={{
+          background: `linear-gradient(90deg, #5797D1 0%, #0F3782 100%)`,
+        }}
+      >
+        {data.title}
+      </div>
+      <div className="flex items-center justify-start mb-4">
+        <Image
+          width={40}
+          height={40}
+          src={"/svgs/Frame.svg"}
+          alt="logo"
+        />
+      </div>
+      <h2 className="text-2xl font-bold text-left mb-4">
+        {data.title}
+      </h2>
+      <ul className="space-y-2 text-md">
+        <li className="flex items-center gap-2 ">
+          <FaCheckCircle className="text-green-500 w-7 h-7" />
+          <span>
+            {data.con1}
+            {data.con11}
+          </span>
+        </li>
+        <li className="flex items-center gap-2">
+          <FaCheckCircle className="text-green-500 w-4 h-4" />
+          {data.con2}
+        </li>
+        <li className="flex items-center gap-2">
+          <FaCheckCircle className="text-green-500 w-7 h-7" />
+          {data.con3}
+        </li>
+      </ul>
+    </div>
+  );
 
   return (
     <>
@@ -62,47 +76,25 @@ function Play() {
               </p>
             </div>
 
-            <div className="w-full flex flex-wrap justify-center gap-6 p-6">
+            {/* Mobile View - Only visible below sm screens */}
+            <div className="w-full block sm:hidden border-2 p-2 ">
+              <Swiper 
+         slidesPerView="auto" centeredSlides={true} spaceBetween={20} pagination={false} loop={false}
+                className="mySwiper"
+              >
+                {pricedata.map((data, index) => (
+                  <SwiperSlide key={index} className="!w-auto max-w-full">
+                    <PriceCard data={data} />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+
+            {/* Desktop/Tablet View - Hidden on mobile */}
+            <div className="hidden sm:flex flex-wrap justify-center gap-6 p-6">
               {pricedata.map((data, index) => (
-                <div
-                  key={index}
-                  className="bg-white bg-opacity-10 backdrop-blur-lg text-white rounded-2xl p-6 sm:p-8 w-full sm:w-80 shadow-lg relative border border-white border-opacity-20"
-                >
-                  <div
-                    className="absolute -top-3 left-4 text-white text-sm px-3 py-1 rounded-md"
-                    style={{
-                      background: `linear-gradient(90deg, #5797D1 0%, #0F3782 100%)`,
-                    }}
-                  >
-                    {data.title}
-                  </div>
-                  <div className="flex items-center justify-start mb-4">
-                    <Image
-                      width={40}
-                      height={40}
-                      src={"/svgs/Frame.svg"}
-                      alt="logo"
-                    />
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-left mb-4">
-                    {data.title}
-                  </h2>
-                  <ul className="space-y-2 text-md">
-                    <li className="flex items-center gap-2 ">
-                      <FaCheckCircle className="text-green-500 w-8 h-8 lg:w-6 lg:h-6" />
-                      {data.con1}
-                      <br className="hidden lg:block" />
-                      {data.con11}
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <FaCheckCircle className="text-green-500 w-4 h-4 lg:w-5 lg:h-5" />
-                      {data.con2}
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <FaCheckCircle className="text-green-500 w-8 h-8 lg:w-9 lg:h-9" />
-                      {data.con3}
-                    </li>
-                  </ul>
+                <div key={index} className="w-full sm:w-80">
+                  <PriceCard data={data} />
                 </div>
               ))}
             </div>

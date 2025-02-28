@@ -1,28 +1,31 @@
-
-const specialcards = [
+export const pricedata = [
   {
-    title: "Ocho Wild",
-    description:
-      "Allows the player to change the active color. This card can be played at any time.",
-    image: "https://placehold.co/400x400/png",
+    title: "Tier 1",
+    con1: "Players Who land in the Top 10 ",
+    con11: " Each get a Payout Amount of $5,000",
+    con2: "Players 11 - 100",
+    con3: "Players who Land in the Top 100 from 11-100 Each win $555",
   },
   {
-    title: "Draw 4 Wild",
-    description:
-      "Lets the player change the active color and forces the next player to draw 4 cards (unless they play a Draw 2 or another Draw 4).",
-    image: "https://placehold.co/400x400/png",
+    title: "Tier 2",
+    con1: "Players Who land in the Top 10",
+    con11: " Each get a Payout Amount of $12,500.00",
+    con2: "Players 11 - 100",
+    con3: "Players who Land in the Top 100 from 11-100 Each win $1,388",
   },
   {
-    title: "Draw 2",
-    description:
-      "The next player must draw 2 cards, unless they counter with a Draw 2 or Draw 4 Wild.",
-    image: "https://placehold.co/400x400/png",
-  },
-  {
-    title: "Reverse",
-    description: "Reverses the direction of play.",
-    image: "https://placehold.co/400x400/png",
+    title: "Tier 3",
+    con1: "Players Who land in the Top 10",
+    con11: " Each get a Payout Amount of $250,000",
+    con2: "Players 11 - 100",
+    con3: "Players who Land in the Top 100 from 11-100 Each win $25,000",
   },
 ];
 
-export default specialcards;
+export const rules = [
+  "Tournament is for 7 Days",
+  "Must play once for each day for the 7 days",
+  "Once the tournament begins, you can't sign up until it's over",
+  "No Cheating",
+  "No bots",
+];

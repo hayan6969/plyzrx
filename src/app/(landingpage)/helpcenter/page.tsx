@@ -23,12 +23,12 @@ const HelpCenter = () => {
        { title:"End User License Agreement",link:"/eula"},
        { title:"Cookies Policies",link:"/cookiespolicy"},
        { title:"Disclaimer & Provisions",link:"/disclaimerprovisions"},
-       { title:"Dispute Resolution",link:"/cookiespolicy"},
-       { title:"Fraud Prevention",link:"/cookiespolicy"},
-       { title:"Payment & Withdrawal",link:"/cookiespolicy"},
-       { title:"Privacy Policy",link:"/cookiespolicy"},
-       { title:"Refund & Chargeback",link:"/cookiespolicy"},
-       { title:"Terms & Condition",link:"/cookiespolicy"}
+       { title:"Dispute Resolution",link:"/disputeresolution"},
+       { title:"Fraud Prevention",link:"/fraudprevention"},
+       { title:"Payment & Withdrawal",link:"/paymentwithdrawl"},
+       { title:"Privacy Policy",link:"/privacypolicy"},
+       { title:"Refund & Chargeback",link:"/refund"},
+       { title:"Terms & Condition",link:"/termsandcondition"}
         
     ];
 

@@ -1,3 +1,4 @@
+"use client";
 import {
   FaFacebookF,
   FaInstagram,
@@ -7,8 +8,20 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+
 
 const Footer = () => {
+  const [theYear,setYear]=useState(0)
+useEffect(()=>
+{
+  const currentYear = new Date().getFullYear();
+
+  setYear(currentYear)
+},[])
+
+
   return (
     <footer className="bg-footercolor font-bodyfont py-10 px-5 flex flex-col items-center">
       <div className="w-full max-w-[90%] 2xl:max-w-[86%] flex flex-wrap justify-between items-start gap-6 md:gap-10">
@@ -29,20 +42,20 @@ const Footer = () => {
             <li>
               <Link href="/privacypolicy">Privacy & Policy</Link>
             </li>
-            <li>License Agreement</li>
-            <li>Cookies</li>
-            <li>Dispute Resolution</li>
-            <li>Fraud Prevention</li>
-            <li>Refund</li>
+            <li> <Link href="/license">License Agreement</Link></li>
+            <li><Link href="/cookiespolicy">Cookies</Link></li>
+            <li><Link href="/disputeresolution">Dispute Resolution</Link></li>
+            <li><Link href="/fraudprevention">Fraud Prevention</Link></li>
+            <li><Link href="/refund">Refund</Link></li>
           </ul>
         </div>
 
         <div className="w-full sm:w-[45%] md:w-[25%] lg:w-[19%] flex flex-col p-4">
           <h3 className="text-xl mb-5">Agreement</h3>
           <ul className="opacity-85 font-thin">
-            <li>Disclaimer & Provision</li>
-            <li>Terms & Condition</li>
-            <li>Payment & Withdrawal</li>
+            <li><Link href="/disclaimerprovisions">Disclaimer & Provision</Link></li>
+            <li><Link href="/termsandcondition">Terms & Condition</Link></li>
+            <li><Link href="/termsandcondition">Payment & Withdrawal</Link></li>
           </ul>
         </div>
 
@@ -70,7 +83,7 @@ const Footer = () => {
       </div>
 
       <div className="w-full max-w-[90%] 2xl:max-w-[86%] border-t-2 border-[rgba(255,255,255,0.5)] flex justify-center items-center mt-6 pt-4">
-        <p>&copy; 2019 Lift Media | All Rights Reserved</p>
+        <p>&copy; {theYear} Lift Media | All Rights Reserved</p>
       </div>
     </footer>
   );
