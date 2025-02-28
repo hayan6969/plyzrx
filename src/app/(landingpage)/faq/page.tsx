@@ -80,7 +80,7 @@ const FAQSection = () => {
           Frequently Asked Questions
         </h2>
 
-   <div className='flex flex-col md:flex-row border-2 w-full p-5 justify-center gap-6 items-center'>
+   <div className='flex flex-col md:flex-row  w-full p-5 justify-center gap-6 items-center'>
    <Link href={"/generalfaq"} className="bg-white text-custompink px-6 py-2 md:mr-5 rounded-lg hover:bg-[#d4004d] hover:text-white">
    General FAQ
         </Link>
