@@ -78,7 +78,7 @@ function Play() {
 
             {/* Mobile View - Only visible below sm screens */}
         {/* Mobile & Small Screen View - Visible only from sm till md */}
-<div className="w-full sm:block md:hidden border-2 p-2">
+<div className="w-full sm:block md:hidden p-2">
   <Swiper 
     slidesPerView="auto" 
     centeredSlides={true} 
