@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
     (await cookiesStore).set({
       name: "token",
-      value: JSON.stringify(api.data),
+      value: api.data.idToken,
       httpOnly: true,
       secure: true,
       sameSite: "strict",

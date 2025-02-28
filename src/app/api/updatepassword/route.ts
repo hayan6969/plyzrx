@@ -11,6 +11,13 @@ export async function POST(request: Request) {
   }
 
   try {
+
+console.log(password);
+
+const Recievedcookie=(await cookiesStore).get("token")
+
+console.log("cookies is ",Recievedcookie?.value);
+
     const api = await axios.post(
       "https://player-auth.services.api.unity.com/v1/authentication/usernamepassword/update-password",
       { password, newPassword },
@@ -18,7 +25,7 @@ export async function POST(request: Request) {
         headers: {
           "Content-Type": "application/json",
           ProjectId: process.env.PROJECTID ?? "",
-          Authorization:""
+          Authorization:`Bearer ${Recievedcookie?.value}`
         },
       }
     );
@@ -35,7 +42,7 @@ export async function POST(request: Request) {
     // return NextResponse.json({  }, { status: 201 });
     return NextResponse.json({
       success: true,
-      message: "User created successfully",
+      message: "Passowrd Updated successfully",
     });
   } catch (error: any) {
     console.log("Error Response:", error.response?.data || error.message);

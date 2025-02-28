@@ -25,7 +25,12 @@ function Page() {
       const onSubmit: SubmitHandler<Inputs> = async(data) => {
         setButtonState(true);
         try {
-          const response = await axios.post("/api/updatepassword", data);
+          console.log(data);
+          
+          const response = await axios.post("/api/updatepassword", data,{
+            withCredentials:true
+          });
+    console.log(response);
     
           if (!response.data.success) {
             toast.error(response.data.message);
@@ -33,7 +38,7 @@ function Page() {
             toast.success(response.data.message);  
           }
         } catch (error) {
-          console.error("Error in sign-in", error);
+          console.error("Error in updating", error);
         } finally {
           setButtonState(false);
         }
@@ -74,6 +79,9 @@ function Page() {
                   {"*" + errors.password.message}
                 </p>
               )}
+          
+                
+      
           <Input
                   id="newpassword"
                   type="password"
@@ -94,7 +102,7 @@ function Page() {
                       message: "Must be less than 30 characters",
                     },
                   })}
-                  placeholder="Enter your password"
+                  placeholder="Enter your New password"
                   className="pl-9 h-10 text-base w-full text-black"
                 />
                    {errors.newPassword && (
@@ -102,6 +110,9 @@ function Page() {
                   {"*" + errors.newPassword.message}
                 </p>
               )}
+                <span className="italic text-black font-bodyfont">
+                    *(1 uppercase, 1 lowercase, 1 digit, 1 symbol)
+                  </span>
            <Button
                 type="submit"
                 className="w-full bg-custompink hover:bg-red-500 h-10 text-base mt-2"
