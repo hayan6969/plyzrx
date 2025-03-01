@@ -63,7 +63,7 @@ function Play() {
           `,
         }}
       >
-        <section className="pt-10 w-[90%] lg:w-[85%] mx-auto rounded-xl">
+        <section className="pt-10 w-[95%] lg:w-[85%] mx-auto rounded-xl">
           <Heading headingname="How to Play" />
 
           <div className="flex flex-col w-full">
@@ -76,16 +76,14 @@ function Play() {
               </p>
             </div>
 
-            {/* Mobile View - Only visible below sm screens */}
-        {/* Mobile & Small Screen View - Visible only from sm till md */}
-<div className="w-full sm:block md:hidden p-2">
+
+<div className="w-full sm:block md:hidden p-0">
   <Swiper 
     slidesPerView="auto" 
     centeredSlides={true} 
-    spaceBetween={20} 
+    spaceBetween={10} 
     pagination={false} 
     loop={false} 
-    className="mySwiper"
   >
     {pricedata.map((data, index) => (
       <SwiperSlide key={index} className="!w-auto max-w-full">
@@ -95,7 +93,6 @@ function Play() {
   </Swiper>
 </div>
 
-{/* Desktop/Tablet View - Hidden on mobile & sm, visible from md and above */}
 <div className="hidden md:flex flex-wrap justify-center gap-6 p-6">
   {pricedata.map((data, index) => (
     <div key={index} className="w-full sm:w-80">

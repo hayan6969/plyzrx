@@ -55,7 +55,7 @@ const tournaments = [
 
 function Tournaments_conn() {
   return (
-    <main className="w-full min-h-screen pt-3 sm:pt-1 lg:pt-3 2xl:pt-5 flex flex-col">
+    <main id="tournament" className="w-full min-h-screen pt-3 sm:pt-1 lg:pt-3 2xl:pt-5 flex flex-col">
       <div className="h-[11%] p-2 mb-10 flex justify-center items-center">
         <h1 className="leading-4 md:leading-5 lg:leading-6 flex flex-col justify-center items-center">
           {" "}

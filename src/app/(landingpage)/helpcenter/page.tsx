@@ -8,15 +8,15 @@ import {
 } from "@/components/ui/accordion";
 import Heading from '@/components/Heading';
 import Link from 'next/link';
+import Footer from '@/components/Footer';
+
 
 const HelpCenter = () => {
     const sidebarCategories = [
-        { icon: <FaBook />, title: "Getting Started" },
-        { icon: <FaTrophy />, title: "Tournaments" },
-        { icon: <FaUser />, title: "Account & Profile" },
-        { icon: <FaMoneyBill />, title: "Payments" },
-        { icon: <FaClipboard />, title: "Safety & Rules" },
-        { icon: <FaUsers />, title: "Community" }
+        { icon: <FaBook />, title: "Getting Started",link:"/howplay" },
+        { icon: <FaTrophy />, title: "Tournaments",link:"/#tournament" },
+        { icon: <FaUser />, title: "Account & Profile",link:"/" },
+        { icon: <FaMoneyBill />, title: "Payments",link:"/" },
     ];
 
     const policies = [
@@ -33,6 +33,7 @@ const HelpCenter = () => {
     ];
 
     return (
+        <>
         <main className='min-h-screen flex flex-col gap-5 font-bodyfont bg-black text-white'
             style={{
                 background: `
@@ -50,13 +51,14 @@ const HelpCenter = () => {
                         <h2 className="text-xl font-semibold my-4">Help Categories</h2>
                         <nav className="space-y-2 w-full flex flex-col items-center justify-center">
                             {sidebarCategories.map((category, index) => (
-                                <button
+                                <Link
                                     key={index}
                                     className="flex items-center gap-3 w-full p-2 rounded hover:bg-gray-800 transition-colors text-left"
+                                href={category.link}
                                 >
                                     <span className="text-xl">{category.icon}</span>
                                     <span className="text-sm">{category.title}</span>
-                                </button>
+                                </Link>
                             ))}
                         </nav>
                     </div>
@@ -92,6 +94,8 @@ const HelpCenter = () => {
                 </div>
             </div>
         </main>
+        <Footer/>
+        </>
     );
 };
 

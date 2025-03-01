@@ -45,6 +45,7 @@ function Page() {
       } else {
         toast.success(responce.data.message);
         localStorage.setItem("Login", "true");
+        localStorage.setItem("userName",responce.data.username)
         router.push("/");
       }
 

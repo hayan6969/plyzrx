@@ -24,7 +24,7 @@ body {
 
 @media (min-width: 1024px) {
   .responsive-gradient {
-    background: radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 400px);
+    background: radial-gradient(circle, rgba(255, 0, 102, 0.4) 0%, rgba(0, 0, 0, 0) 267px);
   }
 }
 @layer base {
@@ -99,4 +99,14 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+.footerglassy{
+/* From https://css.glass */
+background: rgba(255, 243, 243, 0.28);
+box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+backdrop-filter: blur(5.1px);
+-webkit-backdrop-filter: blur(5.1px);
+border: 1px solid rgba(255, 243, 243, 0.31);
 }

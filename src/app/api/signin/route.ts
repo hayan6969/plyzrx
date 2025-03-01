@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: "User logged in successfully",
+      username:api.data.user.username
     });
   } catch (error: any) {
     console.log("Error Response:", error.response?.data || error.message);

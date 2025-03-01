@@ -10,7 +10,7 @@ function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showProfile, setProfile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+const [username,SetUsername]=useState("")
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
@@ -34,6 +34,10 @@ function Navbar() {
   };
 
   useEffect(() => {
+    const storedUsername = localStorage.getItem("userName");
+    if (storedUsername) {
+      SetUsername(storedUsername);
+    }
     checkAuthStatus();
   }, []);
 
@@ -69,8 +73,10 @@ function Navbar() {
               <div className="w-6 h-6 border-2 border-custompink border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : showProfile ? (
-            <Link href={"/profile"}>
+            <Link href={"/profile"} className="flex justify-center items-center">
               <UserProfileIcon />
+              <span className="text-sm ml-6 text-white">{username}</span>
+
             </Link>
           ) : (
             <>
@@ -122,7 +128,7 @@ function Navbar() {
                 href={"/profile"}
               >
                 <UserProfileIcon />
-                <span className="text-sm text-black">Profile</span>
+                <span className="text-sm text-black">{username}</span>
               </Link>
             ) : (
               <>

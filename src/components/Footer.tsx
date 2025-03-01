@@ -23,18 +23,9 @@ useEffect(()=>
 
 
   return (
-    <footer className="bg-footercolor font-bodyfont py-10 px-5 flex flex-col items-center">
+    <footer className="footerglassy font-bodyfont py-10 px-5 flex flex-col items-center">
       <div className="w-full max-w-[90%] 2xl:max-w-[86%] flex flex-wrap justify-between items-start gap-6 md:gap-10">
-        <div className="w-full sm:w-[40%] md:w-[25%] lg:w-[15%] flex justify-center md:justify-start">
-          <div className="w-[80%] h-20 relative">
-            <Image
-              src="/img/Logo.png"
-              style={{ objectFit: "contain" }}
-              alt="Logo"
-              fill
-            />
-          </div>
-        </div>
+     
 
         <div className="w-full sm:w-[45%] md:w-[25%] lg:w-[20%] flex flex-col p-4">
           <h3 className="text-xl mb-5">Learn More</h3>
@@ -42,7 +33,6 @@ useEffect(()=>
             <li>
               <Link href="/privacypolicy">Privacy & Policy</Link>
             </li>
-            <li> <Link href="/license">License Agreement</Link></li>
             <li><Link href="/cookiespolicy">Cookies</Link></li>
             <li><Link href="/disputeresolution">Dispute Resolution</Link></li>
             <li><Link href="/fraudprevention">Fraud Prevention</Link></li>
@@ -67,12 +57,11 @@ useEffect(()=>
           </div>
           <div className="flex justify-between mt-2">
             <span className="text-gray-400">Email</span>
-            <span className="font-medium">abc@gmail.com</span>
+            <span className="font-medium"><Link href={"mailto:abc@gmail.com"}>abc@gmail.com</Link></span>
           </div>
         </div>
-      </div>
-
-      <div className="w-full max-w-[90%] 2xl:max-w-[86%] flex justify-center lg:justify-end p-4 text-white">
+        <div className="w-full sm:w-[45%] md:w-[25%] lg:w-[25%] flex justify-center lg:flex-col lg:justify-end p-4 text-white">
+        <h3 className="text-xl mb-5 lg:block hidden">Social Links</h3>
         <div className="flex space-x-4">
           <FaFacebookF className="text-2xl hover:text-blue-500 transition" />
           <FaInstagram className="text-2xl hover:text-pink-500 transition" />
@@ -81,6 +70,9 @@ useEffect(()=>
           <FaWordpress className="text-2xl hover:text-blue-600 transition" />
         </div>
       </div>
+      </div>
+
+    
 
       <div className="w-full max-w-[90%] 2xl:max-w-[86%] border-t-2 border-[rgba(255,255,255,0.5)] flex justify-center items-center mt-6 pt-4">
         <p>&copy; {theYear} Lift Media | All Rights Reserved</p>

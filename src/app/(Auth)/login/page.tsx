@@ -10,8 +10,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
-  FaFacebook,
-  FaInstagram,
   FaGoogle,
   FaUser,
   FaLock,
@@ -39,12 +37,15 @@ function Page() {
     setButtonState(true);
     try {
       const response = await axios.post("/api/signin", data);
+console.log(response.data.username);
+
 
       if (!response.data.success) {
         toast.error(response.data.message);
       } else {
         toast.success(response.data.message);
         localStorage.setItem("Login","true");
+        localStorage.setItem("userName",response.data.username)
         router.push("/")
 
       }
@@ -161,15 +162,9 @@ function Page() {
             Continue With
           </p>
 
-          <div className="grid grid-cols-2 lg:flex lg:flex-nowrap justify-center gap-4 font-bodyfont">
-            <Button className="flex items-center bg-white text-black border-gray-300 hover:bg-gray-100 px-4 py-2 w-full sm:w-auto">
+          <div className=" flex  justify-center gap-4 font-bodyfont">
+            <Button className="flex  items-center bg-white text-black border-gray-300 hover:bg-gray-100 px-4 py-2 w-full">
               <FaGoogle className="w-5 h-5 mr-2 text-red-500" /> Google
-            </Button>
-            <Button className="flex items-center bg-white text-black border-gray-300 hover:bg-gray-100 px-4 py-2 w-full sm:w-auto">
-              <FaFacebook className="w-5 h-5 mr-2 text-blue-600" /> Facebook
-            </Button>
-            <Button className="items-center bg-white text-black border-gray-300 hover:bg-gray-100 px-4 py-2 w-full sm:w-auto sm:col-span-2 flex justify-center">
-              <FaInstagram className="w-5 h-5 mr-2 text-pink-500" /> Instagram
             </Button>
           </div>
 
