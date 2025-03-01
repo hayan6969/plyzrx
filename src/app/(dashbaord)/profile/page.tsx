@@ -29,9 +29,12 @@ function Page() {
         withCredentials: true,
       });
 
-      response.data.success
-        ? toast.success(response.data.message)
-        : toast.error(response.data.message);
+      if (response.data.success) {
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
+      }
+      
     } catch (error) {
       console.error("Error in updating", error);
       toast.error("Something went wrong! Please try again.");

@@ -6,7 +6,6 @@ import {
   FaYoutube,
   FaWordpress,
 } from "react-icons/fa";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search } from 'lucide-react';
-import { FaBook, FaTrophy, FaUser, FaMoneyBill, FaClipboard, FaUsers } from "react-icons/fa";
+import { FaBook, FaTrophy, FaUser, FaMoneyBill } from "react-icons/fa";
 import {
   Accordion,
   AccordionContent,
