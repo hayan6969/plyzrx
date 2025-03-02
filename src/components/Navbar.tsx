@@ -5,8 +5,6 @@ import React, { useEffect, useState } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import UserProfileIcon from "@/app/(landingpage)/components/UserProfileIcon";
 import axios from "axios";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showProfile, setProfile] = useState(false);

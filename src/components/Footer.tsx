@@ -4,7 +4,6 @@ import {
   FaInstagram,
   FaTwitter,
   FaYoutube,
-  FaWordpress,
 } from "react-icons/fa";
 import Link from "next/link";
 import { useEffect, useState } from "react";
