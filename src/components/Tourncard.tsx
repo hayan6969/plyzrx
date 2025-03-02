@@ -14,11 +14,11 @@ type Tournament ={
   countmin: any;
   countsec: any;
   finalprice: string;
-  id?: string; // Optional since it's used as key but not in the component
+  id?: string; 
 }
 
 export default function Tourncard(tournament:Tournament) {
-  // Change from {tournament} to tournament as the prop is being passed directly
+  
   const {
     tier,
     price,
