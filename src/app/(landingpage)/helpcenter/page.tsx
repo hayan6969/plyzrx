@@ -70,14 +70,14 @@ const HelpCenter = () => {
                             <p className="text-gray-400 mb-4">Find answers to your questions about tournaments, gameplay, and more.</p>
                             
                             {/* Search Bar */}
-                            <div className="relative mb-8">
+                            {/* <div className="relative mb-8">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                                 <input
                                     type="text"
                                     placeholder="Search for help articles..."
                                     className="w-full pl-10 pr-4 py-2 bg-white rounded-md text-black focus:outline-none"
                                 />
-                            </div>
+                            </div> */}
                             <Accordion type="single" collapsible className="w-full space-y-2">
                                 {policies.map((policy, index) => (
                                     <AccordionItem key={index} value={`item-${index}`} className=" border rounded-lg overflow-hidden">
