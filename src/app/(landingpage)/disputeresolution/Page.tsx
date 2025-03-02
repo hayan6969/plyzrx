@@ -23,11 +23,11 @@ function Page() {
               1. Introduction
             </h2>
             <p>
-              This Dispute Resolution & Content Moderation Policy ("Policy")
+              This Dispute Resolution & Content Moderation Policy (&quot;Policy&quot;)
               outlines the rules and procedures for resolving user disputes and
               ensuring appropriate content moderation on Plyzrx, a platform
-              operated by Tributo Capital LLC ("Company," "we," "our," or "us").
-              By using Plyzrx, you ("User," "Player," or "you") agree to comply
+              operated by Tributo Capital LLC (&quot;Company,&quot; &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;).
+              By using Plyzrx, you (&quot;User,&quot; &quot;Player,&quot; or &quot;you&quot;) agree to comply
               with this Policy.
             </p>
 
