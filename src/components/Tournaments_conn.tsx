@@ -19,7 +19,7 @@ const tournaments = [
     counthr: "22",
     countmin: "40",
     countsec: "24",
-    finalprice: "19.00",
+    finalprice: "19.99",
   },
   {
     id: "2",
@@ -34,7 +34,7 @@ const tournaments = [
     counthr: "22",
     countmin: "40",
     countsec: "24",
-    finalprice: "49.00",
+    finalprice: "49.99",
   },
   {
     id: "3",
