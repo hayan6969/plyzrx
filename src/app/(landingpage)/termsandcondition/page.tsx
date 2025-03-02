@@ -25,10 +25,10 @@ function Page() {
             </h2>
             <p>
               Welcome to Plyzrx, a skill-based gaming platform operated by{" "}
-              <strong>Tributo Capital LLC</strong> ("Company," "we," "our," or
-              "us"). By accessing or using Plyzrx (the "Platform"), you ("User,"
-              "Player," or "you") agree to be bound by these{" "}
-              <strong>Terms & Conditions</strong> ("Terms"). If you do not agree
+              <strong>Tributo Capital LLC</strong> (&quot;Company,&quot; &quot;we,&quot; &quot;our,&quot; or
+              &quot;us&quot;). By accessing or using Plyzrx (the &quot;Platform&quot;), you (&quot;User,&quot;
+              &quot;Player,&quot; or &quot;you&quot;) agree to be bound by these{" "}
+              <strong>Terms & Conditions</strong> (&quot;Terms&quot;). If you do not agree
               to these Terms, you must <strong>immediately discontinue</strong>{" "}
               use of the Platform.
             </p>
@@ -274,7 +274,7 @@ function Page() {
               <strong>not responsible for losses</strong>.
             </p>
             <p>
-              The Platform operates <strong>on an "as is" basis</strong>, with
+              The Platform operates <strong>on an &quot;as is&quot; basis</strong>, with
               no warranties regarding uninterrupted or error-free gameplay.
             </p>
             <p>

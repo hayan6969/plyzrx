@@ -1,7 +1,7 @@
 import React from "react";
 import Footer from "@/components/Footer";
 
-function Page() {
+function page() {
   return (
     <>
       <main
@@ -146,4 +146,4 @@ function Page() {
   );
 }
 
-export default Page;
+export default page;

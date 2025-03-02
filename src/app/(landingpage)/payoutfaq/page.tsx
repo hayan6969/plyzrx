@@ -78,7 +78,7 @@ function Page() {
                 <strong>Crypto Payments:</strong> Usually instant to a few hours
               </li>
               <li>
-                <strong>Other Methods:</strong> Varies based on Deel's
+                <strong>Other Methods:</strong> Varies based on Deel
                 processing time
               </li>
             </ul>
@@ -89,7 +89,7 @@ function Page() {
             <p>
               PlyzRX does not charge withdrawal fees, but Deel or your selected
               payment provider may have transaction fees depending on your
-              chosen payout method. Check Deel's platform for specific details.
+              chosen payout method. Check Deel platform for specific details.
             </p>
 
             <h2 className="text-xl font-bold mt-5 font-headingfont text-custompink">

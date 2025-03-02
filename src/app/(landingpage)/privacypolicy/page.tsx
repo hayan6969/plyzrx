@@ -25,11 +25,11 @@ function Page() {
             </h2>
             <p>
               Plyzrx, operated by <strong>Tributo Capital LLC</strong>{" "}
-              ("Company," "we," "our," or "us"), respects your privacy and is
+              (&quot;Company,&quot; &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;), respects your privacy and is
               committed to protecting your personal information. This{" "}
               <strong>Privacy Policy</strong> outlines how we collect, use,
               disclose, and safeguard your information when you access or use
-              Plyzrx (the "Platform"). By using the Platform, you{" "}
+              Plyzrx (the &quot;Platform&quot;). By using the Platform, you{" "}
               <strong>consent to the collection and use</strong> of your
               information in accordance with this Privacy Policy.
             </p>
@@ -265,7 +265,7 @@ function Page() {
             </ul>
             <p>
               Users can <strong>adjust cookie preferences</strong> via browser
-              settings or by using the Platform's cookie management tool.
+              settings or by using the Platform cookie management tool.
             </p>
 
             <h2 className="text-xl font-bold mt-5 font-headingfont text-custompink">
@@ -307,7 +307,7 @@ function Page() {
             </p>
 
             <h2 className="text-xl font-bold mt-5 font-headingfont text-custompink">
-              10. Children's Privacy
+              10. Children Privacy
             </h2>
             <p>
               Plyzrx is{" "}

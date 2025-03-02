@@ -134,18 +134,18 @@ console.log(response.data.username);
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-              <div className="flex items-center space-x-2">
+              {/* <div className="flex items-center space-x-2">
                 <Checkbox id="remember" />
                 <Label htmlFor="remember" className="text-gray-400">
                   Remember Me
                 </Label>
-              </div>
-              <a
+              </div> */}
+              {/* <a
                 href="#"
                 className="text-white underline hover:underline mt-2 sm:mt-0"
               >
                 Forgot Password?
-              </a>
+              </a> */}
             </div>
 
             <Button

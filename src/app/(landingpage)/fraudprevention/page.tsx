@@ -25,12 +25,12 @@ function Page() {
             </h2>
             <p>
               This <strong>Fraud Prevention & Fair Play Policy</strong>{" "}
-              ("Policy") sets forth the{" "}
+              (&quot;Policy&quot;) sets forth the
               <strong>rules, responsibilities, and enforcement measures</strong>{" "}
               to ensure that all users of <strong>Plyzrx</strong>, a platform
-              operated by <strong>Tributo Capital LLC</strong> ("Company," "we,"
-              "our," or "us"), participate in a fair, transparent, and lawful
-              manner. By using the Platform, you ("User," "Player," or "you")
+              operated by <strong>Tributo Capital LLC</strong> (&quot;Company,&quot; &quot;we,&quot;
+              &quot;our,&quot; or &quot;us&quot;), participate in a fair, transparent, and lawful
+              manner. By using the Platform, you (&quot;User,&quot; &quot;Player,&quot; or &quot;you&quot;)
               agree to abide by this Policy.
             </p>
             <p>
@@ -82,7 +82,7 @@ function Page() {
               </li>
               <li>
                 <strong>Circumventing Geographic Restrictions:</strong> Using
-                VPNs, proxies, or other means to bypass Plyzrx's location-based
+                VPNs, proxies, or other means to bypass Plyzrx location-based
                 restrictions.
               </li>
               <li>
@@ -116,7 +116,7 @@ function Page() {
               </li>
               <li>
                 Plyzrx may require additional verification at any time to
-                confirm a user's identity and prevent fraudulent activity.
+                confirm a user identity and prevent fraudulent activity.
               </li>
               <li>
                 Users providing{" "}
@@ -191,7 +191,7 @@ function Page() {
             <p>If fraud, cheating, or fair play violations are suspected:</p>
             <ul className="list-disc pl-5">
               <li>
-                Plyzrx will <strong>immediately suspend</strong> the user's
+                Plyzrx will <strong>immediately suspend</strong> the user
                 account pending investigation.
               </li>
               <li>

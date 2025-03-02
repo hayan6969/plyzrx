@@ -23,7 +23,7 @@ const HelpCenter = () => {
        { title:"End User License Agreement",link:"/eula"},
        { title:"Cookies Policies",link:"/cookiespolicy"},
        { title:"Disclaimer & Provisions",link:"/disclaimerprovisions"},
-       { title:"Dispute Resolution",link:"/disputeresolution"},
+       { title:"Dispute Resolution",link:"/dispute"},
        { title:"Fraud Prevention",link:"/fraudprevention"},
        { title:"Payment & Withdrawal",link:"/paymentwithdrawl"},
        { title:"Privacy Policy",link:"/privacypolicy"},

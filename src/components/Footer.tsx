@@ -32,7 +32,7 @@ useEffect(()=>
               <Link href="/privacypolicy">Privacy & Policy</Link>
             </li>
             <li className="my-1"><Link href="/cookiespolicy">Cookies</Link></li>
-            <li className="my-1"><Link href="/disputeresolution">Dispute Resolution</Link></li>
+            <li className="my-1"><Link href="/dispute">Dispute Resolution</Link></li>
             <li className="my-1"><Link href="/fraudprevention">Fraud Prevention</Link></li>
             <li className="my-1"><Link href="/refund">Refund</Link></li>
           </ul>
