@@ -127,8 +127,8 @@ export default function Tourncard(tournament:Tournament) {
 
         <div className="mx-1 h-[10%] p-4 flex items-center">
           <Button
-            variant={"tournamentvarient"}
-            className="rounded-3xl overflow-hidden"
+          
+            className="rounded-3xl overflow-hidden border border-custompink  text-white  shadow-sm backdrop-blur-[6.6px] bg-[rgba(245, 0, 79, 1)]"
             size={"md"}
           >
             Start
