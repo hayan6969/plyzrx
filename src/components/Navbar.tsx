@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import UserProfileIcon from "@/app/(landingpage)/components/UserProfileIcon";
 import axios from "axios";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showProfile, setProfile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-const [username,SetUsername]=useState("")
+  const [username, SetUsername] = useState("");
+  const [faqOpen, setFaqOpen] = useState(false);
+
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
@@ -18,7 +21,6 @@ const [username,SetUsername]=useState("")
 
       if (response.data.success) {
         setProfile(true);
-
         localStorage.setItem("Login", "true");
       } else {
         setProfile(false);
@@ -48,6 +50,11 @@ const [username,SetUsername]=useState("")
     { name: "Help Center", href: "/helpcenter" },
   ];
 
+  const faqLinks = [
+    { name: "General FAQ", href: "/generalfaq" },
+    { name: "Payout FAQ", href: "/payoutfaq" },
+  ];
+
   return (
     <>
       <nav className="bg-transparent h-[12%] flex justify-between items-center w-full py-3 px-4 md:px-6 lg:px-8">
@@ -64,6 +71,29 @@ const [username,SetUsername]=useState("")
                 {link.name}
               </Link>
             ))}
+            {/* Dropdown on hover */}
+            <div 
+              className="relative p-2 z-10 hover:text-custompink transition"
+              onMouseEnter={() => setFaqOpen(true)}
+              onMouseLeave={() => setFaqOpen(false)}
+            >
+              <span className="flex items-center">
+                FAQ <ChevronDown className="ml-1 h-4 w-4" />
+              </span>
+              {faqOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2">
+                  {faqLinks.map((link, index) => (
+                    <Link
+                      key={index}
+                      href={link.href}
+                      className="block px-4 py-2 hover:bg-gray-200 rounded-md"
+                    >
+                      {link.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </ul>
         </div>
 
@@ -73,10 +103,12 @@ const [username,SetUsername]=useState("")
               <div className="w-6 h-6 border-2 border-custompink border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : showProfile ? (
-            <Link href={"/profile"} className="flex justify-center items-center">
+            <Link
+              href={"/profile"}
+              className="flex justify-center items-center"
+            >
               <UserProfileIcon />
               <span className="text-sm ml-6 text-white">{username}</span>
-
             </Link>
           ) : (
             <>
@@ -104,6 +136,7 @@ const [username,SetUsername]=useState("")
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </nav>
+
       {isOpen && (
         <div className="md:hidden bg-white p-4 rounded-lg shadow-md flex flex-col items-center absolute mx-auto top-[12%] w-[100%] z-50">
           {navlinks.map((link, index) => (
@@ -116,6 +149,20 @@ const [username,SetUsername]=useState("")
               {link.name}
             </Link>
           ))}
+
+          {/* FAQ Dropdown on Mobile */}
+          <div className="w-full">
+            {faqLinks.map((link, index) => (
+              <Link
+                key={index}
+                href={link.href}
+                className="block py-2 text-black text-base w-full text-center hover:bg-gray-200"
+                onClick={() => setIsOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
 
           <div className="w-full flex flex-col items-center mt-2">
             {isLoading ? (

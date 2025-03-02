@@ -9,10 +9,10 @@ type Tournament ={
   player: string;
   payout2: string;
   time: string;
-  countdays: string;
-  counthr: string;
-  countmin: string;
-  countsec: string;
+  countdays: any;
+  counthr: any;
+  countmin: any;
+  countsec: any;
   finalprice: string;
   id?: string; // Optional since it's used as key but not in the component
 }

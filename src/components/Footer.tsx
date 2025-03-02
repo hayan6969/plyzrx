@@ -50,23 +50,18 @@ useEffect(()=>
 
         <div className="w-full sm:w-[45%] md:w-[25%] lg:w-[25%] p-4 text-white">
           <h2 className="text-xl font-semibold mb-5">Contact Us</h2>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Phone #1</span>
-            <span className="font-medium">123-456-7890</span>
-          </div>
           <div className="flex justify-between mt-2">
             <span className="text-gray-400">Email</span>
-            <span className="font-medium"><Link href={"mailto:abc@gmail.com"}>abc@gmail.com</Link></span>
+            <span className="font-medium"><Link href={"mailto:Support@plyzrx.com "}>Support@plyzrx.com </Link></span>
           </div>
         </div>
         <div className="w-full sm:w-[45%] md:w-[25%] lg:w-[25%] flex justify-center lg:flex-col lg:justify-end p-4 text-white">
         <h3 className="text-xl mb-5 lg:block hidden">Social Links</h3>
         <div className="flex space-x-4">
           <FaFacebookF className="text-2xl hover:text-blue-500 transition" />
-          <FaInstagram className="text-2xl hover:text-pink-500 transition" />
+         <Link href={"https://www.instagram.com/plyzrx?igsh=MTB3dTF2YTBlNHBzZQ=="}> <FaInstagram className="text-2xl hover:text-pink-500 transition" /></Link>
           <FaTwitter className="text-2xl hover:text-blue-400 transition" />
           <FaYoutube className="text-2xl hover:text-red-500 transition" />
-          <FaWordpress className="text-2xl hover:text-blue-600 transition" />
         </div>
       </div>
       </div>
@@ -74,7 +69,7 @@ useEffect(()=>
     
 
       <div className="w-full max-w-[90%] 2xl:max-w-[86%] border-t-2 border-[rgba(255,255,255,0.5)] flex justify-center items-center mt-6 pt-4">
-        <p>&copy; {theYear} Lift Media | All Rights Reserved</p>
+        <p>&copy; {theYear} Plyzrx | All Rights Reserved</p>
       </div>
     </footer>
   );
