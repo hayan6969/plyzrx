@@ -39,8 +39,7 @@ function Page() {
             </h3>
             <p>
               Users must attempt to resolve disputes by first contacting Plyzrx
-              Support through the in-app help center or via [Insert Contact
-              Info].
+              Support through the in-app help center or via ___________________.
             </p>
             <p>
               All dispute claims must be submitted within 7 days of the disputed
@@ -56,7 +55,7 @@ function Page() {
               If a dispute cannot be resolved through internal resolution, it
               shall be submitted to binding arbitration under the rules of the
               American Arbitration Association (AAA). Arbitration shall take
-              place in [Insert Location].
+              place in ___________________.
             </p>
             <p>
               Users waive the right to pursue claims through class-action
@@ -68,7 +67,7 @@ function Page() {
               2.3 Governing Law
             </h3>
             <p>
-              This Policy is governed by the laws of [Insert Jurisdiction],
+              This Policy is governed by the laws of ___________________,
               without regard to conflicts of law principles. Any claims or
               disputes shall be adjudicated exclusively in the designated
               jurisdiction.
@@ -115,7 +114,7 @@ function Page() {
             <p>
               Users who have been penalized for violations may submit an appeal
               within 7 days of the action taken against their account. Appeals
-              must be sent to [Insert Contact Info] with supporting evidence.
+              must be sent to ___________________ with supporting evidence.
             </p>
 
             <h2 className="text-xl font-bold mt-5 font-headingfont text-custompink">

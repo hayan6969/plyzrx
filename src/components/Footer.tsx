@@ -28,13 +28,13 @@ useEffect(()=>
         <div className="w-full sm:w-[45%] md:w-[25%] lg:w-[20%] flex flex-col p-4">
           <h3 className="text-xl mb-5">Learn More</h3>
           <ul className="opacity-85 font-thin">
-            <li>
+            <li className="my-1">
               <Link href="/privacypolicy">Privacy & Policy</Link>
             </li>
-            <li><Link href="/cookiespolicy">Cookies</Link></li>
-            <li><Link href="/disputeresolution">Dispute Resolution</Link></li>
-            <li><Link href="/fraudprevention">Fraud Prevention</Link></li>
-            <li><Link href="/refund">Refund</Link></li>
+            <li className="my-1"><Link href="/cookiespolicy">Cookies</Link></li>
+            <li className="my-1"><Link href="/disputeresolution">Dispute Resolution</Link></li>
+            <li className="my-1"><Link href="/fraudprevention">Fraud Prevention</Link></li>
+            <li className="my-1"><Link href="/refund">Refund</Link></li>
           </ul>
         </div>
 
