@@ -50,13 +50,9 @@ export default function Home() {
         </div>
 
         <div className=" flex justify-center items-center p-3 ">
-          <p className="text-center lg:text-[.8rem] 2xl:text-[1rem] font-bodyfont font-normal">
-            PlyzRX lets you turn your sports expertise into real money action.
-            Simply choose More or Less on two or more players across any sport
-            for a chance to win <br className="hidden lg:block" /> up to 1000x
-            your entry fee. Build your winning lineup, cash out quickly, and be
-            part of a thriving community of daily winners. Betting has never
-            been this <br className="hidden lg:block" /> easy with PlyzRX!
+          <p className="text-center text-[1rem] md:text-[1.2rem] lg:text-[1rem] 2xl:text-[1rem] font-bodyfont font-normal">
+          Plyzrx lets you play fun skilled based games and make a 6 figure income! Simply choose a
+tournament to get into and play and win a cash prize
           </p>
         </div>
 
