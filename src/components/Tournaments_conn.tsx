@@ -11,7 +11,7 @@ const tournamentsData = [
   {
     id: "1",
     tier: "Tier 1",
-    price: "10,000",
+    price: "100,000",
     player1: "1-10",
     payout1: "5,000",
     player: "11-100",
@@ -30,7 +30,7 @@ const tournamentsData = [
     player1: "1-10",
     payout1: "12,500",
     player: "11-100",
-    payout2: "$1388 Each",
+    payout2: "$1,388 Each",
     time: "7 Days",
     countdays: 0,
     counthr: 0,
