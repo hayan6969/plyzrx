@@ -8,7 +8,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
-  FaGoogle,
+  // FaGoogle,
   FaEnvelope,
   FaLock,
   FaUser,
@@ -205,14 +205,14 @@ function Page() {
           </form>
 
           <Separator className="my-3 bg-gray-700" />
-          <p className="text-center text-gray-400 text-sm font-bodyfont">
+          {/* <p className="text-center text-gray-400 text-sm font-bodyfont">
             Or sign up with
-          </p>
-          <div className="flex justify-center font-bodyfont w-full">
+          </p> */}
+          {/* <div className="flex justify-center font-bodyfont w-full">
             <Button className="flex items-center w-full bg-white text-black border-gray-300 hover:bg-gray-100 px-4 py-2 h-10 text-base">
               <FaGoogle className="w-4 h-4 mr-2 text-red-500" /> Google
             </Button>
-          </div>
+          </div> */}
           <p className="text-center text-gray-400 text-sm font-bodyfont">
             Already have an account?{" "}
             <Link href="/login" className="text-blue-500 hover:underline">

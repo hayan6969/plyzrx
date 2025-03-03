@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
-  FaGoogle,
+  // FaGoogle,
   FaUser,
   FaLock,
 } from "react-icons/fa";
@@ -158,15 +158,15 @@ console.log(response.data.username);
           </form>
 
           <Separator className="my-4 bg-gray-700" />
-          <p className="text-center text-gray-400 font-bodyfont">
+          {/* <p className="text-center text-gray-400 font-bodyfont">
             Continue With
-          </p>
+          </p> */}
 
-          <div className=" flex  justify-center gap-4 font-bodyfont">
+          {/* <div className=" flex  justify-center gap-4 font-bodyfont">
             <Button className="flex  items-center bg-white text-black border-gray-300 hover:bg-gray-100 px-4 py-2 w-full">
               <FaGoogle className="w-5 h-5 mr-2 text-red-500" /> Google
             </Button>
-          </div>
+          </div> */}
 
           <p className="text-center text-gray-400 font-bodyfont">
             Don&apos;t have an account?{" "}
