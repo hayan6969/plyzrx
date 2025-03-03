@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import { useState, useEffect } from "react";
-const targetDate = new Date(2025, 3, 2, 14, 30, 0);
+const targetDate = new Date(2025, 3, 2, 0, 0, 0);
 
 const tournamentsData = [
   {
