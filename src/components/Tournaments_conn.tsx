@@ -4,8 +4,8 @@ import Tourncard from "./Tourncard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
-// import { useState, useEffect } from "react";
-// const targetDate = new Date(2025, 3, 2, 0, 0, 0);
+import { useState, useEffect } from "react";
+const targetDate = new Date(2025, 3, 2, 0, 0, 0);
 
 const tournamentsData = [
   {
@@ -55,47 +55,47 @@ const tournamentsData = [
   },
 ];
 function Tournaments_conn() {
-  // const [tournaments, setTournaments] = useState(tournamentsData);
+  const [tournaments, setTournaments] = useState(tournamentsData);
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     const currentDate = new Date();
-  //     const diffMs = targetDate.getTime() - currentDate.getTime();
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentDate = new Date();
+      const diffMs = targetDate.getTime() - currentDate.getTime();
 
-  //     if (diffMs <= 0) {
-  //       clearInterval(interval);
-  //       setTournaments((prevTournaments) =>
-  //         prevTournaments.map((tournament) => ({
-  //           ...tournament,
-  //           countdays: 0,
-  //           counthr: 0,
-  //           countmin: 0,
-  //           countsec: 0,
-  //         }))
-  //       );
-  //       return;
-  //     }
+      if (diffMs <= 0) {
+        clearInterval(interval);
+        setTournaments((prevTournaments) =>
+          prevTournaments.map((tournament) => ({
+            ...tournament,
+            countdays: 0,
+            counthr: 0,
+            countmin: 0,
+            countsec: 0,
+          }))
+        );
+        return;
+      }
 
-  //     const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  //     const hours = Math.floor(
-  //       (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-  //     );
-  //     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  //     const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-  //     setTournaments((prevTournaments) =>
-  //       prevTournaments.map((tournament) => ({
-  //         ...tournament,
-  //         countdays: days,
-  //         counthr: hours,
-  //         countmin: minutes,
-  //         countsec: seconds,
-  //       }))
-  //     );
-  //   }, 1000);
+      setTournaments((prevTournaments) =>
+        prevTournaments.map((tournament) => ({
+          ...tournament,
+          countdays: days,
+          counthr: hours,
+          countmin: minutes,
+          countsec: seconds,
+        }))
+      );
+    }, 1000);
 
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <main
@@ -123,7 +123,7 @@ function Tournaments_conn() {
       <section className="flex-grow sm:p-3 flex flex-col lg:flex-row gap-5 justify-center items-center w-full">
         <div className="w-full hidden sm:flex justify-center">
           <div className="max-w-5xl w-full flex flex-wrap justify-center lg:justify-around gap-5">
-            {tournamentsData?.map((tournament) => (
+            {tournaments?.map((tournament) => (
               <Tourncard key={tournament.id} {...tournament} />
             ))}
           </div>
@@ -138,7 +138,7 @@ function Tournaments_conn() {
             pagination={false}
             loop={false}
           >
-            {tournamentsData?.map((tournament) => (
+            {tournaments?.map((tournament) => (
               <SwiperSlide key={tournament.id} className="!w-auto max-w-full">
                 <Tourncard key={tournament.id} {...tournament} />
               </SwiperSlide>

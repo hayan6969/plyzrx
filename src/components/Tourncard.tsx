@@ -125,11 +125,11 @@ export default function Tourncard(tournament: Tournament) {
           </div>
         </div>
 
-        <div className={`mx-1 h-[10%] p-4 flex flex-col items-center`}>
+        <div className="mx-1 h-[10%] p-4 flex items-center">
           <Button
-            className="rounded-3xl overflow-hidden border border-custompink text-white shadow-sm backdrop-blur-[6.6px] bg-[rgba(245, 0, 79, 1)]"
-            size={"md"}
+            className="rounded-3xl overflow-hidden"
             onClick={() => setShowPayPal(true)}
+            size={"md"}
           >
             Start
           </Button>
