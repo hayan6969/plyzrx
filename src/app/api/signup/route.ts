@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: false,
-      message: error.response?.data.detail || error.messageerror,
+      message: error.response?.data.detail || "Cant Create Account",
     });
   }
 }

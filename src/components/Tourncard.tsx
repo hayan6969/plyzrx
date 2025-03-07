@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
 import PayPalButton from "./PayPalButton";
+import axios from "axios";
+import Logincard from "@/components/Logincard"
 
 type Tournament = {
   tier: string;
@@ -35,6 +37,29 @@ export default function Tourncard(tournament: Tournament) {
   } = tournament;
 
   const [showPayPal, setShowPayPal] = useState(false);
+const [showLogin,setLogin]=useState(false)
+const checklogin=async()=>
+{
+  try {
+    const responce= await axios.post("/api/check");
+    console.log(responce.data);
+    if (responce.data.success===false) {
+      console.log("false responce");
+      
+      setLogin(true);
+      setShowPayPal(false)
+    }
+    else
+    {
+      setLogin(false);
+      setShowPayPal(true)
+    }
+  } catch (error) {
+    console.log("error in checking login status",error);
+    
+  }
+}
+
 
   return (
     <>
@@ -129,7 +154,7 @@ export default function Tourncard(tournament: Tournament) {
           <Button
             className="rounded-3xl overflow-hidden border border-custompink text-white shadow-sm backdrop-blur-[6.6px] bg-[rgba(245, 0, 79, 1)]"
             size={"md"}
-            onClick={() => setShowPayPal(true)}
+            onClick={checklogin}
           >
             Start
           </Button>
@@ -153,6 +178,29 @@ export default function Tourncard(tournament: Tournament) {
               onClick={(e) => e.stopPropagation()}
             >
               <PayPalButton amount={finalprice} />
+            </div>
+          </div>
+        )}
+
+{showLogin && (
+          <div
+            className="fixed rounded-3xl inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => setLogin(false)} // Close on background click
+          >
+            {/* Close Button - Positioned Outside */}
+            <button
+              className="absolute top-5 right-5 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
+              onClick={() => setLogin(false)}
+            >
+              ✕
+            </button>
+
+            {/* Image Wrapper - Stops Click Propagation */}
+            <div
+              className="relative p-4  rounded-lg shadow-lg "
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Logincard/>
             </div>
           </div>
         )}

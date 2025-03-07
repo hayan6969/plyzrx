@@ -129,7 +129,6 @@ function Tournaments_conn() {
           </div>
         </div>
 
-        {/* Mobile View - Only visible below md screens */}
         <div className="w-full block sm:hidden">
           <Swiper
             slidesPerView="auto"
