@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
+import PayPalButton from "./PayPalButton";
 
-type Tournament ={
+type Tournament = {
   tier: string;
   price: string;
   player1: string;
@@ -14,11 +15,10 @@ type Tournament ={
   countmin: any;
   countsec: any;
   finalprice: string;
-  id?: string; 
-}
+  id?: string;
+};
 
-export default function Tourncard(tournament:Tournament) {
-  
+export default function Tourncard(tournament: Tournament) {
   const {
     tier,
     price,
@@ -33,12 +33,12 @@ export default function Tourncard(tournament:Tournament) {
     countsec,
     finalprice,
   } = tournament;
-  
+
+  const [showPayPal, setShowPayPal] = useState(false);
+
   return (
     <>
-      <div
-        className="w-70 2xl:w-80 h-[80vh] lg:h-[85vh] py-4 bg-[rgba(255,255,255,0.18)] border-1 border-[rgba(255,255,255,0.18)] backdrop-blur-[6.6px] text-white rounded-3xl shadow-lg border border-gray-700 flex flex-col font-bodyfont"
-      >
+      <div className="w-70 2xl:w-80 h-[85vh] lg:h-[90vh] py-4 bg-[rgba(255,255,255,0.18)] border-1 border-[rgba(255,255,255,0.18)] backdrop-blur-[6.6px] text-white rounded-3xl shadow-lg border border-gray-700 flex flex-col font-bodyfont">
         <div className="mx-2 h-[15%] px-2 flex flex-col justify-center">
           <div className="border-b-2 border-[rgba(255,255,255,0.6)] pb-2">
             <h2 className="text-white text-xl lg:text-2xl 2xl:text-[1.5rem] mb-2 font-medium">
@@ -125,15 +125,37 @@ export default function Tourncard(tournament:Tournament) {
           </div>
         </div>
 
-        <div className="mx-1 h-[10%] p-4 flex items-center">
+        <div className={`mx-1 h-[10%] p-4 flex flex-col items-center`}>
           <Button
-          
-            className="rounded-3xl overflow-hidden border border-custompink  text-white  shadow-sm backdrop-blur-[6.6px] bg-[rgba(245, 0, 79, 1)]"
+            className="rounded-3xl overflow-hidden border border-custompink text-white shadow-sm backdrop-blur-[6.6px] bg-[rgba(245, 0, 79, 1)]"
             size={"md"}
+            onClick={() => setShowPayPal(true)}
           >
             Start
           </Button>
         </div>
+        {showPayPal && (
+          <div
+            className="fixed rounded-3xl inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => setShowPayPal(false)} // Close on background click
+          >
+            {/* Close Button - Positioned Outside */}
+            <button
+              className="absolute top-5 right-5 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
+              onClick={() => setShowPayPal(false)}
+            >
+              ✕
+            </button>
+
+            {/* Image Wrapper - Stops Click Propagation */}
+            <div
+              className="relative p-4 bg-white rounded-lg shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <PayPalButton amount={finalprice} />
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
