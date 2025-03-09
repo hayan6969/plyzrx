@@ -7,12 +7,12 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith('/profile')) {
-    // Read token from cookies
+
     const Recievedcookie=(await cookiesStore).get("token")
 
     if(Recievedcookie)
     {
-  return NextResponse.next(); // Allow other requests to continue
+  return NextResponse.next(); 
     }
     else{
       return NextResponse.redirect(new URL('/login', request.url));

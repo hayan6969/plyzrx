@@ -1,6 +1,9 @@
+"use client";
 import React, { useState } from "react";
 import { Button } from "./ui/button";
 import PayPalSubscription from "./PayPalSubscribe";
+import axios from "axios";
+import Logincard from "@/components/Logincard";
 
 type Tournament = {
   tier: string;
@@ -37,6 +40,24 @@ export default function Tourncard(tournament: Tournament) {
   } = tournament;
 
   const [showPayPal, setShowPayPal] = useState(false);
+  const [showLogin, setLogin] = useState(false);
+  const checklogin = async () => {
+    try {
+      const responce = await axios.post("/api/check");
+      console.log(responce.data);
+      if (responce.data.success === false) {
+        console.log("false responce");
+
+        setLogin(true);
+        setShowPayPal(false);
+      } else {
+        setLogin(false);
+        setShowPayPal(true);
+      }
+    } catch (error) {
+      console.log("error in checking login status", error);
+    }
+  };
 
   return (
     <>
@@ -127,11 +148,11 @@ export default function Tourncard(tournament: Tournament) {
           </div>
         </div>
 
-        <div className="mx-1 h-[10%] p-4 flex items-center">
+        <div className={`mx-1 h-[10%] p-4 flex items-center`}>
           <Button
             className="rounded-3xl overflow-hidden"
-            onClick={() => setShowPayPal(true)}
             size={"md"}
+            onClick={checklogin}
           >
             Start
           </Button>
@@ -139,7 +160,7 @@ export default function Tourncard(tournament: Tournament) {
         {showPayPal && (
           <div
             className="fixed rounded-3xl inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setShowPayPal(false)} 
+            onClick={() => setShowPayPal(false)}
           >
             <button
               className="absolute top-5 right-5 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
@@ -153,6 +174,29 @@ export default function Tourncard(tournament: Tournament) {
               onClick={(e) => e.stopPropagation()}
             >
               <PayPalSubscription planId={planId} />
+            </div>
+          </div>
+        )}
+
+        {showLogin && (
+          <div
+            className="fixed rounded-3xl inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => setLogin(false)} // Close on background click
+          >
+            {/* Close Button - Positioned Outside */}
+            <button
+              className="absolute top-5 right-5 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
+              onClick={() => setLogin(false)}
+            >
+              ✕
+            </button>
+
+            {/* Image Wrapper - Stops Click Propagation */}
+            <div
+              className="relative p-4  rounded-lg shadow-lg "
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Logincard />
             </div>
           </div>
         )}
