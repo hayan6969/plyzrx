@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import PayPalButton from "./PayPalButton";
+import PayPalSubscription from "./PayPalSubscribe";
 
 type Tournament = {
   tier: string;
@@ -16,6 +16,7 @@ type Tournament = {
   countsec: any;
   finalprice: string;
   id?: string;
+  planId: string;
 };
 
 export default function Tourncard(tournament: Tournament) {
@@ -32,6 +33,7 @@ export default function Tourncard(tournament: Tournament) {
     countmin,
     countsec,
     finalprice,
+    planId,
   } = tournament;
 
   const [showPayPal, setShowPayPal] = useState(false);
@@ -137,9 +139,8 @@ export default function Tourncard(tournament: Tournament) {
         {showPayPal && (
           <div
             className="fixed rounded-3xl inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setShowPayPal(false)} // Close on background click
+            onClick={() => setShowPayPal(false)} 
           >
-            {/* Close Button - Positioned Outside */}
             <button
               className="absolute top-5 right-5 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
               onClick={() => setShowPayPal(false)}
@@ -147,12 +148,11 @@ export default function Tourncard(tournament: Tournament) {
               ✕
             </button>
 
-            {/* Image Wrapper - Stops Click Propagation */}
             <div
               className="relative p-4 bg-white rounded-lg shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
-              <PayPalButton amount={finalprice} />
+              <PayPalSubscription planId={planId} />
             </div>
           </div>
         )}

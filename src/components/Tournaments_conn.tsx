@@ -22,6 +22,7 @@ const tournamentsData = [
     countmin: 0,
     countsec: 0,
     finalprice: "19.99",
+    planId: "P-1D5089494A991393GM7GLOJY",
   },
   {
     id: "2",
@@ -37,6 +38,7 @@ const tournamentsData = [
     countmin: 0,
     countsec: 0,
     finalprice: "49.99",
+    planId: "P-72E51471DW952002JM7GLPDQ",
   },
   {
     id: "3",
@@ -52,6 +54,7 @@ const tournamentsData = [
     countmin: 0,
     countsec: 0,
     finalprice: "1000",
+    planId: "P-2KE19196MV305594FM7GLPMI",
   },
 ];
 function Tournaments_conn() {
