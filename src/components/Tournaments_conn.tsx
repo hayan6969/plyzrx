@@ -5,8 +5,9 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import { useState, useEffect } from "react";
-const targetDate = new Date(2025, 3, 2, 0, 0, 0);
 
+/****************************************/
+const targetDate = new Date(2025, 3, 2, 0, 0, 0);
 const plan1 =process.env.NEXT_PUBLIC_PLAN_ONE
 const plan2 =process.env.NEXT_PUBLIC_PLAN_TWO
 const plan3 =process.env.NEXT_PUBLIC_PLAN_THREE
