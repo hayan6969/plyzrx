@@ -19,7 +19,7 @@ type Tournament = {
   countsec: any;
   finalprice: string;
   id?: string;
-  planId: string;
+  planId: any;
 };
 
 export default function Tourncard(tournament: Tournament) {

@@ -7,6 +7,9 @@ import "swiper/css/pagination";
 import { useState, useEffect } from "react";
 const targetDate = new Date(2025, 3, 2, 0, 0, 0);
 
+const plan1 =process.env.NEXT_PUBLIC_PLAN_ONE
+const plan2 =process.env.NEXT_PUBLIC_PLAN_TWO
+const plan3 =process.env.NEXT_PUBLIC_PLAN_THREE
 const tournamentsData = [
   {
     id: "1",
@@ -22,7 +25,7 @@ const tournamentsData = [
     countmin: 0,
     countsec: 0,
     finalprice: "19.99",
-    planId: "P-1D5089494A991393GM7GLOJY",
+    planId: plan1,
   },
   {
     id: "2",
@@ -38,7 +41,7 @@ const tournamentsData = [
     countmin: 0,
     countsec: 0,
     finalprice: "49.99",
-    planId: "P-72E51471DW952002JM7GLPDQ",
+    planId: plan2,
   },
   {
     id: "3",
@@ -54,7 +57,7 @@ const tournamentsData = [
     countmin: 0,
     countsec: 0,
     finalprice: "1000",
-    planId: "P-2KE19196MV305594FM7GLPMI",
+    planId: plan3,
   },
 ];
 function Tournaments_conn() {
