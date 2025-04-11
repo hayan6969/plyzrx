@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import PayPalSubscription from "./PayPalSubscribe";
 import axios from "axios";
 import Logincard from "@/components/Logincard";
 import CustomerEmail from "./CustomerEmail";
@@ -37,7 +36,6 @@ export default function Tourncard(tournament: Tournament) {
     countmin,
     countsec,
     finalprice,
-    planId,
   } = tournament;
 
   const [showPayPal, setShowPayPal] = useState(false);

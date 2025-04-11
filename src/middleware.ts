@@ -11,7 +11,6 @@ export async function middleware(request: NextRequest) {
   const res = await fetch(`http://ip-api.com/json/${ip}`);
   const geo = await res.json();
   console.log(geo);
-  const stateCode = geo.regionName
   if (geo.country === 'US' && blockedStates.includes(geo.region)) {
     return NextResponse.redirect(new URL('/access-denied', request.url));
   }

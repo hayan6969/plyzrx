@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import emailjs from '@emailjs/browser'
-import { toast } from 'sonner'
 
 interface CustomerEmailProps {
   packageDetail: string
