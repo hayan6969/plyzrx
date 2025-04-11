@@ -15,10 +15,11 @@ export async function POST(request: Request) {
       {
         headers: {
           "Content-Type": "application/json",
-          ProjectId: process.env.PROJECTID ?? "",
+          ProjectId: "9353b433-f61e-4b9d-b39b-0b794f99da3c",
         },
       }
     );
+console.log(api.data.idToken);
 
     (await cookiesStore).set({
       name: "token",

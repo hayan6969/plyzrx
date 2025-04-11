@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import PayPalSubscription from "./PayPalSubscribe";
 import axios from "axios";
 import Logincard from "@/components/Logincard";
+import CustomerEmail from "./CustomerEmail";
 
 type Tournament = {
   tier: string;
@@ -173,7 +174,7 @@ export default function Tourncard(tournament: Tournament) {
               className="relative p-4 bg-white rounded-lg shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
-              <PayPalSubscription planId={planId} />
+              <CustomerEmail packageDetail={tier} />
             </div>
           </div>
         )}
