@@ -37,7 +37,6 @@ export default function Tourncard(tournament: Tournament) {
   } = tournament;
 
   const [showPayPal, setShowPayPal] = useState(false);
-  const [showLogin, setLogin] = useState(false);
   const checklogin = async () => {
   setShowPayPal(true);
   };
