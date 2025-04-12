@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 
- function page() {
+ function Page() {
   const [geoData, setGeoData] = useState(null);
   useEffect(() => {
 
@@ -30,10 +30,11 @@ import React, { useEffect, useState } from 'react';
         <div className="text-sm text-gray-500">
           This restriction applies to users from certain US states due to regulatory requirements.
         </div>
+        {geoData }
       </div>
     </div>
   )
 }
 
 
-export default page;
+export default Page;
