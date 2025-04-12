@@ -1,8 +1,6 @@
-"use client"
-import React, { useEffect, useState } from 'react';
 
  function Page() {
-  const [geoData, setGeoData] = useState(null);
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
