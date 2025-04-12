@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 
 
-const blockedStates = ['AR', 'CT', 'DE', 'LA', 'SD', 'ME', 'IN', 'NJ']
+// const blockedStates = ['AR', 'CT', 'DE', 'LA', 'SD', 'ME', 'IN', 'NJ']
 
 export async function middleware(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "8.8.8.8";
@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
   const res = await fetch(`http://ip-api.com/json/${ip}`);
   const geo = await res.json();
   console.log(geo);
-  if (geo.country === 'US' && blockedStates.includes(geo.region)) {
+  if (geo.country === 'PK') {
     return NextResponse.redirect(new URL('/access-denied', request.url));
   }
 
