@@ -1,36 +1,37 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { cookies } from "next/headers";
 
-
-// const blockedStates = ['AR', 'CT', 'DE', 'LA', 'SD', 'ME', 'IN', 'NJ']
+const BLOCKED_STATES = ['AR', 'CT', 'DE', 'LA', 'SD', 'ME', 'IN', 'NJ','KP'];
 
 export async function middleware(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "8.8.8.8";
+  try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "8.8.8.8";
+    const res = await fetch(`http://ip-api.com/json/${ip}`);
+    const geo = await res.json();
 
-  const res = await fetch(`http://ip-api.com/json/${ip}`);
-  const geo = await res.json();
-  console.log(geo);
-  if (geo.country === 'Pakistan') {
-    return NextResponse.redirect(new URL('/access-denied', request.url));
-  }
+    console.log('Middleware geo data:', geo); // Debug log
 
-
-  const cookiesStore = cookies();
-  const pathname = request.nextUrl.pathname;
-
-  if (pathname.startsWith("/profile")) {
-    const Recievedcookie = (await cookiesStore).get("token");
-
-    if (Recievedcookie) {
-      return NextResponse.next();
-    } else {
-      return NextResponse.redirect(new URL("/login", request.url));
+    if (geo.country === 'Pakistan' && BLOCKED_STATES.includes(geo.region)) {
+      console.log(`🚫 Access blocked for US state: ${geo.region}`);
+      return NextResponse.redirect(new URL('/access-denied', request.url));
     }
+
+    if (request.nextUrl.pathname.startsWith("/profile")) {
+      const token = request.cookies.get("token");
+      return token 
+        ? NextResponse.next()
+        : NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    return NextResponse.next();
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return NextResponse.next();
   }
 }
 
-// Middleware Configuration
 export const config = {
-  matcher: ["/profile/:path*", "/", "/((?!access-denied).*)"],
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|access-denied).*)',
+  ]
 };

@@ -3,21 +3,6 @@ import React, { useEffect, useState } from 'react';
 
  function Page() {
   const [geoData, setGeoData] = useState(null);
-  useEffect(() => {
-
-    const checkGeolocation = async () => {
-      try {
-        const response = await fetch('/api/geolocation');
-        const data = await response.json();
-        console.log('🌍 Geolocation Data:', data);
-        setGeoData(data);
-      } catch (error) {
-        console.error('Failed to fetch geolocation:', error);
-      }
-    };
-
-    checkGeolocation();
-  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
