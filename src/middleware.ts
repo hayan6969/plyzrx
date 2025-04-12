@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const BLOCKED_STATES = ['AR', 'CT', 'DE', 'LA', 'SD', 'ME', 'IN', 'NJ','KP'];
+const BLOCKED_STATES = ['AR', 'CT', 'DE', 'LA', 'SD', 'ME', 'IN', 'NJ'];
 
 export async function middleware(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
 
     console.log('Middleware geo data:', geo); // Debug log
 
-    if (geo.country === 'Pakistan' && BLOCKED_STATES.includes(geo.region)) {
+    if (geo.country === 'US' && BLOCKED_STATES.includes(geo.region)) {
       console.log(`🚫 Access blocked for US state: ${geo.region}`);
       return NextResponse.redirect(new URL('/access-denied', request.url));
     }
