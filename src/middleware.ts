@@ -8,24 +8,7 @@ import { cookies } from "next/headers";
 export async function middleware(request: NextRequest) {
 
   try {
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "8.8.8.8";
-    const res = await fetch(`http://ip-api.com/json/${ip}`);
-    
-    if (!res.ok) {
-      console.error('IP API request failed');
-      return NextResponse.next();
-    }
-
-    const geo = await res.json();
-    
-    if (geo.status === 'fail') {
-      console.error('Geolocation lookup failed');
-      return NextResponse.next();
-    }
-
-    if (geo.country === 'PK') {
-      return NextResponse.redirect(new URL('/access-denied', request.url));
-    }
+   
 
    
   const cookiesStore = cookies();
@@ -41,7 +24,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  
+
   } catch (error) {
     console.error('Middleware error:', error);
     return NextResponse.next();

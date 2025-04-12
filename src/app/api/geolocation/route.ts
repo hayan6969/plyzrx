@@ -7,7 +7,9 @@ export async function GET(request: Request) {
     const geoData = await res.json();
 
     console.log('Server-side geolocation:', geoData);
-
+    if (geoData.country === 'Pakistan') {
+        return NextResponse.redirect(new URL('/access-denied', request.url));
+      }
     return NextResponse.json({
       ip,
       country: geoData.country,
@@ -19,3 +21,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Failed to fetch geolocation' }, { status: 500 });
   }
 }
+
+
+ 
