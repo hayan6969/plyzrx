@@ -1,7 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const BLOCKED_STATES = ['AR', 'CT', 'DE', 'LA', 'SD', 'ME', 'IN', 'NJ'];
+const BLOCKED_STATES = [
+  'AR',  // Arkansas
+  'CT',  // Connecticut
+  'DE',  // Delaware
+  'LA',  // Louisiana
+  'SD',  // South Dakota
+  'ME',  // Maine
+  'IN',  // Indiana
+  'UT',  // Utah
+  'HI',  // Hawaii
+  'SC',  // South Carolina
+  'TN',  // Tennessee
+  'AL',  // Alabama
+  'GA',  // Georgia
+  'NC',  // North Carolina
+  'ID'   // Idaho
+];
 
 export async function middleware(request: NextRequest) {
   try {
