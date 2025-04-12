@@ -10,7 +10,10 @@ interface CustomerEmailProps {
 }
 
 const emailSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
+  phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
 })
 
 type EmailFormValues = z.infer<typeof emailSchema>
@@ -29,20 +32,23 @@ const CustomerEmail: React.FC<CustomerEmailProps> = ({ packageDetail }) => {
   const onSubmit = async (data: EmailFormValues) => {
     try {
       const templateParams = {
+        first_name: data.firstName,
+        last_name: data.lastName,
         email: data.email,
-        title: packageDetail,
+        phone_number: data.phoneNumber,
+        tier: packageDetail,
       }
 
       const response = await emailjs.send(
-        'service_89bzej1', // Replace with your EmailJS service ID
-        'template_tzjanam', // Replace with your EmailJS template ID
+        'service_89bzej1', 
+        'template_tzjanam', 
         templateParams,
-        'axieVSSsGN1bDnjRn' // Replace with your EmailJS public key
+        'axieVSSsGN1bDnjRn' 
       )
 console.log(response);
 
       if (response.status === 200) {
-        setSuccessMessage('Email sent successfully!')
+        setSuccessMessage('You will receive an email shortly.')
         reset()
       }
     } catch (error) {
@@ -53,7 +59,46 @@ console.log(response);
 
   return (
     <div className="w-full max-w-md mx-auto p-6">
+      {packageDetail}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <label
+            htmlFor="firstName"
+            className="block text-sm font-medium text-gray-700"
+          >
+            First Name
+          </label>
+          <input
+            {...register('firstName')}
+            type="text"
+            id="firstName"
+            placeholder="Enter your first name"
+            className="w-full px-3 text-black py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          {errors.firstName && (
+            <p className="text-sm text-red-600">{errors.firstName.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="lastName"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Last Name
+          </label>
+          <input
+            {...register('lastName')}
+            type="text"
+            id="lastName"
+            placeholder="Enter your last name"
+            className="w-full px-3 text-black py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          {errors.lastName && (
+            <p className="text-sm text-red-600">{errors.lastName.message}</p>
+          )}
+        </div>
+
         <div className="space-y-2">
           <label
             htmlFor="email"
@@ -70,6 +115,25 @@ console.log(response);
           />
           {errors.email && (
             <p className="text-sm text-red-600">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="phoneNumber"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Phone Number
+          </label>
+          <input
+            {...register('phoneNumber')}
+            type="tel"
+            id="phoneNumber"
+            placeholder="Enter your phone number"
+            className="w-full px-3 text-black py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          {errors.phoneNumber && (
+            <p className="text-sm text-red-600">{errors.phoneNumber.message}</p>
           )}
         </div>
 
