@@ -31,6 +31,12 @@ const CustomerEmail: React.FC<CustomerEmailProps> = ({ packageDetail }) => {
 
   const onSubmit = async (data: EmailFormValues) => {
     try {
+      console.log(
+        process.env.NEXT_PUBLIC_SERVICEID,
+        process.env.NEXT_PUBLIC_TEMPLATEID, 
+        process.env.NEXT_PUBLIC_PUBLICKEY
+      );
+      
       const templateParams = {
         first_name: data.firstName,
         last_name: data.lastName,
@@ -40,10 +46,10 @@ const CustomerEmail: React.FC<CustomerEmailProps> = ({ packageDetail }) => {
       }
 
       const response = await emailjs.send(
-        'service_89bzej1', 
-        'template_tzjanam', 
+        `${process.env.NEXT_PUBLIC_SERVICEID}`,
+        `${process.env.NEXT_PUBLIC_TEMPLATEID}` ,
         templateParams,
-        'axieVSSsGN1bDnjRn' 
+        `${process.env.NEXT_PUBLIC_PUBLICKEY}`
       )
 console.log(response);
 
