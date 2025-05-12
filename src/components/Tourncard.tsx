@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
-import CustomerEmail from "./CustomerEmail";
+import PayPalButton from "./PayPalButton";
 
 type Tournament = {
   tier: string;
@@ -37,8 +37,25 @@ export default function Tourncard(tournament: Tournament) {
   } = tournament;
 
   const [showPayPal, setShowPayPal] = useState(false);
-  const checklogin = async () => {
-  setShowPayPal(true);
+  const [userId, setUserId] = useState<string>("anonymous");
+  const [username, setUsername] = useState<string>("guest");
+
+  // Retrieve user info from localStorage or another source
+  useEffect(() => {
+    // Example of retrieving user info from localStorage
+    try {
+      const storedUserId = localStorage.getItem("user-id");
+      const storedUsername = localStorage.getItem("username");
+
+      if (storedUserId) setUserId(storedUserId);
+      if (storedUsername) setUsername(storedUsername);
+    } catch (error) {
+      console.error("Error retrieving user info:", error);
+    }
+  }, []);
+
+  const handlePurchase = () => {
+    setShowPayPal(true);
   };
 
   return (
@@ -134,9 +151,9 @@ export default function Tourncard(tournament: Tournament) {
           <Button
             className="rounded-3xl overflow-hidden"
             size={"md"}
-            onClick={checklogin}
+            onClick={handlePurchase}
           >
-            Start
+            Purchase
           </Button>
         </div>
         {showPayPal && (
@@ -144,24 +161,36 @@ export default function Tourncard(tournament: Tournament) {
             className="fixed rounded-3xl inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             onClick={() => setShowPayPal(false)}
           >
-           
-
             <div
-              className="relative p-4 bg-white rounded-lg shadow-lg"
+              className="relative p-6 bg-white rounded-lg shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
-               <button
-              className="absolute top-5 right-5 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
-              onClick={() => setShowPayPal(false)}
-            >
-              ✕
-            </button>
-              <CustomerEmail packageDetail={tier} />
+              <button
+                className="absolute top-5 right-5 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
+                onClick={() => setShowPayPal(false)}
+              >
+                ✕
+              </button>
+
+              <div className="mb-4 text-center">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {tier} Tournament
+                </h2>
+                <p className="text-lg font-semibold text-gray-700 mt-2">
+                  Total: ${finalprice}
+                </p>
+              </div>
+
+              <div className="mt-6">
+                <PayPalButton
+                  amount={finalprice}
+                  userId={userId}
+                  username={username}
+                />
+              </div>
             </div>
           </div>
         )}
-
-
       </div>
     </>
   );

@@ -35,20 +35,22 @@ const PayPalSubscription: React.FC<SubscriptionProps> = ({ planId }) => {
   };
 
   const onApprove = async (data: OnApproveData): Promise<void> => {
-      if (data.subscriptionID) {
-        console.log("Subscription successful:", data);
-        alert(`Subscription Successful! Subscription ID: ${data.subscriptionID}`);
-      } else {
-        console.error("Subscription ID is null or undefined");
-      }
-    };
+    if (data.subscriptionID) {
+      console.log("Subscription successful:", data);
+      alert(`Subscription Successful! Subscription ID: ${data.subscriptionID}`);
+      return Promise.resolve();
+    } else {
+      console.error("Subscription ID is null or undefined");
+      return Promise.reject("Subscription ID is missing");
+    }
+  };
 
   return (
     <PayPalScriptProvider options={initialOptions}>
       <PayPalButtons
         style={{ layout: "vertical" }}
         createSubscription={createSubscription}
-        onApprove={()=> onApprove({subscriptionID: subscriptionId!})}
+        onApprove={async () => onApprove({ subscriptionID: subscriptionId! })}
       />
     </PayPalScriptProvider>
   );

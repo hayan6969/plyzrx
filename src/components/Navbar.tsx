@@ -23,11 +23,13 @@ function Navbar() {
       } else {
         setProfile(false);
         localStorage.setItem("Login", "false");
+        window.location.href = "/login";
       }
     } catch (error) {
       console.error("Auth check failed:", error);
       setProfile(false);
       localStorage.setItem("Login", "false");
+      window.location.href = "/login";
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +72,7 @@ function Navbar() {
               </Link>
             ))}
             {/* Dropdown on hover */}
-            <div 
+            <div
               className="relative p-2 z-10 hover:text-custompink transition"
               onMouseEnter={() => setFaqOpen(true)}
               onMouseLeave={() => setFaqOpen(false)}

@@ -15,7 +15,7 @@ export async function POST(request: Request) {
       {
         headers: {
           "Content-Type": "application/json",
-          ProjectId: process.env.PROJECTID ?? "",
+          ProjectId: process.env.NEXT_PUBLIC_PROJECTID ?? "",
         },
       }
     );

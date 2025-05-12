@@ -26,7 +26,7 @@ type FormData = {
 
 function Page() {
   const [buttonState, setButtonState] = useState(false);
-  const router= useRouter();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -37,17 +37,15 @@ function Page() {
     setButtonState(true);
     try {
       const response = await axios.post("/api/signin", data);
-console.log(response.data.username);
-
+      console.log(response.data.username);
 
       if (!response.data.success) {
         toast.error(response.data.message);
       } else {
         toast.success(response.data.message);
-        localStorage.setItem("Login","true");
-        localStorage.setItem("userName",response.data.username)
-        router.push("/")
-
+        localStorage.setItem("Login", "true");
+        localStorage.setItem("userName", response.data.username);
+        router.push("/");
       }
     } catch (error) {
       console.error("Error in sign-in", error);
