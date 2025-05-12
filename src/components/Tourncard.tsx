@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import PayPalButton from "./PayPalButton";
 
@@ -37,6 +37,22 @@ export default function Tourncard(tournament: Tournament) {
   } = tournament;
 
   const [showPayPal, setShowPayPal] = useState(false);
+  const [userId, setUserId] = useState<string>("anonymous");
+  const [username, setUsername] = useState<string>("guest");
+
+  // Retrieve user info from localStorage or another source
+  useEffect(() => {
+    // Example of retrieving user info from localStorage
+    try {
+      const storedUserId = localStorage.getItem("user-id");
+      const storedUsername = localStorage.getItem("username");
+
+      if (storedUserId) setUserId(storedUserId);
+      if (storedUsername) setUsername(storedUsername);
+    } catch (error) {
+      console.error("Error retrieving user info:", error);
+    }
+  }, []);
 
   const handlePurchase = () => {
     setShowPayPal(true);
@@ -166,7 +182,11 @@ export default function Tourncard(tournament: Tournament) {
               </div>
 
               <div className="mt-6">
-                <PayPalButton amount={finalprice} />
+                <PayPalButton
+                  amount={finalprice}
+                  userId={userId}
+                  username={username}
+                />
               </div>
             </div>
           </div>

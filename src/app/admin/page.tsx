@@ -18,6 +18,12 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Client, Account } from "appwrite";
 import { isAdminAuthenticated, clearAdminAuth } from "@/lib/authStorage";
+import {
+  PaymentLog,
+  UserTier,
+  getPaymentLogs,
+  getAllUserTiers,
+} from "@/lib/appwriteDB";
 
 // Initialize Appwrite Client directly in the component
 const client = new Client()
@@ -28,29 +34,12 @@ const client = new Client()
 
 const account = new Account(client);
 
-interface PaymentLog {
-  userId: string;
-  username: string;
-  dateTime: string;
-  paymentFrom: string;
-  platform: string;
-  playerId: string;
-  paymentAmount: number;
-  paymentId: string;
-}
-
-interface User {
-  userId: string;
-  tier1: boolean;
-  tier2: boolean;
-  tier3: boolean;
-}
-
 export default function AdminDashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [paymentLogs, setPaymentLogs] = useState<PaymentLog[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserTier[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check authentication directly from localStorage
@@ -60,20 +49,55 @@ export default function AdminDashboard() {
     }
 
     // Load dashboard data
-    fetchMockData();
-    setIsLoading(false);
+    fetchAppwriteData();
   }, [router]);
 
-  const fetchMockData = () => {
+  const fetchAppwriteData = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Fetch payment logs from Appwrite
+      const logs = await getPaymentLogs();
+
+      if (logs.length > 0) {
+        setPaymentLogs(logs);
+      } else {
+        // If no logs found, use mock data as fallback
+        fetchMockPaymentLogs();
+      }
+
+      // Fetch user tiers from Appwrite
+      const userTiers = await getAllUserTiers();
+
+      if (userTiers.length > 0) {
+        setUsers(userTiers);
+      } else {
+        // If no user tiers found, use mock data as fallback
+        fetchMockUserTiers();
+      }
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError(
+        "Failed to load data from Appwrite. Using mock data as fallback."
+      );
+
+      // Use mock data as fallback
+      fetchMockPaymentLogs();
+      fetchMockUserTiers();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchMockPaymentLogs = () => {
     // Mock payment logs data
     const mockPaymentLogs: PaymentLog[] = [
       {
         userId: "user_123",
         username: "player1",
         dateTime: "2023-11-15 14:30:45",
-        paymentFrom: "PayPal",
         platform: "Web",
-        playerId: "unity_123",
         paymentAmount: 19.99,
         paymentId: "pay_abc123",
       },
@@ -81,9 +105,7 @@ export default function AdminDashboard() {
         userId: "user_456",
         username: "gamer2",
         dateTime: "2023-11-16 09:15:22",
-        paymentFrom: "Credit Card",
-        platform: "Mobile",
-        playerId: "unity_456",
+        platform: "Web",
         paymentAmount: 49.99,
         paymentId: "pay_def456",
       },
@@ -91,9 +113,7 @@ export default function AdminDashboard() {
         userId: "user_789",
         username: "xXProGamerXx",
         dateTime: "2023-11-17 18:45:12",
-        paymentFrom: "Google Pay",
         platform: "Web",
-        playerId: "unity_789",
         paymentAmount: 29.99,
         paymentId: "pay_ghi789",
       },
@@ -101,9 +121,7 @@ export default function AdminDashboard() {
         userId: "user_101",
         username: "gameMaster42",
         dateTime: "2023-11-18 22:10:33",
-        paymentFrom: "Apple Pay",
-        platform: "Mobile",
-        playerId: "unity_101",
+        platform: "Web",
         paymentAmount: 99.99,
         paymentId: "pay_jkl101",
       },
@@ -111,9 +129,7 @@ export default function AdminDashboard() {
         userId: "user_202",
         username: "epicPlayer",
         dateTime: "2023-11-19 11:05:56",
-        paymentFrom: "PayPal",
         platform: "Web",
-        playerId: "unity_202",
         paymentAmount: 14.99,
         paymentId: "pay_mno202",
       },
@@ -121,9 +137,7 @@ export default function AdminDashboard() {
         userId: "user_303",
         username: "gameWizard",
         dateTime: "2023-11-20 15:30:18",
-        paymentFrom: "Credit Card",
-        platform: "Mobile",
-        playerId: "unity_303",
+        platform: "Web",
         paymentAmount: 59.99,
         paymentId: "pay_pqr303",
       },
@@ -131,16 +145,18 @@ export default function AdminDashboard() {
         userId: "user_404",
         username: "legendaryGamer",
         dateTime: "2023-11-21 08:22:41",
-        paymentFrom: "Google Pay",
         platform: "Web",
-        playerId: "unity_404",
         paymentAmount: 39.99,
         paymentId: "pay_stu404",
       },
     ];
 
+    setPaymentLogs(mockPaymentLogs);
+  };
+
+  const fetchMockUserTiers = () => {
     // Mock users data
-    const mockUsers: User[] = [
+    const mockUsers: UserTier[] = [
       {
         userId: "user_123",
         tier1: true,
@@ -185,7 +201,6 @@ export default function AdminDashboard() {
       },
     ];
 
-    setPaymentLogs(mockPaymentLogs);
     setUsers(mockUsers);
   };
 
@@ -209,6 +224,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleRefresh = () => {
+    fetchAppwriteData();
+    toast.info("Refreshing data...");
+  };
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -222,13 +242,27 @@ export default function AdminDashboard() {
       <Toaster />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-custompink">Admin Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-        >
-          Logout
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+          >
+            Refresh Data
+          </button>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+          >
+            Logout
+          </button>
+        </div>
       </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
 
       <Tabs defaultValue="payments" className="w-full">
         <TabsList className="flex gap-2 mb-4 ">
@@ -252,30 +286,34 @@ export default function AdminDashboard() {
                   <TableRow className="border-b-4 border-gray-800">
                     <TableHead>User ID</TableHead>
                     <TableHead>Username</TableHead>
-                    <TableHead>Date & Time</TableHead>
-                    <TableHead>Payment From</TableHead>
-                    <TableHead>Platform</TableHead>
-                    <TableHead>Player ID</TableHead>
-                    <TableHead>Amount</TableHead>
                     <TableHead>Payment ID</TableHead>
+                    <TableHead>Platform</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Date & Time</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paymentLogs.map((log, index) => (
-                    <TableRow
-                      className="border-b border-gray-800/50"
-                      key={index}
-                    >
-                      <TableCell>{log.userId}</TableCell>
-                      <TableCell>{log.username}</TableCell>
-                      <TableCell>{log.dateTime}</TableCell>
-                      <TableCell>{log.paymentFrom}</TableCell>
-                      <TableCell>{log.platform}</TableCell>
-                      <TableCell>{log.playerId}</TableCell>
-                      <TableCell>${log.paymentAmount.toFixed(2)}</TableCell>
-                      <TableCell>{log.paymentId}</TableCell>
+                  {paymentLogs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-4">
+                        No payment logs found
+                      </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    paymentLogs.map((log, index) => (
+                      <TableRow
+                        className="border-b border-gray-800/50"
+                        key={log.$id || log.paymentId || index}
+                      >
+                        <TableCell>{log.userId}</TableCell>
+                        <TableCell>{log.username}</TableCell>
+                        <TableCell>{log.paymentId}</TableCell>
+                        <TableCell>{log.platform}</TableCell>
+                        <TableCell>${log.paymentAmount.toFixed(2)}</TableCell>
+                        <TableCell>{log.dateTime}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -299,50 +337,58 @@ export default function AdminDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user, index) => (
-                    <TableRow
-                      className="border-b border-gray-800/50"
-                      key={index}
-                    >
-                      <TableCell>{user.userId}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            user.tier1
-                              ? "bg-green-600 hover:bg-green-700"
-                              : "bg-red-600 hover:bg-red-700"
-                          }
-                          variant="default"
-                        >
-                          {user.tier1 ? "true" : "false"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            user.tier2
-                              ? "bg-green-600 hover:bg-green-700"
-                              : "bg-red-600 hover:bg-red-700"
-                          }
-                          variant="default"
-                        >
-                          {user.tier2 ? "true" : "false"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            user.tier3
-                              ? "bg-green-600 hover:bg-green-700"
-                              : "bg-red-600 hover:bg-red-700"
-                          }
-                          variant="default"
-                        >
-                          {user.tier3 ? "true" : "false"}
-                        </Badge>
+                  {users.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-4">
+                        No users found
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    users.map((user, index) => (
+                      <TableRow
+                        className="border-b border-gray-800/50"
+                        key={user.$id || user.userId || index}
+                      >
+                        <TableCell>{user.userId}</TableCell>
+                        <TableCell>
+                          <Badge
+                            className={
+                              user.tier1
+                                ? "bg-green-600 hover:bg-green-700"
+                                : "bg-red-600 hover:bg-red-700"
+                            }
+                            variant="default"
+                          >
+                            {user.tier1 ? "true" : "false"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={
+                              user.tier2
+                                ? "bg-green-600 hover:bg-green-700"
+                                : "bg-red-600 hover:bg-red-700"
+                            }
+                            variant="default"
+                          >
+                            {user.tier2 ? "true" : "false"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={
+                              user.tier3
+                                ? "bg-green-600 hover:bg-green-700"
+                                : "bg-red-600 hover:bg-red-700"
+                            }
+                            variant="default"
+                          >
+                            {user.tier3 ? "true" : "false"}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
