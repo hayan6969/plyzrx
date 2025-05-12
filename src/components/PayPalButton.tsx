@@ -50,12 +50,16 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ amount }) => {
           orderID: data.orderID,
         }
       );
+
+      // Close the PayPal checkout modal by returning a resolved promise
       alert(
         "Payment Successful! Transaction ID: " +
           response.data.purchase_units[0].payments.captures[0].id
       );
+      return Promise.resolve();
     } catch (error) {
       console.error("Error capturing payment:", error);
+      return Promise.reject("Payment failed");
     }
   };
 

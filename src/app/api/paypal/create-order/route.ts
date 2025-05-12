@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 interface PayPalOrderRequest {
   orderAmount: string;
@@ -10,11 +10,17 @@ interface PayPalOrderResponse {
   error?: string;
 }
 
-export async function POST(req: Request): Promise<NextResponse<PayPalOrderResponse>> {
+export async function POST(
+  req: Request
+): Promise<NextResponse<PayPalOrderResponse>> {
   try {
     const { orderAmount }: PayPalOrderRequest = await req.json();
 
-    if (!process.env.PAYPAL_API || !process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_SECRET) {
+    if (
+      !process.env.PAYPAL_API ||
+      !process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
+      !process.env.PAYPAL_SECRET
+    ) {
       throw new Error("PayPal environment variables are not set");
     }
 
@@ -45,7 +51,8 @@ export async function POST(req: Request): Promise<NextResponse<PayPalOrderRespon
     const data: PayPalOrderResponse = await response.json();
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Error creating PayPal order";
+    const errorMessage =
+      error instanceof Error ? error.message : "Error creating PayPal order";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
