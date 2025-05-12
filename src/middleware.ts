@@ -18,9 +18,6 @@ const BLOCKED_STATES = [
   "ID", // Idaho
 ];
 
-// List of public paths that don't require authentication
-const PUBLIC_PATHS = ["/login", "/signup", "/access-denied", "/api/auth"];
-
 export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const { pathname } = request.nextUrl;

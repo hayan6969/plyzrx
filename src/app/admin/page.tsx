@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -41,20 +41,123 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserTier[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Check authentication directly from localStorage
-    if (!isAdminAuthenticated()) {
-      router.push("/admin/login");
-      return;
-    }
-
-    // Load dashboard data
-    fetchAppwriteData();
-  }, [router]);
-
-  const fetchAppwriteData = async () => {
+  const fetchAppwriteData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+
+    const fetchMockPaymentLogs = () => {
+      // Mock payment logs data
+      const mockPaymentLogs: PaymentLog[] = [
+        {
+          userId: "user_123",
+          username: "player1",
+          dateTime: "2023-11-15 14:30:45",
+          platform: "Web",
+          paymentAmount: 19.99,
+          paymentId: "pay_abc123",
+        },
+        {
+          userId: "user_456",
+          username: "gamer2",
+          dateTime: "2023-11-16 09:15:22",
+          platform: "Web",
+          paymentAmount: 49.99,
+          paymentId: "pay_def456",
+        },
+        {
+          userId: "user_789",
+          username: "xXProGamerXx",
+          dateTime: "2023-11-17 18:45:12",
+          platform: "Web",
+          paymentAmount: 29.99,
+          paymentId: "pay_ghi789",
+        },
+        {
+          userId: "user_101",
+          username: "gameMaster42",
+          dateTime: "2023-11-18 22:10:33",
+          platform: "Web",
+          paymentAmount: 99.99,
+          paymentId: "pay_jkl101",
+        },
+        {
+          userId: "user_202",
+          username: "epicPlayer",
+          dateTime: "2023-11-19 11:05:56",
+          platform: "Web",
+          paymentAmount: 14.99,
+          paymentId: "pay_mno202",
+        },
+        {
+          userId: "user_303",
+          username: "gameWizard",
+          dateTime: "2023-11-20 15:30:18",
+          platform: "Web",
+          paymentAmount: 59.99,
+          paymentId: "pay_pqr303",
+        },
+        {
+          userId: "user_404",
+          username: "legendaryGamer",
+          dateTime: "2023-11-21 08:22:41",
+          platform: "Web",
+          paymentAmount: 39.99,
+          paymentId: "pay_stu404",
+        },
+      ];
+
+      setPaymentLogs(mockPaymentLogs);
+    };
+
+    const fetchMockUserTiers = () => {
+      // Mock users data
+      const mockUsers: UserTier[] = [
+        {
+          userId: "user_123",
+          tier1: true,
+          tier2: true,
+          tier3: false,
+        },
+        {
+          userId: "user_456",
+          tier1: true,
+          tier2: true,
+          tier3: true,
+        },
+        {
+          userId: "user_789",
+          tier1: true,
+          tier2: false,
+          tier3: false,
+        },
+        {
+          userId: "user_101",
+          tier1: true,
+          tier2: true,
+          tier3: true,
+        },
+        {
+          userId: "user_202",
+          tier1: true,
+          tier2: false,
+          tier3: false,
+        },
+        {
+          userId: "user_303",
+          tier1: false,
+          tier2: false,
+          tier3: false,
+        },
+        {
+          userId: "user_404",
+          tier1: true,
+          tier2: true,
+          tier3: false,
+        },
+      ];
+
+      setUsers(mockUsers);
+    };
 
     try {
       // Fetch payment logs from Appwrite
@@ -88,121 +191,18 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const fetchMockPaymentLogs = () => {
-    // Mock payment logs data
-    const mockPaymentLogs: PaymentLog[] = [
-      {
-        userId: "user_123",
-        username: "player1",
-        dateTime: "2023-11-15 14:30:45",
-        platform: "Web",
-        paymentAmount: 19.99,
-        paymentId: "pay_abc123",
-      },
-      {
-        userId: "user_456",
-        username: "gamer2",
-        dateTime: "2023-11-16 09:15:22",
-        platform: "Web",
-        paymentAmount: 49.99,
-        paymentId: "pay_def456",
-      },
-      {
-        userId: "user_789",
-        username: "xXProGamerXx",
-        dateTime: "2023-11-17 18:45:12",
-        platform: "Web",
-        paymentAmount: 29.99,
-        paymentId: "pay_ghi789",
-      },
-      {
-        userId: "user_101",
-        username: "gameMaster42",
-        dateTime: "2023-11-18 22:10:33",
-        platform: "Web",
-        paymentAmount: 99.99,
-        paymentId: "pay_jkl101",
-      },
-      {
-        userId: "user_202",
-        username: "epicPlayer",
-        dateTime: "2023-11-19 11:05:56",
-        platform: "Web",
-        paymentAmount: 14.99,
-        paymentId: "pay_mno202",
-      },
-      {
-        userId: "user_303",
-        username: "gameWizard",
-        dateTime: "2023-11-20 15:30:18",
-        platform: "Web",
-        paymentAmount: 59.99,
-        paymentId: "pay_pqr303",
-      },
-      {
-        userId: "user_404",
-        username: "legendaryGamer",
-        dateTime: "2023-11-21 08:22:41",
-        platform: "Web",
-        paymentAmount: 39.99,
-        paymentId: "pay_stu404",
-      },
-    ];
+  useEffect(() => {
+    // Check authentication directly from localStorage
+    if (!isAdminAuthenticated()) {
+      router.push("/admin/login");
+      return;
+    }
 
-    setPaymentLogs(mockPaymentLogs);
-  };
-
-  const fetchMockUserTiers = () => {
-    // Mock users data
-    const mockUsers: UserTier[] = [
-      {
-        userId: "user_123",
-        tier1: true,
-        tier2: true,
-        tier3: false,
-      },
-      {
-        userId: "user_456",
-        tier1: true,
-        tier2: true,
-        tier3: true,
-      },
-      {
-        userId: "user_789",
-        tier1: true,
-        tier2: false,
-        tier3: false,
-      },
-      {
-        userId: "user_101",
-        tier1: true,
-        tier2: true,
-        tier3: true,
-      },
-      {
-        userId: "user_202",
-        tier1: true,
-        tier2: false,
-        tier3: false,
-      },
-      {
-        userId: "user_303",
-        tier1: false,
-        tier2: false,
-        tier3: false,
-      },
-      {
-        userId: "user_404",
-        tier1: true,
-        tier2: true,
-        tier3: false,
-      },
-    ];
-
-    setUsers(mockUsers);
-  };
+    // Load dashboard data
+    fetchAppwriteData();
+  }, [router, fetchAppwriteData]);
 
   const handleLogout = async () => {
     try {
