@@ -44,6 +44,9 @@ export async function POST(
               },
             },
           ],
+application_context: {
+    shipping_preference: "NO_SHIPPING", 
+  },
         }),
       }
     );
