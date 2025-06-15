@@ -19,8 +19,6 @@ export async function POST(request: Request) {
         },
       }
     );
-console.log(api.data.idToken);
-
     (await cookiesStore).set({
       name: "token",
       value: api.data.idToken,
@@ -34,7 +32,8 @@ console.log(api.data.idToken);
     return NextResponse.json({
       success: true,
       message: "User logged in successfully",
-      username:api.data.user.username
+      username:api.data.user.username,
+      userid:api.data.user.id
     });
   } catch (error: any) {
     console.log("Error Response:", error.response?.data || error.message);

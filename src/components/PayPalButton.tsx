@@ -27,8 +27,8 @@ interface CaptureOrderResponse {
 
 const PayPalButton: React.FC<PayPalButtonProps> = ({
   amount,
-  userId = "anonymous",
-  username = "guest",
+  userId = localStorage.getItem("userid")|| "anonomus",
+  username = localStorage.getItem("userName") || "guest",
 }) => {
   const [orderID, setOrderID] = useState<string>("");
 

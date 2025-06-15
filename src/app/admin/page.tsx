@@ -14,6 +14,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Client, Account } from "appwrite";
@@ -21,9 +27,34 @@ import { isAdminAuthenticated, clearAdminAuth } from "@/lib/authStorage";
 import {
   PaymentLog,
   UserTier,
+  TournamentControl,
   getPaymentLogs,
   getAllUserTiers,
+  getAllTournaments,
+  createTournament,
+  updateTournament,
+  startTournament,
+  endTournament,
 } from "@/lib/appwriteDB";
+import { useForm, Controller } from "react-hook-form";
+
+// Tournament Form Interface for React Hook Form
+interface TournamentFormData {
+  name: string;
+  tier: string;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  isManualMode: boolean;
+}
+
+// Edit Tournament Form Interface
+interface EditTournamentForm {
+  name: string;
+  tier: string;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  isManualMode: boolean;
+}
 
 // Initialize Appwrite Client directly in the component
 const client = new Client()
@@ -39,7 +70,138 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [paymentLogs, setPaymentLogs] = useState<PaymentLog[]>([]);
   const [users, setUsers] = useState<UserTier[]>([]);
+  const [tournamentControls, setTournamentControls] = useState<TournamentControl[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingTournamentId, setEditingTournamentId] = useState<string>("");
+
+  // Helper function to add one week to a date
+  const addOneWeek = (dateString: string): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().slice(0, 16);
+  };
+
+  // React Hook Form setup for create tournament
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<TournamentFormData>({
+    defaultValues: {
+      name: '',
+      tier: '1',
+      scheduledStartDate: '',
+      scheduledEndDate: '',
+      isManualMode: false,
+    }
+  });
+
+  // React Hook Form setup for edit tournament
+  const {
+    register: editRegister,
+    handleSubmit: editHandleSubmit,
+    control: editControl,
+    reset: editReset,
+    setValue: editSetValue,
+    watch: editWatch,
+    formState: { errors: editErrors },
+  } = useForm<EditTournamentForm>({
+    defaultValues: {
+      name: '',
+      tier: '1',
+      scheduledStartDate: '',
+      scheduledEndDate: '',
+      isManualMode: false,
+    }
+  });
+
+  // Watch for start date changes in create form
+  const watchStartDate = watch('scheduledStartDate');
+  const watchEditStartDate = editWatch('scheduledStartDate');
+
+  // Auto-update end date when start date changes (Create form)
+  useEffect(() => {
+    if (watchStartDate) {
+      const autoEndDate = addOneWeek(watchStartDate);
+      setValue('scheduledEndDate', autoEndDate);
+    }
+  }, [watchStartDate, setValue]);
+
+  // Auto-update end date when start date changes (Edit form)
+  useEffect(() => {
+    if (watchEditStartDate) {
+      const autoEndDate = addOneWeek(watchEditStartDate);
+      editSetValue('scheduledEndDate', autoEndDate);
+    }
+  }, [watchEditStartDate, editSetValue]);
+
+  // Generate Tournament ID
+  const generateTournamentId = (tier: number, startDate: Date): string => {
+    const dateStr = startDate.toISOString().slice(0, 10).replace(/-/g, '_');
+    return `T${tier}_${dateStr}`;
+  };
+
+  // Mock tournament data
+  const fetchMockTournaments = () => {
+    const mockTournaments: TournamentControl[] = [
+      {
+        tournamentId: "T1_2025_06_01",
+        name: "Weekly Championship Tier 1",
+        tier: 1,
+        isManualMode: false,
+        scheduledStartDate: new Date("2025-06-01T10:00:00"),
+        scheduledEndDate: new Date("2025-06-08T10:00:00"), // One week later
+        status: "scheduled",
+        createdBy: "admin",
+        lastModifiedBy: "admin",
+      },
+      {
+        tournamentId: "T1_2025_06_08",
+        name: "Premium League Tier 1",
+        tier: 1,
+        isManualMode: true,
+        scheduledStartDate: new Date("2025-06-08T15:00:00"),
+        scheduledEndDate: new Date("2025-06-15T15:00:00"), // One week later
+        status: "scheduled",
+        createdBy: "admin",
+        lastModifiedBy: "admin",
+      },
+      {
+        tournamentId: "T2_2025_06_15",
+        name: "Elite Masters Tier 2",
+        tier: 2,
+        isManualMode: true,
+        scheduledStartDate: new Date("2025-06-15T12:00:00"),
+        scheduledEndDate: new Date("2025-06-22T12:00:00"), // One week later
+        actualStartDate: new Date("2025-06-15T12:00:00"),
+        status: "active",
+        createdBy: "admin",
+        lastModifiedBy: "admin",
+      },
+      {
+        tournamentId: "T3_2025_06_10",
+        name: "Champions League Tier 3",
+        tier: 3,
+        isManualMode: true,
+        scheduledStartDate: new Date("2025-06-10T12:00:00"),
+        scheduledEndDate: new Date("2025-06-17T12:00:00"), // One week later
+        actualStartDate: new Date("2025-06-10T12:00:00"),
+        actualEndDate: new Date("2025-06-17T18:30:00"),
+        status: "ended",
+        createdBy: "admin",
+        lastModifiedBy: "admin",
+      },
+    ];
+
+    setTournamentControls(mockTournaments);
+  };
 
   const fetchAppwriteData = useCallback(async () => {
     setIsLoading(true);
@@ -179,19 +341,220 @@ export default function AdminDashboard() {
         // If no user tiers found, use mock data as fallback
         fetchMockUserTiers();
       }
+
+      // Fetch tournaments from Appwrite
+      const tournaments = await getAllTournaments();
+      
+      if (tournaments.length > 0) {
+        setTournamentControls(tournaments);
+      } else {
+        // If no tournaments found, use mock data as fallback
+        fetchMockTournaments();
+      }
     } catch (err) {
       console.error("Error fetching data:", err);
-      setError(
-        "Failed to load data from Appwrite. Using mock data as fallback."
-      );
+      setError("Failed to load data from Appwrite. Using mock data as fallback.");
 
       // Use mock data as fallback
+      fetchMockTournaments();
       fetchMockPaymentLogs();
       fetchMockUserTiers();
     } finally {
       setIsLoading(false);
     }
   }, []);
+
+  // Create new tournament handler using React Hook Form
+  const onSubmit = async (data: TournamentFormData) => {
+    try {
+      const startDate = new Date(data.scheduledStartDate);
+      const endDate = new Date(data.scheduledEndDate);
+
+      if (startDate >= endDate) {
+        toast.error("End date must be after start date");
+        return;
+      }
+
+      // Check if end date is at least one day after start date
+      const minEndDate = new Date(startDate);
+      minEndDate.setDate(minEndDate.getDate() + 1);
+      
+      if (endDate < minEndDate) {
+        toast.error("Tournament must run for at least one day");
+        return;
+      }
+
+      const tierNumber = parseInt(data.tier) as 1 | 2 | 3;
+      const tournamentId = generateTournamentId(tierNumber, startDate);
+
+      // Check if tournament ID already exists
+      if (tournamentControls.some(t => t.tournamentId === tournamentId)) {
+        toast.error("A tournament with this tier and date already exists");
+        return;
+      }
+
+      const newTournament: TournamentControl = {
+        tournamentId,
+        name: data.name,
+        tier: tierNumber,
+        isManualMode: data.isManualMode,
+        scheduledStartDate: startDate,
+        scheduledEndDate: endDate,
+        status: 'scheduled',
+        createdBy: 'admin',
+        lastModifiedBy: 'admin',
+      };
+
+      // Save to database
+      const savedTournament = await createTournament(newTournament);
+      
+      // Update local state
+      setTournamentControls(prev => [...prev, savedTournament]);
+
+      // Reset form
+      reset();
+      setIsCreateDialogOpen(false);
+      toast.success("Tournament created successfully");
+
+    } catch (error) {
+      console.error("Failed to create tournament:", error);
+      toast.error("Failed to create tournament");
+    }
+  };
+
+  // Edit tournament handlers
+  const handleEditTournament = (tournamentId: string) => {
+    const tournament = tournamentControls.find(t => t.tournamentId === tournamentId);
+    if (tournament) {
+      // Check if tournament is in auto mode
+      if (!tournament.isManualMode) {
+        toast.error("Cannot edit tournaments in auto mode. Switch to manual mode first.");
+        return;
+      }
+
+      setEditingTournamentId(tournamentId);
+      
+      // Pre-populate form with existing data
+      editSetValue('name', tournament.name);
+      editSetValue('tier', String(tournament.tier));
+      editSetValue('scheduledStartDate', tournament.scheduledStartDate.toISOString().slice(0, 16));
+      editSetValue('scheduledEndDate', tournament.scheduledEndDate.toISOString().slice(0, 16));
+      editSetValue('isManualMode', tournament.isManualMode);
+      
+      setIsEditDialogOpen(true);
+    }
+  };
+
+  const onEditSubmit = async (data: EditTournamentForm) => {
+    try {
+      const startDate = new Date(data.scheduledStartDate);
+      const endDate = new Date(data.scheduledEndDate);
+
+      if (startDate >= endDate) {
+        toast.error("End date must be after start date");
+        return;
+      }
+
+      // Check if end date is at least one day after start date
+      const minEndDate = new Date(startDate);
+      minEndDate.setDate(minEndDate.getDate() + 1);
+      
+      if (endDate < minEndDate) {
+        toast.error("Tournament must run for at least one day");
+        return;
+      }
+
+      const tournament = tournamentControls.find(t => t.tournamentId === editingTournamentId);
+      if (!tournament) {
+        toast.error("Tournament not found");
+        return;
+      }
+
+      // Double-check that tournament is still in manual mode
+      if (!tournament.isManualMode) {
+        toast.error("Cannot edit tournaments in auto mode");
+        return;
+      }
+
+      const updatedTournament: Partial<TournamentControl> = {
+        name: data.name,
+        tier: parseInt(data.tier) as 1 | 2 | 3,
+        scheduledStartDate: startDate,
+        scheduledEndDate: endDate,
+        isManualMode: data.isManualMode,
+        lastModifiedBy: "admin"
+      };
+
+      // Update in database if tournament has $id
+      if (tournament.$id) {
+        await updateTournament(tournament.$id, updatedTournament);
+      }
+
+      // Update local state
+      setTournamentControls(prev => 
+        prev.map(control => 
+          control.tournamentId === editingTournamentId 
+            ? { ...control, ...updatedTournament }
+            : control
+        )
+      );
+
+      setIsEditDialogOpen(false);
+      setEditingTournamentId("");
+      editReset();
+      toast.success("Tournament updated successfully");
+
+    } catch (error) {
+      console.error("Failed to update tournament:", error);
+      toast.error("Failed to update tournament");
+    }
+  };
+
+  const handleStartTournament = async (tournamentId: string) => {
+    try {
+      // Update in database first
+      const updatedTournament = await startTournament(tournamentId, "admin");
+      
+      if (updatedTournament) {
+        // Update local state with the returned data
+        setTournamentControls(prev => 
+          prev.map(control => 
+            control.tournamentId === tournamentId 
+              ? updatedTournament
+              : control
+          )
+        );
+        
+        toast.success("Tournament started successfully");
+      }
+    } catch (error) {
+      console.error("Failed to start tournament:", error);
+      toast.error("Failed to start tournament");
+    }
+  };
+
+  const handleEndTournament = async (tournamentId: string) => {
+    try {
+      // Update in database first
+      const updatedTournament = await endTournament(tournamentId, "admin");
+      
+      if (updatedTournament) {
+        // Update local state with the returned data
+        setTournamentControls(prev => 
+          prev.map(control => 
+            control.tournamentId === tournamentId 
+              ? updatedTournament
+              : control
+          )
+        );
+        
+        toast.success("Tournament ended successfully");
+      }
+    } catch (error) {
+      console.error("Failed to end tournament:", error);
+      toast.error("Failed to end tournament");
+    }
+  };
 
   useEffect(() => {
     // Check authentication directly from localStorage
@@ -265,17 +628,20 @@ export default function AdminDashboard() {
       )}
 
       <Tabs defaultValue="payments" className="w-full">
-        <TabsList className="flex gap-2 mb-4 ">
+        <TabsList className="flex gap-2 mb-4">
           <TabsTrigger className="border-2 border-gray-800/50" value="payments">
             Payment Logs
           </TabsTrigger>
           <TabsTrigger className="border-2 border-gray-800/50" value="users">
             Users
           </TabsTrigger>
+          <TabsTrigger className="border-2 border-gray-800/50" value="tournaments">
+            Tournament Control
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="payments">
-          <Card className=" border-2 border-gray-800/50 ">
+          <Card className="border-2 border-gray-800/50">
             <CardHeader>
               <CardTitle>Payment Logs</CardTitle>
             </CardHeader>
@@ -321,7 +687,7 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="users">
-          <Card className=" border-2 border-gray-800/50">
+          <Card className="border-2 border-gray-800/50">
             <CardHeader>
               <CardTitle>Users</CardTitle>
             </CardHeader>
@@ -393,6 +759,370 @@ export default function AdminDashboard() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="tournaments">
+          <Card className="border-2 border-gray-800/50">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Tournament Control Panel</CardTitle>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-custompink hover:bg-custompink/90">
+                    Create New Tournament
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md bg-white text-black">
+                  <DialogHeader>
+                    <DialogTitle className="text-black">Create New Tournament</DialogTitle>
+                    <p className="text-sm text-gray-600 mt-2">
+                      End date will automatically be set to one week after start date, but can be modified.
+                    </p>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div>
+                      <Label htmlFor="tournament-name" className="text-black font-medium">
+                        Tournament Name *
+                      </Label>
+                      <Input
+                        id="tournament-name"
+                        placeholder="Enter tournament name"
+                        {...register("name", {
+                          required: "Tournament name is required",
+                          minLength: {
+                            value: 3,
+                            message: "Tournament name must be at least 3 characters"
+                          }
+                        })}
+                        className="mt-1 bg-white text-black border-gray-300 placeholder:text-gray-500"
+                      />
+                      {errors.name && (
+                        <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="tournament-tier" className="text-black font-medium">
+                        Tier *
+                      </Label>
+                      <Controller
+                        name="tier"
+                        control={control}
+                        rules={{ required: "Please select a tier" }}
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger className="mt-1 bg-white text-black border-gray-300">
+                              <SelectValue placeholder="Select tier" className="text-black" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white text-black border-gray-300">
+                              <SelectItem value="1" className="text-black hover:bg-gray-100">
+                                Tier 1
+                              </SelectItem>
+                              <SelectItem value="2" className="text-black hover:bg-gray-100">
+                                Tier 2
+                              </SelectItem>
+                              <SelectItem value="3" className="text-black hover:bg-gray-100">
+                                Tier 3
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.tier && (
+                        <p className="text-red-500 text-sm mt-1">{errors.tier.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="start-date" className="text-black font-medium">
+                        Start Date *
+                      </Label>
+                      <Input
+                        id="start-date"
+                        type="datetime-local"
+                        {...register("scheduledStartDate", {
+                          required: "Start date is required"
+                        })}
+                        className="mt-1 bg-white text-black border-gray-300"
+                      />
+                      {errors.scheduledStartDate && (
+                        <p className="text-red-500 text-sm mt-1">{errors.scheduledStartDate.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="end-date" className="text-black font-medium">
+                        End Date * (Auto-set to 1 week after start date)
+                      </Label>
+                      <Input
+                        id="end-date"
+                        type="datetime-local"
+                        {...register("scheduledEndDate", {
+                          required: "End date is required"
+                        })}
+                        className="mt-1 bg-white text-black border-gray-300"
+                      />
+                      {errors.scheduledEndDate && (
+                        <p className="text-red-500 text-sm mt-1">{errors.scheduledEndDate.message}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        You can still modify the end date if needed
+                      </p>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Controller
+                        name="isManualMode"
+                        control={control}
+                        render={({ field }) => (
+                          <Switch
+                            id="manual-mode"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        )}
+                      />
+                      <Label htmlFor="manual-mode" className="text-black font-medium">
+                        Manual Control Mode
+                      </Label>
+                    </div>
+
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        onClick={() => {
+                          setIsCreateDialogOpen(false);
+                          reset();
+                        }}
+                        className="text-black border-gray-300 hover:bg-gray-100"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit"
+                        className="bg-custompink hover:bg-custompink/90 text-white"
+                      >
+                        Create Tournament
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b-4 border-gray-800">
+                    <TableHead>Tournament ID</TableHead>
+                    <TableHead>Tier</TableHead>
+                    <TableHead>Start Date</TableHead>
+                    <TableHead>End Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Mode</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tournamentControls.map((control) => (
+                    <TableRow key={control.tournamentId} className="border-b border-gray-800/50">
+                      <TableCell className="font-medium">{control.tournamentId}</TableCell>
+                      <TableCell>{control.tier}</TableCell>
+                      <TableCell>{control.scheduledStartDate.toLocaleDateString()}</TableCell>
+                      <TableCell>{control.scheduledEndDate.toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge className={`${
+                          control.status === 'active' 
+                            ? 'bg-green-600 hover:bg-green-700' 
+                            : control.status === 'ended' 
+                            ? 'bg-red-600 hover:bg-red-700' 
+                            : 'bg-yellow-600 hover:bg-yellow-700'
+                        }`}>
+                          {control.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={control.isManualMode ? "default" : "outline"}>
+                          {control.isManualMode ? "Manual" : "Auto"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="space-x-1">
+                        <Button
+                          size="sm"
+                          onClick={() => handleStartTournament(control.tournamentId)}
+                          disabled={!control.isManualMode || control.status === 'active' || control.status === 'ended'}
+                          className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Start Now
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleEndTournament(control.tournamentId)}
+                          disabled={!control.isManualMode || control.status !== 'active'}
+                          className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Stop Now
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditTournament(control.tournamentId)}
+                          disabled={control.status !== 'scheduled' || !control.isManualMode}
+                          className={`${
+                            !control.isManualMode 
+                              ? 'opacity-50 cursor-not-allowed' 
+                              : 'hover:bg-gray-100'
+                          }`}
+                          title={
+                            !control.isManualMode 
+                              ? "Cannot edit tournaments in auto mode" 
+                              : control.status !== 'scheduled' 
+                              ? "Can only edit scheduled tournaments" 
+                              : "Edit tournament"
+                          }
+                        >
+                          ✎
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Edit Tournament Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="sm:max-w-md bg-white text-black">
+              <DialogHeader>
+                <DialogTitle className="text-black">Edit Tournament</DialogTitle>
+                <p className="text-sm text-gray-600 mt-2">
+                  End date will auto-update when you change the start date, but can be modified.
+                </p>
+              </DialogHeader>
+              <form onSubmit={editHandleSubmit(onEditSubmit)} className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-tournament-name" className="text-black font-medium">Tournament Name *</Label>
+                  <Input
+                    id="edit-tournament-name"
+                    placeholder="Enter tournament name"
+                    {...editRegister("name", {
+                      required: "Tournament name is required",
+                      minLength: {
+                        value: 3,
+                        message: "Tournament name must be at least 3 characters"
+                      }
+                    })}
+                    className="mt-1 bg-white text-black border-gray-300 placeholder:text-gray-500"
+                  />
+                  {editErrors.name && (
+                    <p className="text-red-500 text-sm mt-1">{editErrors.name.message}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit-tournament-tier" className="text-black font-medium">Tier *</Label>
+                  <Controller
+                    name="tier"
+                    control={editControl}
+                    rules={{ required: "Please select a tier" }}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger className="mt-1 bg-white text-black border-gray-300">
+                          <SelectValue placeholder="Select tier" className="text-black" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white text-black border-gray-300">
+                          <SelectItem value="1" className="text-black hover:bg-gray-100">Tier 1</SelectItem>
+                          <SelectItem value="2" className="text-black hover:bg-gray-100">Tier 2</SelectItem>
+                          <SelectItem value="3" className="text-black hover:bg-gray-100">Tier 3</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {editErrors.tier && (
+                    <p className="text-red-500 text-sm mt-1">{editErrors.tier.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-start-date" className="text-black font-medium">Start Date *</Label>
+                  <Input
+                    id="edit-start-date"
+                    type="datetime-local"
+                    {...editRegister("scheduledStartDate", {
+                      required: "Start date is required"
+                    })}
+                    className="mt-1 bg-white text-black border-gray-300"
+                  />
+                  {editErrors.scheduledStartDate && (
+                    <p className="text-red-500 text-sm mt-1">{editErrors.scheduledStartDate.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-end-date" className="text-black font-medium">End Date * (Auto-updated)</Label>
+                  <Input
+                    id="edit-end-date"
+                    type="datetime-local"
+                    {...editRegister("scheduledEndDate", {
+                      required: "End date is required"
+                    })}
+                    className="mt-1 bg-white text-black border-gray-300"
+                  />
+                  {editErrors.scheduledEndDate && (
+                    <p className="text-red-500 text-sm mt-1">{editErrors.scheduledEndDate.message}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    End date auto-updates to 1 week after start date, but you can modify it
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Controller
+                    name="isManualMode"
+                    control={editControl}
+                    render={({ field }) => (
+                      <Switch
+                        id="edit-manual-mode"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
+                  />
+                  <Label htmlFor="edit-manual-mode" className="text-black font-medium">
+                    Manual Control Mode
+                  </Label>
+                </div>
+                
+                {/* Warning message for mode switching */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                  <p className="text-yellow-800 text-sm">
+                    <strong>Note:</strong> Switching to auto mode will prevent further editing of this tournament.
+                  </p>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    onClick={() => {
+                      setIsEditDialogOpen(false);
+                      setEditingTournamentId("");
+                      editReset();
+                    }}
+                    className="text-black border-gray-300 hover:bg-gray-100"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    className="bg-custompink hover:bg-custompink/90 text-white"
+                  >
+                    Update Tournament
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
       </Tabs>
     </div>

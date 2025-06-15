@@ -37,7 +37,7 @@ function Page() {
     setButtonState(true);
     try {
       const response = await axios.post("/api/signin", data);
-      console.log(response.data.username);
+      console.log(response.data);
 
       if (!response.data.success) {
         toast.error(response.data.message);
@@ -45,6 +45,7 @@ function Page() {
         toast.success(response.data.message);
         localStorage.setItem("Login", "true");
         localStorage.setItem("userName", response.data.username);
+        localStorage.setItem("userid",response.data.userid)
         router.push("/");
       }
     } catch (error) {
