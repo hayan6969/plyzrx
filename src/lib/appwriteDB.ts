@@ -23,7 +23,7 @@ const PAYMENT_LOGS_COLLECTION_ID =
 const USERS_COLLECTION_ID =
   process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || "";
 const TOURNAMENT_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_TOURNAMENT_COLLECTION_ID || "";
-
+const MATCH_LOGS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_MATCH_LOGS_COLLECTION_ID || "";
 // Payment Logs Types
 export interface PaymentLog {
   $id?: string;
@@ -59,6 +59,12 @@ export interface TournamentControl {
   lastModifiedBy: string;
 }
 
+export interface MatchLog {
+  $id?: string;
+  Match_ID: string;
+  Logs: string;
+  createdAt?: string;
+}
 
 
 
@@ -404,25 +410,43 @@ export const endTournament = async (
 
 
 
-// export const getMatchLog = async (matchId: string): Promise<MatchLog | null> => {
-//   try {
-//     if (typeof window === "undefined") {
-//       throw new Error("Cannot fetch match log from server side");
-//     }
+export const getMatchLog = async (matchId: string): Promise<MatchLog | null> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch match log from server side");
+    }
 
-//     const result = await databases.listDocuments(
-//       DATABASE_ID,
-//       MATCH_LOGS_COLLECTION_ID,
-//       [Query.equal("Match_ID", matchId)]
-//     );
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      MATCH_LOGS_COLLECTION_ID,
+      [Query.equal("Match_ID", matchId)]
+    );
 
-//     if (result.documents.length === 0) {
-//       return null;
-//     }
+    if (result.documents.length === 0) {
+      return null;
+    }
 
-//     return result.documents[0] as unknown as MatchLog;
-//   } catch (error) {
-//     console.error("Failed to fetch match log:", error);
-//     return null;
-//   }
-// };
+    return result.documents[0] as unknown as MatchLog;
+  } catch (error) {
+    console.error("Failed to fetch match log:", error);
+    return null;
+  }
+};
+
+export const getAllMatchLogs = async (): Promise<MatchLog[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch match logs from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      MATCH_LOGS_COLLECTION_ID
+    );
+
+    return result.documents as unknown as MatchLog[];
+  } catch (error) {
+    console.error("Failed to fetch match logs:", error);
+    return [];
+  }
+};

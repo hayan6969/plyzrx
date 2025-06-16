@@ -35,6 +35,8 @@ import {
   updateTournament,
   startTournament,
   endTournament,
+  getAllMatchLogs,
+  MatchLog,
 } from "@/lib/appwriteDB";
 import { useForm, Controller } from "react-hook-form";
 
@@ -71,6 +73,8 @@ export default function AdminDashboard() {
   const [paymentLogs, setPaymentLogs] = useState<PaymentLog[]>([]);
   const [users, setUsers] = useState<UserTier[]>([]);
   const [tournamentControls, setTournamentControls] = useState<TournamentControl[]>([]);
+  const [matchLogs, setMatchLogs] = useState<MatchLog[]>([]);
+  const [selectedMatchLog, setSelectedMatchLog] = useState<MatchLog | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -351,6 +355,11 @@ export default function AdminDashboard() {
         // If no tournaments found, use mock data as fallback
         fetchMockTournaments();
       }
+
+      // Fetch match logs from Appwrite
+      const matchess = await getAllMatchLogs();
+      setMatchLogs(matchess);
+
     } catch (err) {
       console.error("Error fetching data:", err);
       setError("Failed to load data from Appwrite. Using mock data as fallback.");
@@ -359,6 +368,7 @@ export default function AdminDashboard() {
       fetchMockTournaments();
       fetchMockPaymentLogs();
       fetchMockUserTiers();
+      setMatchLogs([]); // fallback: empty
     } finally {
       setIsLoading(false);
     }
@@ -637,6 +647,9 @@ export default function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger className="border-2 border-gray-800/50" value="tournaments">
             Tournament Control
+          </TabsTrigger>
+          <TabsTrigger className="border-2 border-gray-800/50" value="matchlogs">
+            Match Logs
           </TabsTrigger>
         </TabsList>
 
@@ -1123,6 +1136,85 @@ export default function AdminDashboard() {
               </form>
             </DialogContent>
           </Dialog>
+        </TabsContent>
+
+        <TabsContent value="matchlogs">
+          <Card className="border-2 border-gray-800/50">
+            <CardHeader>
+              <CardTitle>Match Logs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="w-full md:w-1/2">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-b-4 border-gray-800">
+                        <TableHead>Match ID</TableHead>
+                        <TableHead>Created At</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {matchLogs.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={2} className="text-center py-4">
+                            No match logs found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        matchLogs.map((log) => (
+                          <TableRow
+                            key={log.$id || log.Match_ID}
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => setSelectedMatchLog(log)}
+                          >
+                            <TableCell>{log.Match_ID}</TableCell>
+                            <TableCell>
+                              {log.createdAt
+                                ? new Date(log.createdAt).toLocaleString()
+                                : "-"}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="w-full md:w-1/2">
+                  {selectedMatchLog ? (
+                    <div className="p-4 border rounded bg-gray-50">
+                      <h3 className="font-bold mb-2">Match Log Details</h3>
+                      <div>
+                        <strong>Match ID:</strong> {selectedMatchLog.Match_ID}
+                      </div>
+                      <div>
+                        <strong>Created At:</strong>{" "}
+                        {selectedMatchLog.createdAt
+                          ? new Date(selectedMatchLog.createdAt).toLocaleString()
+                          : "-"}
+                      </div>
+                      <div className="mt-2">
+                        <strong>Logs:</strong>
+                        <pre className="bg-gray-200 p-2 rounded mt-1 overflow-x-auto text-xs">
+                          {selectedMatchLog.Logs}
+                        </pre>
+                      </div>
+                      <Button
+                        className="mt-4"
+                        variant="outline"
+                        onClick={() => setSelectedMatchLog(null)}
+                      >
+                        Close
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="p-4 text-gray-500">
+                      Click a match log to view details.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
