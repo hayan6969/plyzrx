@@ -22,7 +22,7 @@ const PAYMENT_LOGS_COLLECTION_ID =
   process.env.NEXT_PUBLIC_APPWRITE_PAYMENT_LOGS_COLLECTION_ID || "";
 const USERS_COLLECTION_ID =
   process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || "";
-
+const MATCH_LOGS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_MATCH_LOGS_COLLECTION_ID || "";
 const TOURNAMENT_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_TOURNAMENT_COLLECTION_ID || "";
 
 // Payment Logs Types
@@ -59,6 +59,9 @@ export interface TournamentControl {
   createdBy: string;
   lastModifiedBy: string;
 }
+
+
+
 
 // Payment Logs Functions
 export const createPaymentLog = async (
@@ -396,3 +399,31 @@ export const endTournament = async (
   }
 };
 
+
+
+
+
+
+
+// export const getMatchLog = async (matchId: string): Promise<MatchLog | null> => {
+//   try {
+//     if (typeof window === "undefined") {
+//       throw new Error("Cannot fetch match log from server side");
+//     }
+
+//     const result = await databases.listDocuments(
+//       DATABASE_ID,
+//       MATCH_LOGS_COLLECTION_ID,
+//       [Query.equal("Match_ID", matchId)]
+//     );
+
+//     if (result.documents.length === 0) {
+//       return null;
+//     }
+
+//     return result.documents[0] as unknown as MatchLog;
+//   } catch (error) {
+//     console.error("Failed to fetch match log:", error);
+//     return null;
+//   }
+// };
