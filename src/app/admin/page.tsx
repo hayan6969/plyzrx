@@ -360,6 +360,7 @@ export default function AdminDashboard() {
         // If no user tiers found, use mock data as fallback
         fetchMockUserTiers();
       }
+console.log(tournamentAssignments);
 
       // Fetch tournaments from Appwrite
       const tournaments = await getAllTournaments();
