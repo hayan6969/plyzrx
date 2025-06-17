@@ -2,7 +2,7 @@
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useState } from "react";
 import axios from "axios";
-import { createPaymentLog } from "@/lib/appwriteDB";
+import { assignUserToTournament, createPaymentLog } from "@/lib/appwriteDB";
 import { updateUserTierFromPayment } from "@/lib/tierUpdater";
 
 interface PayPalButtonProps {
@@ -77,6 +77,8 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
 
         // 2. Update user tier information
         await updateUserTierFromPayment(userId, paymentAmount);
+await assignUserToTournament(userId,transactionId)
+
 
         console.log("Payment data saved to Appwrite and user tier updated");
       } catch (appwriteError) {

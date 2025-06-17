@@ -66,7 +66,20 @@ export interface MatchLog {
   createdAt?: string;
 }
 
+// Update the TournamentAssignment interface to use string for tier
+export interface TournamentAssignment {
+  $id?: string;
+  userId: string;
+  tournamentId: string;
+  assignedAt: string;
+  tier: '1' | '2' | '3'; // Changed from number to string
+  PaymentId?: string;
+  AccessStatus: 'Awaiting' | 'Active' | 'Completed' | "Expired" ;
+}
 
+// Add collection ID for tournament assignments
+const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID = 
+  process.env.NEXT_PUBLIC_APPWRITE_USER || "";
 
 // Payment Logs Functions
 export const createPaymentLog = async (
@@ -448,5 +461,244 @@ export const getAllMatchLogs = async (): Promise<MatchLog[]> => {
   } catch (error) {
     console.error("Failed to fetch match logs:", error);
     return [];
+  }
+};
+
+// Tournament Assignment Functions
+export const assignUserToTournament = async (
+  userId: string,
+  transactionId?: string
+): Promise<TournamentAssignment | null> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot assign user to tournament from server side");
+    }
+
+    // Get user tier information
+    const userTier = await getUserTier(userId);
+    if (!userTier) {
+      throw new Error("User tier not found");
+    }
+
+    // Determine user's highest tier - return as string
+    let tier: '1' | '2' | '3';
+    if (userTier.tier3) {
+      tier = '3';
+    } else if (userTier.tier2) {
+      tier = '2';
+    } else if (userTier.tier1) {
+      tier = '1';
+    } else {
+      throw new Error("User has no active tier");
+    }
+
+    // Check if user already has an assignment
+    const existingAssignment = await getUserTournamentAssignment(userId);
+
+    // If already assigned and active, do not reassign
+    if (existingAssignment && existingAssignment.AccessStatus === 'Active') {
+      throw new Error("User is already assigned to an active tournament");
+    }
+
+    // Find scheduled tournaments for the user's tier
+    const scheduledTournaments = await getScheduledTournamentsByTier(parseInt(tier) as 1 | 2 | 3);
+
+    if (scheduledTournaments.length > 0) {
+      const tournamentToAssign = scheduledTournaments[0];
+
+      // If user has an awaiting assignment, update it
+      if (existingAssignment && existingAssignment.AccessStatus === 'Awaiting') {
+        const updated = await databases.updateDocument(
+          DATABASE_ID,
+          TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+          existingAssignment.$id!,
+          {
+            tournamentId: tournamentToAssign.tournamentId,
+            assignedAt: new Date().toISOString(),
+            tier,
+            PaymentId: transactionId,
+            AccessStatus: 'Active'
+          }
+        );
+        return updated as unknown as TournamentAssignment;
+      }
+
+      // Otherwise, create a new assignment
+      const assignmentData: TournamentAssignment = {
+        userId,
+        tournamentId: tournamentToAssign.tournamentId,
+        assignedAt: new Date().toISOString(),
+        tier,
+        PaymentId: transactionId,
+        AccessStatus: 'Active'
+      };
+
+      const result = await databases.createDocument(
+        DATABASE_ID,
+        TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+        ID.unique(),
+        assignmentData
+      );
+      return result as unknown as TournamentAssignment;
+    } else {
+      // No tournament available, set tournamentId to null/empty and AccessStatus to Awaiting
+      if (existingAssignment && existingAssignment.AccessStatus === 'Awaiting') {
+        // Already awaiting, just return
+        return existingAssignment;
+      }
+
+      const assignmentData: TournamentAssignment = {
+        userId,
+        tournamentId: "", // or null if your schema allows
+        assignedAt: new Date().toISOString(),
+        tier,
+        PaymentId: transactionId,
+        AccessStatus: 'Awaiting'
+      };
+
+      const result = await databases.createDocument(
+        DATABASE_ID,
+        TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+        ID.unique(),
+        assignmentData
+      );
+      return result as unknown as TournamentAssignment;
+    }
+  } catch (error) {
+    console.error("Failed to assign user to tournament:", error);
+    throw error;
+  }
+};
+
+export const getScheduledTournamentsByTier = async (
+  tier: 1 | 2 | 3
+): Promise<TournamentControl[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch tournaments from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_COLLECTION_ID,
+      [
+        Query.equal("tier", tier),
+        Query.equal("status", "scheduled")
+      ]
+    );
+
+    return result.documents.map((doc) => ({
+      ...doc,
+      scheduledStartDate: new Date(doc.scheduledStartDate),
+      scheduledEndDate: new Date(doc.scheduledEndDate),
+      actualStartDate: doc.actualStartDate ? new Date(doc.actualStartDate) : undefined,
+      actualEndDate: doc.actualEndDate ? new Date(doc.actualEndDate) : undefined,
+    })) as unknown as TournamentControl[];
+  } catch (error) {
+    console.error("Failed to fetch scheduled tournaments by tier:", error);
+    return [];
+  }
+};
+
+export const getUserTournamentAssignment = async (
+  userId: string
+): Promise<TournamentAssignment | null> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch user tournament assignment from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+      [Query.equal("userId", userId)]
+    );
+
+    if (result.documents.length === 0) {
+      return null;
+    }
+
+    return result.documents[0] as unknown as TournamentAssignment;
+  } catch (error) {
+    console.error("Failed to fetch user tournament assignment:", error);
+    return null;
+  }
+};
+
+export const getTournamentAssignments = async (
+  tournamentId: string
+): Promise<TournamentAssignment[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch tournament assignments from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+      [Query.equal("tournamentId", tournamentId)]
+    );
+
+    return result.documents as unknown as TournamentAssignment[];
+  } catch (error) {
+    console.error("Failed to fetch tournament assignments:", error);
+    return [];
+  }
+};
+
+// Update the updateTournamentAssignmentStatus function to use correct field name
+export const updateTournamentAssignmentStatus = async (
+  assignmentId: string,
+  status: 'assigned' | 'participating' | 'completed'
+): Promise<TournamentAssignment> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot update tournament assignment from server side");
+    }
+
+    const result = await databases.updateDocument(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+      assignmentId,
+      { AccessStatus: status } // Use AccessStatus instead of status
+    );
+
+    return result as unknown as TournamentAssignment;
+  } catch (error) {
+    console.error("Failed to update tournament assignment status:", error);
+    throw error;
+  }
+};
+
+export const getUserTournamentHistory = async (
+  userId: string
+): Promise<TournamentAssignment[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch user tournament history from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+      [Query.equal("userId", userId)]
+    );
+
+    return result.documents as unknown as TournamentAssignment[];
+  } catch (error) {
+    console.error("Failed to fetch user tournament history:", error);
+    return [];
+  }
+};
+
+// Auto-assign users to tournaments based on their payment
+export const autoAssignUserFromPayment = async (
+  paymentLog: PaymentLog
+): Promise<TournamentAssignment | null> => {
+  try {
+    return await assignUserToTournament(paymentLog.userId, paymentLog.paymentId);
+  } catch (error) {
+    console.error("Failed to auto-assign user from payment:", error);
+    return null;
   }
 };

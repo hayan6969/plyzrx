@@ -37,6 +37,8 @@ import {
   endTournament,
   getAllMatchLogs,
   MatchLog,
+  getUserTournamentAssignment,
+  assignUserToTournament,
 } from "@/lib/appwriteDB";
 import { useForm, Controller } from "react-hook-form";
 
@@ -210,6 +212,9 @@ export default function AdminDashboard() {
   const fetchAppwriteData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+
+
+    // await assignUserToTournament("dasdasdasdasda","dsdadcsdas")
 
     const fetchMockPaymentLogs = () => {
       // Mock payment logs data
