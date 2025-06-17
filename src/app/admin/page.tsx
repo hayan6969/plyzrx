@@ -251,7 +251,7 @@ export default function AdminDashboard() {
           dateTime: "2023-11-17 18:45:12",
           platform: "Web",
           paymentAmount: 29.99,
-          PaymentId: "pay_ghi789",
+          paymentId: "pay_ghi789",
         },
         {
           userId: "user_101",
@@ -259,7 +259,7 @@ export default function AdminDashboard() {
           dateTime: "2023-11-18 22:10:33",
           platform: "Web",
           paymentAmount: 99.99,
-          PaymentId: "pay_jkl101",
+          paymentId: "pay_jkl101",
         },
         {
           userId: "user_202",
@@ -267,7 +267,7 @@ export default function AdminDashboard() {
           dateTime: "2023-11-19 11:05:56",
           platform: "Web",
           paymentAmount: 14.99,
-          PaymentId: "pay_mno202",
+          paymentId: "pay_mno202",
         },
         {
           userId: "user_303",
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
           dateTime: "2023-11-20 15:30:18",
           platform: "Web",
           paymentAmount: 59.99,
-          PaymentId: "pay_pqr303",
+          paymentId: "pay_pqr303",
         },
         {
           userId: "user_404",
@@ -283,7 +283,7 @@ export default function AdminDashboard() {
           dateTime: "2023-11-21 08:22:41",
           platform: "Web",
           paymentAmount: 39.99,
-          PaymentId: "pay_stu404",
+          paymentId: "pay_stu404",
         },
       ];
 
@@ -408,7 +408,7 @@ console.log(tournamentAssignments);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [tournamentAssignments]);
 
   // Create new tournament handler using React Hook Form
   const onSubmit = async (data: TournamentFormData) => {
@@ -769,11 +769,11 @@ console.log(tournamentAssignments);
                     paymentLogs.map((log, index) => (
                       <TableRow
                         className="border-b border-gray-800/50"
-                        key={log.$id || log.PaymentId || index}
+                        key={log.$id || log.paymentId || index}
                       >
                         <TableCell>{log.userId}</TableCell>
                         <TableCell>{log.username}</TableCell>
-                        <TableCell>{log.PaymentId}</TableCell>
+                        <TableCell>{log.paymentId}</TableCell>
                         <TableCell>{log.platform}</TableCell>
                         <TableCell>${log.paymentAmount.toFixed(2)}</TableCell>
                         <TableCell>{log.dateTime}</TableCell>

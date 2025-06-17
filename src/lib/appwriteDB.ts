@@ -32,7 +32,7 @@ export interface PaymentLog {
   dateTime: string;
   platform: string;
   paymentAmount: number;
-  PaymentId: string;
+  paymentId: string;
 }
 
 // User Tier Types
@@ -696,7 +696,7 @@ export const autoAssignUserFromPayment = async (
   paymentLog: PaymentLog
 ): Promise<TournamentAssignment | null> => {
   try {
-    return await assignUserToTournament(paymentLog.userId, paymentLog.PaymentId);
+    return await assignUserToTournament(paymentLog.userId, paymentLog.paymentId);
   } catch (error) {
     console.error("Failed to auto-assign user from payment:", error);
     return null;
