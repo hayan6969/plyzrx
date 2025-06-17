@@ -50,10 +50,7 @@ import {
   endTournament,
   getAllMatchLogs,
   MatchLog,
-  getUserTournamentAssignment,
-  assignUserToTournament,
   getAllTournamentAssignments,
-  getTournamentAssignmentsByStatus,
   bulkAssignAwaitingUsers,
 } from "@/lib/appwriteDB";
 import { useForm, Controller } from "react-hook-form";
