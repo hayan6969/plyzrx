@@ -32,7 +32,7 @@ export interface PaymentLog {
   dateTime: string;
   platform: string;
   paymentAmount: number;
-  paymentId: string;
+  PaymentId: string;
 }
 
 // User Tier Types
@@ -696,9 +696,105 @@ export const autoAssignUserFromPayment = async (
   paymentLog: PaymentLog
 ): Promise<TournamentAssignment | null> => {
   try {
-    return await assignUserToTournament(paymentLog.userId, paymentLog.paymentId);
+    return await assignUserToTournament(paymentLog.userId, paymentLog.PaymentId);
   } catch (error) {
     console.error("Failed to auto-assign user from payment:", error);
     return null;
+  }
+};
+
+// Add function to get all tournament assignments
+export const getAllTournamentAssignments = async (): Promise<TournamentAssignment[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch tournament assignments from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID
+    );
+
+    return result.documents as unknown as TournamentAssignment[];
+  } catch (error) {
+    console.error("Failed to fetch all tournament assignments:", error);
+    return [];
+  }
+};
+
+// Add function to get assignments by status
+export const getTournamentAssignmentsByStatus = async (
+  status: 'Awaiting' | 'Active' | 'Completed' | 'Expired'
+): Promise<TournamentAssignment[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch tournament assignments from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+      [Query.equal("AccessStatus", status)]
+    );
+
+    return result.documents as unknown as TournamentAssignment[];
+  } catch (error) {
+    console.error("Failed to fetch tournament assignments by status:", error);
+    return [];
+  }
+};
+
+// Add function to bulk assign awaiting users to tournaments
+export const bulkAssignAwaitingUsers = async (): Promise<{
+  success: number;
+  failed: number;
+  errors: string[];
+}> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot bulk assign users from server side");
+    }
+
+    const awaitingUsers = await getTournamentAssignmentsByStatus('Awaiting');
+    let successCount = 0;
+    let failedCount = 0;
+    const errors: string[] = [];
+
+    for (const assignment of awaitingUsers) {
+      try {
+        // Get available tournaments for this user's tier
+        const scheduledTournaments = await getScheduledTournamentsByTier(parseInt(assignment.tier) as 1 | 2 | 3);
+        
+        if (scheduledTournaments.length > 0) {
+          const tournamentToAssign = scheduledTournaments[0];
+          
+          // Update the awaiting assignment to active
+          await databases.updateDocument(
+            DATABASE_ID,
+            TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+            assignment.$id!,
+            {
+              tournamentId: tournamentToAssign.tournamentId,
+              assignedAt: new Date().toISOString(),
+              AccessStatus: 'Active'
+            }
+          );
+          
+          successCount++;
+        } else {
+          // No tournament available for this tier
+          errors.push(`No tournament available for user ${assignment.userId} (Tier ${assignment.tier})`);
+          failedCount++;
+        }
+      } catch (error) {
+        errors.push(`Failed to assign user ${assignment.userId}: ${error}`);
+        failedCount++;
+      }
+    }
+
+    return { success: successCount, failed: failedCount, errors };
+  } catch (error) {
+    console.error("Failed to bulk assign awaiting users:", error);
+    throw error;
   }
 };
