@@ -41,6 +41,7 @@ import {
   UserTier,
   TournamentControl,
   TournamentAssignment,
+  MatchAssignment,
   getPaymentLogs,
   getAllUserTiers,
   getAllTournaments,
@@ -52,6 +53,11 @@ import {
   MatchLog,
   getAllTournamentAssignments,
   bulkAssignAwaitingUsers,
+  getAllMatchAssignments,
+  createMatchAssignment,
+  createAutomaticMatches,
+  getActiveUsersByTier,
+  updateMatchAssignment,
 } from "@/lib/appwriteDB";
 import { useForm, Controller } from "react-hook-form";
 
@@ -71,6 +77,13 @@ interface EditTournamentForm {
   scheduledStartDate: string;
   scheduledEndDate: string;
   isManualMode: boolean;
+}
+
+// Add interface for manual match creation form
+interface ManualMatchForm {
+  tier: string;
+  player1Id: string;
+  player2Id: string;
 }
 
 // Initialize Appwrite Client directly in the component
@@ -101,6 +114,8 @@ export default function AdminDashboard() {
   const [tournamentAssignments, setTournamentAssignments] = useState<
     TournamentAssignment[]
   >([]);
+  console.log(tournamentAssignments);
+  
   const [activeAssignments, setActiveAssignments] = useState<
     TournamentAssignment[]
   >([]);
@@ -111,6 +126,16 @@ export default function AdminDashboard() {
     TournamentAssignment[]
   >([]);
   const [isAssigning, setIsAssigning] = useState(false);
+  const [matchAssignments, setMatchAssignments] = useState<MatchAssignment[]>([]);
+  const [isCreatingMatches, setIsCreatingMatches] = useState(false);
+  const [isManualMatchDialogOpen, setIsManualMatchDialogOpen] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState<{
+    [key: string]: TournamentAssignment[];
+  }>({
+    "1": [],
+    "2": [],
+    "3": [],
+  });
 
   // Helper function to add one week to a date
   const addOneWeek = (dateString: string): string => {
@@ -158,9 +183,25 @@ export default function AdminDashboard() {
     },
   });
 
+  // React Hook Form for manual match creation
+  const {
+    handleSubmit: matchHandleSubmit,
+    control: matchControl,
+    reset: matchReset,
+    watch: matchWatch,
+    formState: { errors: matchErrors },
+  } = useForm<ManualMatchForm>({
+    defaultValues: {
+      tier: "1",
+      player1Id: "",
+      player2Id: "",
+    },
+  });
+
   // Watch for start date changes in create form
   const watchStartDate = watch("scheduledStartDate");
   const watchEditStartDate = editWatch("scheduledStartDate");
+  const watchTier = matchWatch("tier");
 
   // Auto-update end date when start date changes (Create form)
   useEffect(() => {
@@ -242,6 +283,7 @@ export default function AdminDashboard() {
   const fetchAppwriteData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+
     const fetchMockPaymentLogs = () => {
       // Mock payment logs data
       const mockPaymentLogs: PaymentLog[] = [
@@ -360,7 +402,6 @@ export default function AdminDashboard() {
         // If no user tiers found, use mock data as fallback
         fetchMockUserTiers();
       }
-console.log(tournamentAssignments);
 
       // Fetch tournaments from Appwrite
       const tournaments = await getAllTournaments();
@@ -390,6 +431,21 @@ console.log(tournamentAssignments);
       setActiveAssignments(active);
       setAwaitingAssignments(awaiting);
       setCompletedAssignments(completed);
+
+      // Fetch match assignments
+      const matches = await getAllMatchAssignments();
+      setMatchAssignments(matches);
+
+      // Fetch available users for each tier
+      const tier1Users = await getActiveUsersByTier("1");
+      const tier2Users = await getActiveUsersByTier("2");
+      const tier3Users = await getActiveUsersByTier("3");
+
+      setAvailableUsers({
+        "1": tier1Users,
+        "2": tier2Users,
+        "3": tier3Users,
+      });
     } catch (err) {
       console.error("Error fetching data:", err);
       setError(
@@ -408,7 +464,7 @@ console.log(tournamentAssignments);
     } finally {
       setIsLoading(false);
     }
-  }, [tournamentAssignments]);
+  }, []);
 
   // Create new tournament handler using React Hook Form
   const onSubmit = async (data: TournamentFormData) => {
@@ -641,6 +697,108 @@ console.log(tournamentAssignments);
     }
   };
 
+  // Handle automatic match creation
+  const handleCreateAutomaticMatches = async (tier: "1" | "2" | "3") => {
+    setIsCreatingMatches(true);
+    try {
+      const result = await createAutomaticMatches(tier);
+
+      if (result.success > 0) {
+        toast.success(`Successfully created ${result.success} matches for Tier ${tier}`);
+
+        // Update local state
+        setMatchAssignments((prev) => [...prev, ...result.matches]);
+
+        // Refresh data to get updated user availability
+        await fetchAppwriteData();
+      }
+
+      if (result.failed > 0) {
+        toast.error(`Failed to create ${result.failed} matches. Check console for details.`);
+        console.error("Match creation errors:", result.errors);
+      }
+
+      if (result.errors.length > 0) {
+        result.errors.forEach((error) => {
+          if (error.includes("bye") || error.includes("Not enough")) {
+            toast.info(error);
+          }
+        });
+      }
+
+      if (result.success === 0 && result.failed === 0) {
+        toast.info(`No matches could be created for Tier ${tier}`);
+      }
+    } catch (error) {
+      console.error("Automatic match creation failed:", error);
+      toast.error("Failed to create automatic matches");
+    } finally {
+      setIsCreatingMatches(false);
+    }
+  };
+
+  // Handle manual match creation
+  const onManualMatchSubmit = async (data: ManualMatchForm) => {
+    try {
+      if (data.player1Id === data.player2Id) {
+        toast.error("Cannot create a match between the same player");
+        return;
+      }
+
+      const matchData: MatchAssignment = {
+        player1Id: data.player1Id,
+        player2Id: data.player2Id,
+        WinnerId: "",
+        WinnerScore: "",
+      };
+
+      const createdMatch = await createMatchAssignment(matchData);
+
+      // Update local state
+      setMatchAssignments((prev) => [...prev, createdMatch]);
+
+      // Reset form and close dialog
+      matchReset();
+      setIsManualMatchDialogOpen(false);
+
+      toast.success("Manual match created successfully");
+
+      // Refresh data
+      await fetchAppwriteData();
+    } catch (error) {
+      console.error("Failed to create manual match:", error);
+      toast.error("Failed to create manual match");
+    }
+  };
+
+  // Handle match result update
+  const handleUpdateMatchResult = async (
+    matchId: string,
+    winnerId: string,
+    winnerScore: string
+  ) => {
+    try {
+      await updateMatchAssignment(matchId, {
+        WinnerId: winnerId,
+        WinnerScore: winnerScore,
+      });
+
+      // Update local state
+      setMatchAssignments((prev) =>
+        prev.map((match) =>
+          match.$id === matchId
+            ? { ...match, WinnerId: winnerId, WinnerScore: winnerScore }
+            : match
+        )
+      );
+
+      toast.success("Match result updated successfully");
+    } catch (error) {
+      console.error("Failed to update match result:", error);
+      toast.error("Failed to update match result");
+    }
+  };
+
   useEffect(() => {
     // Check authentication directly from localStorage
     if (!isAdminAuthenticated()) {
@@ -731,6 +889,12 @@ console.log(tournamentAssignments);
             value="assignments"
           >
             Tournament Assignments
+          </TabsTrigger>
+          <TabsTrigger
+            className="border-2 border-gray-800/50"
+            value="matches"
+          >
+            Matches
           </TabsTrigger>
           <TabsTrigger
             className="border-2 border-gray-800/50"
@@ -1582,6 +1746,308 @@ console.log(tournamentAssignments);
                   </Card>
                 </TabsContent>
               </Tabs>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="matches">
+          <Card className="border-2 border-gray-800/50">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Match Management</CardTitle>
+              <div className="flex gap-2">
+                <Dialog
+                  open={isManualMatchDialogOpen}
+                  onOpenChange={setIsManualMatchDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button variant="outline">Create Manual Match</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md bg-white text-black">
+                    <DialogHeader>
+                      <DialogTitle className="text-black">
+                        Create Manual Match
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form
+                      onSubmit={matchHandleSubmit(onManualMatchSubmit)}
+                      className="space-y-4"
+                    >
+                      <div>
+                        <Label
+                          htmlFor="match-tier"
+                          className="text-black font-medium"
+                        >
+                          Tier *
+                        </Label>
+                        <Controller
+                          name="tier"
+                          control={matchControl}
+                          rules={{ required: "Please select a tier" }}
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="mt-1 bg-white text-black border-gray-300">
+                                <SelectValue placeholder="Select tier" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white text-black border-gray-300">
+                                <SelectItem value="1">
+                                  Tier 1 ({availableUsers["1"].length} users)
+                                </SelectItem>
+                                <SelectItem value="2">
+                                  Tier 2 ({availableUsers["2"].length} users)
+                                </SelectItem>
+                                <SelectItem value="3">
+                                  Tier 3 ({availableUsers["3"].length} users)
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {matchErrors.tier && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {matchErrors.tier.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label
+                          htmlFor="player1"
+                          className="text-black font-medium"
+                        >
+                          Player 1 *
+                        </Label>
+                        <Controller
+                          name="player1Id"
+                          control={matchControl}
+                          rules={{ required: "Please select Player 1" }}
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="mt-1 bg-white text-black border-gray-300">
+                                <SelectValue placeholder="Select Player 1" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white text-black border-gray-300">
+                                {availableUsers[watchTier as "1" | "2" | "3"]?.map(
+                                  (user) => (
+                                    <SelectItem key={user.userId} value={user.userId}>
+                                      {user.userId}
+                                    </SelectItem>
+                                  )
+                                )}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {matchErrors.player1Id && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {matchErrors.player1Id.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label
+                          htmlFor="player2"
+                          className="text-black font-medium"
+                        >
+                          Player 2 *
+                        </Label>
+                        <Controller
+                          name="player2Id"
+                          control={matchControl}
+                          rules={{ required: "Please select Player 2" }}
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="mt-1 bg-white text-black border-gray-300">
+                                <SelectValue placeholder="Select Player 2" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white text-black border-gray-300">
+                                {availableUsers[watchTier as "1" | "2" | "3"]?.map(
+                                  (user) => (
+                                    <SelectItem key={user.userId} value={user.userId}>
+                                      {user.userId}
+                                    </SelectItem>
+                                  )
+                                )}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {matchErrors.player2Id && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {matchErrors.player2Id.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex justify-end space-x-2 pt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setIsManualMatchDialogOpen(false);
+                            matchReset();
+                          }}
+                          className="text-black border-gray-300 hover:bg-gray-100"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          className="bg-custompink hover:bg-custompink/90 text-white"
+                        >
+                          Create Match
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">
+                  Create Automatic Matches
+                </h3>
+                <div className="flex gap-4">
+                  <Button
+                    onClick={() => handleCreateAutomaticMatches("1")}
+                    disabled={isCreatingMatches || availableUsers["1"].length < 2}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isCreatingMatches ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      `Auto Create Tier 1 Matches (${
+                        Math.floor(availableUsers["1"].length / 2)
+                      } possible)`
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => handleCreateAutomaticMatches("2")}
+                    disabled={isCreatingMatches || availableUsers["2"].length < 2}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {isCreatingMatches ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      `Auto Create Tier 2 Matches (${
+                        Math.floor(availableUsers["2"].length / 2)
+                      } possible)`
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => handleCreateAutomaticMatches("3")}
+                    disabled={isCreatingMatches || availableUsers["3"].length < 2}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {isCreatingMatches ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      `Auto Create Tier 3 Matches (${
+                        Math.floor(availableUsers["3"].length / 2)
+                      } possible)`
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <Table>
+                <TableCaption>List of all matches</TableCaption>
+                <TableHeader>
+                  <TableRow className="border-b-4 border-gray-800">
+                    <TableHead>Match ID</TableHead>
+                    <TableHead>Player 1</TableHead>
+                    <TableHead>Player 2</TableHead>
+                    <TableHead>Winner</TableHead>
+                    <TableHead>Winner Score</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {matchAssignments.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-4">
+                        No matches found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    matchAssignments.map((match, index) => (
+                      <TableRow
+                        className="border-b border-gray-800/50"
+                        key={match.$id || index}
+                      >
+                        <TableCell>
+                          {match.$id}
+                        </TableCell>
+                        <TableCell>{match.player1Id}</TableCell>
+                        <TableCell>{match.player2Id}</TableCell>
+                        <TableCell>{match.WinnerId || "TBD"}</TableCell>
+                        <TableCell>{match.WinnerScore || "TBD"}</TableCell>
+                        <TableCell>
+                          <Badge
+                            className={
+                              match.WinnerId
+                                ? "bg-green-600 hover:bg-green-700"
+                                : "bg-yellow-600 hover:bg-yellow-700"
+                            }
+                          >
+                            {match.WinnerId ? "Completed" : "Pending"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {!match.WinnerId && (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  const score = prompt("Enter winner score:");
+                                  if (score) {
+                                    handleUpdateMatchResult(match.$id!, match.player1Id, score);
+                                  }
+                                }}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                P1 Wins
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  const score = prompt("Enter winner score:");
+                                  if (score) {
+                                    handleUpdateMatchResult(match.$id!, match.player2Id, score);
+                                  }
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                P2 Wins
+                              </Button>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>

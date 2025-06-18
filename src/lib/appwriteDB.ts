@@ -77,9 +77,23 @@ export interface TournamentAssignment {
   AccessStatus: 'Awaiting' | 'Active' | 'Completed' | "Expired" ;
 }
 
+export interface MatchAssignment{
+  $id?: string;
+player1Id:string;
+player2Id:string;
+WinnerId:string;
+WinnerScore:string;
+}
+
+
+
 // Add collection ID for tournament assignments
 const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID = 
   process.env.NEXT_PUBLIC_APPWRITE_USER || "";
+
+// Add collection ID for match assignments
+const MATCH_ASSIGNMENTS_COLLECTION_ID = 
+  process.env.NEXT_PUBLIC_APPWRITE_MATCH_ASSIGNMENTS_COLLECTION_ID || "";
 
 // Payment Logs Functions
 export const createPaymentLog = async (
@@ -797,4 +811,167 @@ export const bulkAssignAwaitingUsers = async (): Promise<{
     console.error("Failed to bulk assign awaiting users:", error);
     throw error;
   }
+};
+
+// Match Assignment Functions
+export const createMatchAssignment = async (
+  matchData: MatchAssignment
+): Promise<MatchAssignment> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot create match assignment from server side");
+    }
+
+    const result = await databases.createDocument(
+      DATABASE_ID,
+      MATCH_ASSIGNMENTS_COLLECTION_ID,
+      ID.unique(),
+      matchData
+    );
+
+    return result as unknown as MatchAssignment;
+  } catch (error) {
+    console.error("Failed to create match assignment:", error);
+    throw error;
+  }
+};
+
+export const getAllMatchAssignments = async (): Promise<MatchAssignment[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch match assignments from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      MATCH_ASSIGNMENTS_COLLECTION_ID
+    );
+
+    return result.documents as unknown as MatchAssignment[];
+  } catch (error) {
+    console.error("Failed to fetch match assignments:", error);
+    return [];
+  }
+};
+
+export const updateMatchAssignment = async (
+  matchId: string,
+  updateData: Partial<MatchAssignment>
+): Promise<MatchAssignment> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot update match assignment from server side");
+    }
+
+    const result = await databases.updateDocument(
+      DATABASE_ID,
+      MATCH_ASSIGNMENTS_COLLECTION_ID,
+      matchId,
+      updateData
+    );
+
+    return result as unknown as MatchAssignment;
+  } catch (error) {
+    console.error("Failed to update match assignment:", error);
+    throw error;
+  }
+};
+
+// Get active users by tier for match creation
+export const getActiveUsersByTier = async (tier: '1' | '2' | '3'): Promise<TournamentAssignment[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch active users from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+      [
+        Query.equal("tier", tier),
+        Query.equal("AccessStatus", "Active")
+      ]
+    );
+
+    return result.documents as unknown as TournamentAssignment[];
+  } catch (error) {
+    console.error("Failed to fetch active users by tier:", error);
+    return [];
+  }
+};
+
+// Create automatic matches for a specific tier
+export const createAutomaticMatches = async (tier: '1' | '2' | '3'): Promise<{
+  success: number;
+  failed: number;
+  matches: MatchAssignment[];
+  errors: string[];
+}> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot create automatic matches from server side");
+    }
+
+    const activeUsers = await getActiveUsersByTier(tier);
+    
+    if (activeUsers.length < 2) {
+      return {
+        success: 0,
+        failed: 0,
+        matches: [],
+        errors: [`Not enough active users in Tier ${tier} to create matches (minimum 2 required)`]
+      };
+    }
+
+    // Shuffle the users array for random pairing
+    const shuffledUsers = [...activeUsers].sort(() => Math.random() - 0.5);
+    const matches: MatchAssignment[] = [];
+    const errors: string[] = [];
+    let successCount = 0;
+    let failedCount = 0;
+
+    // Create matches by pairing users
+    for (let i = 0; i < shuffledUsers.length - 1; i += 2) {
+      try {
+        const player1 = shuffledUsers[i];
+        const player2 = shuffledUsers[i + 1];
+
+        const matchData: MatchAssignment = {
+          player1Id: player1.userId,
+          player2Id: player2.userId,
+          WinnerId: "", // Empty until match is completed
+          WinnerScore: "" // Empty until match is completed
+        };
+
+        const createdMatch = await createMatchAssignment(matchData);
+        matches.push(createdMatch);
+        successCount++;
+      } catch (error) {
+        errors.push(`Failed to create match for users ${shuffledUsers[i].userId} vs ${shuffledUsers[i + 1].userId}: ${error}`);
+        failedCount++;
+      }
+    }
+
+    // If there's an odd number of users, the last one gets a bye
+    if (shuffledUsers.length % 2 !== 0) {
+      errors.push(`User ${shuffledUsers[shuffledUsers.length - 1].userId} gets a bye (odd number of players)`);
+    }
+
+    return {
+      success: successCount,
+      failed: failedCount,
+      matches,
+      errors
+    };
+  } catch (error) {
+    console.error("Failed to create automatic matches:", error);
+    throw error;
+  }
+};
+
+// Generate unique match ID
+export const generateMatchId = (): string => {
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1000);
+  return `MATCH_${timestamp}_${random}`;
 };
