@@ -29,12 +29,12 @@ interface MatchAssignment {
   StartedAt: string;
 }
 
-// Generate unique match ID
-const generateMatchId = (): string => {
-  const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 1000);
-  return `MATCH_${timestamp}_${random}`;
-};
+// // Generate unique match ID
+// const generateMatchId = (): string => {
+//   const timestamp = Date.now();
+//   const random = Math.floor(Math.random() * 1000);
+//   return `MATCH_${timestamp}_${random}`;
+// };
 
 export async function POST(request: NextRequest) {
   try {
