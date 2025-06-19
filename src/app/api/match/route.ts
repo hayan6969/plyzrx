@@ -3,7 +3,7 @@ import { Client, Databases, Query } from 'appwrite';
 
 // Initialize Appwrite Client for server-side operations
 const client = new Client()
-  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1')
+  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || '')
   .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '')
 
 const databases = new Databases(client);
@@ -115,3 +115,6 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+
+

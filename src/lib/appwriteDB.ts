@@ -79,10 +79,12 @@ export interface TournamentAssignment {
 
 export interface MatchAssignment{
   $id?: string;
-player1Id:string;
-player2Id:string;
-WinnerId:string;
-WinnerScore:string;
+  player1Id: string;
+  player2Id: string;
+  WinnerId: string;
+  WinnerScore: string;
+  tournamentid: string; // <-- should be string
+  StartedAt: string;    // <-- should be string (ISO)
 }
 
 
@@ -940,7 +942,9 @@ export const createAutomaticMatches = async (tier: '1' | '2' | '3'): Promise<{
           player1Id: player1.userId,
           player2Id: player2.userId,
           WinnerId: "", // Empty until match is completed
-          WinnerScore: "" // Empty until match is completed
+          WinnerScore: "", // Empty until match is completed
+          tournamentid: player1.tournamentId, // Use tournament ID from player assignment
+          StartedAt: new Date().toISOString() // Set current timestamp as start time
         };
 
         const createdMatch = await createMatchAssignment(matchData);

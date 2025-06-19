@@ -745,11 +745,19 @@ export default function AdminDashboard() {
         return;
       }
 
+      // Find tournament assignment for player1 (or player2)
+      const player1Assignment = availableUsers[data.tier].find(
+        (u) => u.userId === data.player1Id
+      );
+      const tournamentid = player1Assignment?.tournamentId || "";
+
       const matchData: MatchAssignment = {
         player1Id: data.player1Id,
         player2Id: data.player2Id,
         WinnerId: "",
         WinnerScore: "",
+        tournamentid, // <-- add tournament id
+        StartedAt: new Date().toISOString(), // <-- add startedAt
       };
 
       const createdMatch = await createMatchAssignment(matchData);
