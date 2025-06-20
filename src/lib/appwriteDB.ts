@@ -89,6 +89,23 @@ export interface MatchAssignment{
 
 
 
+// Report interface
+export interface Report {
+  $id?: string;
+  reporteduser: string;
+  reportedBy: string;
+  matchId: string;
+  matchLog: string;
+  createdAt: string;
+  Status:String
+}
+
+
+export interface BanUser {
+  $id?:String,
+  reportedId:String
+}
+
 // Add collection ID for tournament assignments
 const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID = 
   process.env.NEXT_PUBLIC_APPWRITE_USER || "";
@@ -96,6 +113,13 @@ const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID =
 // Add collection ID for match assignments
 const MATCH_ASSIGNMENTS_COLLECTION_ID = 
   process.env.NEXT_PUBLIC_APPWRITE_MATCH_ASSIGNMENTS_COLLECTION_ID || "";
+
+// Add collection ID for reports
+const REPORT_COLLECTION_ID = 
+  process.env.NEXT_PUBLIC_APPWRITE_REPORT_LOG_COLLECTION || "";
+
+  const BanUsers=
+process.env.NEXT_PUBLIC_APPWRITE_BAN_USERS_COLLECTION_ID || ""
 
 // Payment Logs Functions
 export const createPaymentLog = async (
@@ -978,4 +1002,168 @@ export const generateMatchId = (): string => {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 1000);
   return `MATCH_${timestamp}_${random}`;
+};
+
+// Report Functions
+export const getAllReports = async (): Promise<Report[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch reports from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      REPORT_COLLECTION_ID
+    );
+
+    return result.documents as unknown as Report[];
+  } catch (error) {
+    console.error("Failed to fetch reports:", error);
+    return [];
+  }
+};
+
+export const getReportById = async (reportId: string): Promise<Report | null> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch report from server side");
+    }
+
+    const result = await databases.getDocument(
+      DATABASE_ID,
+      REPORT_COLLECTION_ID,
+      reportId
+    );
+
+    return result as unknown as Report;
+  } catch (error) {
+    console.error("Failed to fetch report:", error);
+    return null;
+  }
+};
+
+export const updateReportStatus = async (
+  reportId: string,
+  status: string
+): Promise<Report> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot update report from server side");
+    }
+
+    const result = await databases.updateDocument(
+      DATABASE_ID,
+      REPORT_COLLECTION_ID,
+      reportId,
+      { Status: status }
+    );
+
+    return result as unknown as Report;
+  } catch (error) {
+    console.error("Failed to update report status:", error);
+    throw error;
+  }
+};
+
+// Ban User Functions
+export const createBanUser = async (
+  reportedUserId: string
+): Promise<BanUser> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot ban user from server side");
+    }
+
+    // Check if user is already banned
+    const existingBan = await getBanUserById(reportedUserId);
+    if (existingBan) {
+      throw new Error("User is already banned");
+    }
+
+    const banData: BanUser = {
+      reportedId: reportedUserId
+    };
+
+    const result = await databases.createDocument(
+      DATABASE_ID,
+      BanUsers,
+      ID.unique(),
+      banData
+    );
+
+    return result as unknown as BanUser;
+  } catch (error) {
+    console.error("Failed to ban user:", error);
+    throw error;
+  }
+};
+
+export const getAllBannedUsers = async (): Promise<BanUser[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch banned users from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      BanUsers
+    );
+
+    return result.documents as unknown as BanUser[];
+  } catch (error) {
+    console.error("Failed to fetch banned users:", error);
+    return [];
+  }
+};
+
+export const getBanUserById = async (reportedUserId: string): Promise<BanUser | null> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch ban user from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      BanUsers,
+      [Query.equal("reportedId", reportedUserId)]
+    );
+
+    if (result.documents.length === 0) {
+      return null;
+    }
+
+    return result.documents[0] as unknown as BanUser;
+  } catch (error) {
+    console.error("Failed to fetch ban user:", error);
+    return null;
+  }
+};
+
+export const unbanUser = async (banId: string): Promise<boolean> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot unban user from server side");
+    }
+
+    await databases.deleteDocument(
+      DATABASE_ID,
+      BanUsers,
+      banId
+    );
+
+    return true;
+  } catch (error) {
+    console.error("Failed to unban user:", error);
+    return false;
+  }
+};
+
+export const isUserBanned = async (userId: string): Promise<boolean> => {
+  try {
+    const bannedUser = await getBanUserById(userId);
+    return bannedUser !== null;
+  } catch (error) {
+    console.error("Failed to check if user is banned:", error);
+    return false;
+  }
 };
