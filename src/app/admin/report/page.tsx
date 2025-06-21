@@ -71,6 +71,7 @@ export default function AdminReportPage() {
       setLoading(false);
     }
   };
+console.log(selectedReport);
 
   const fetchBannedUsers = async () => {
     try {

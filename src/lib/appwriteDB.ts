@@ -97,13 +97,13 @@ export interface Report {
   matchId: string;
   matchLog: string;
   createdAt: string;
-  Status:String
+  Status:string
 }
 
 
 export interface BanUser {
-  $id?:String,
-  reportedId:String
+  $id?:string,
+  reportedId:string
 }
 
 // Add collection ID for tournament assignments
