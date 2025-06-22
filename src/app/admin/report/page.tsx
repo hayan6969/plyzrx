@@ -124,6 +124,8 @@ export default function AdminReportPage() {
       setBannedUsersLoading(false);
     }
   };
+  console.log(selectedReport,selectedUser,selectedPayment);
+  
 
   const fetchUsers = async () => {
     try {
