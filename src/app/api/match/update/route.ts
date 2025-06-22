@@ -24,10 +24,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { WinnerId, WinnerScore } = await request.json();
-    if (!WinnerId || !WinnerScore) {
+    const { WinnerId, WinnerScore, LoserId, LoserScore } = await request.json();
+    if (!WinnerId || WinnerScore === undefined || !LoserId || LoserScore === undefined) {
       return NextResponse.json(
-        { error: "WinnerId and WinnerScore are required" },
+        { error: "WinnerId, WinnerScore, LoserId, and LoserScore are required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if match exists and get match details
+    let matchDoc;
+    try {
+      matchDoc = await databases.getDocument(
+        DATABASE_ID,
+        MATCH_ASSIGNMENTS_COLLECTION_ID,
+        matchId
+      );
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Match not found" },
+        { status: 404 }
+      );
+    }
+
+    // Verify that winner and loser IDs are valid players in this match
+    const player1Id = matchDoc.player1Id;
+    const player2Id = matchDoc.player2Id;
+    
+    if (!player1Id || !player2Id) {
+      return NextResponse.json(
+        { error: "Match is missing player assignments" },
+        { status: 400 }
+      );
+    }
+
+    const validPlayerIds = [player1Id, player2Id];
+    
+    if (!validPlayerIds.includes(WinnerId)) {
+      return NextResponse.json(
+        { error: "Winner ID is not a valid player in this match" },
+        { status: 400 }
+      );
+    }
+
+    if (!validPlayerIds.includes(LoserId)) {
+      return NextResponse.json(
+        { error: "Loser ID is not a valid player in this match" },
+        { status: 400 }
+      );
+    }
+
+    if (WinnerId === LoserId) {
+      return NextResponse.json(
+        { error: "Winner and Loser cannot be the same player" },
         { status: 400 }
       );
     }
@@ -39,49 +88,94 @@ export async function POST(request: NextRequest) {
       matchId,
       {
         WinnerId,
-        WinnerScore,
+        WinnerScore: String(WinnerScore),
+        LoserId,
+        LoserScore: String(LoserScore),
         endedAt: new Date().toISOString(),
       }
     );
 
-    // 2. Find the user in the user collection by userId
-    const userResult = await databases.listDocuments(
+    // 2. Find and update winner user
+    const winnerResult = await databases.listDocuments(
       DATABASE_ID,
       USERS_COLLECTION_ID,
       [Query.equal("userId", WinnerId)]
     );
 
-    if (userResult.documents.length === 0) {
+    if (winnerResult.documents.length === 0) {
       return NextResponse.json(
         { error: "Winner user not found" },
         { status: 404 }
       );
     }
 
-    const userDoc = userResult.documents[0];
-    // TournamentScore is string or null
-    const prevScore = Number(userDoc.TournamentScore) || 0;
+    const winnerDoc = winnerResult.documents[0];
+    const winnerPrevScore = Number(winnerDoc.TournamentScore) || 0;
     const winnerScoreNum = Number(WinnerScore) || 0;
-    const newScore = prevScore + winnerScoreNum;
+    const winnerNewScore = winnerPrevScore + winnerScoreNum;
+    const winnerPrevWins = Number(winnerDoc.wins) || 0;
 
-    // 3. Update the user's tournament score (as string)
+    // Update winner's stats
     await databases.updateDocument(
       DATABASE_ID,
       USERS_COLLECTION_ID,
-      userDoc.$id, // still need $id to update the document
-      { TournamentScore: String(newScore) }
+      winnerDoc.$id,
+      { 
+        TournamentScore: String(winnerNewScore),
+        wins: winnerPrevWins + 1
+      }
+    );
+
+    // 3. Find and update loser user
+    const loserResult = await databases.listDocuments(
+      DATABASE_ID,
+      USERS_COLLECTION_ID,
+      [Query.equal("userId", LoserId)]
+    );
+
+    if (loserResult.documents.length === 0) {
+      return NextResponse.json(
+        { error: "Loser user not found" },
+        { status: 404 }
+      );
+    }
+
+    const loserDoc = loserResult.documents[0];
+    const loserPrevScore = Number(loserDoc.TournamentScore) || 0;
+    const loserScoreNum = Number(LoserScore) || 0; // Can be negative
+    const loserNewScore = loserPrevScore + loserScoreNum;
+    const loserPrevLosses = Number(loserDoc.loss) || 0;
+
+    // Update loser's stats
+    await databases.updateDocument(
+      DATABASE_ID,
+      USERS_COLLECTION_ID,
+      loserDoc.$id,
+      { 
+        TournamentScore: String(loserNewScore),
+        loss: loserPrevLosses + 1
+      }
     );
 
     return NextResponse.json({
       success: true,
       updatedMatch,
-      newUserScore: newScore,
+      winner: {
+        userId: WinnerId,
+        newScore: winnerNewScore,
+        newWins: winnerPrevWins + 1
+      },
+      loser: {
+        userId: LoserId,
+        newScore: loserNewScore,
+        newLosses: loserPrevLosses + 1
+      }
     });
   } catch (error) {
-    console.error("Failed to update match and user score:", error);
+    console.error("Failed to update match and user scores:", error);
     return NextResponse.json(
       {
-        error: "Failed to update match and user score",
+        error: "Failed to update match and user scores",
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
