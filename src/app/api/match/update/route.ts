@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       );
     } catch (error) {
       return NextResponse.json(
-        { error: "Match not found" },
+        { error: `Match not found ${error}` },
         { status: 404 }
       );
     }
