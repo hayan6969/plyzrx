@@ -12,6 +12,7 @@ const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || "";
 const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || "";
 const TOURNAMENT_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_TOURNAMENT_COLLECTION_ID || "";
 const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USER || "";
+const PAYMENT_LOGS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_PAYMENT_LOGS_COLLECTION_ID || "";
 
 interface UserTier {
   $id?: string;
@@ -46,6 +47,16 @@ interface TournamentAssignment {
   AccessStatus: 'Awaiting' | 'Active' | 'Completed' | "Expired";
 }
 
+interface PaymentLog {
+  $id?: string;
+  userId: string;
+  username: string;
+  dateTime: string;
+  platform: string;
+  paymentAmount: number;
+  paymentId: string;
+}
+
 // Server-side functions
 const getUserTierServer = async (userId: string): Promise<UserTier | null> => {
   try {
@@ -62,6 +73,29 @@ const getUserTierServer = async (userId: string): Promise<UserTier | null> => {
     return result.documents[0] as unknown as UserTier;
   } catch (error) {
     console.error("Failed to fetch user tier:", error);
+    return null;
+  }
+};
+
+const getUserLatestPaymentServer = async (userId: string): Promise<PaymentLog | null> => {
+  try {
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      PAYMENT_LOGS_COLLECTION_ID,
+      [
+        Query.equal("userId", userId),
+        Query.orderDesc("dateTime"),
+        Query.limit(1)
+      ]
+    );
+
+    if (result.documents.length === 0) {
+      return null;
+    }
+
+    return result.documents[0] as unknown as PaymentLog;
+  } catch (error) {
+    console.error("Failed to fetch user payment:", error);
     return null;
   }
 };
@@ -220,15 +254,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let finalPaymentId = paymentId;
+
+    // If no paymentId provided, get the latest payment for the user
     if (!paymentId) {
-      return NextResponse.json(
-        { error: 'Payment ID is required' },
-        { status: 400 }
-      );
+      const latestPayment = await getUserLatestPaymentServer(userId);
+      
+      if (!latestPayment) {
+        return NextResponse.json(
+          { error: 'No payment found for this user. Please make a payment first.' },
+          { status: 400 }
+        );
+      }
+
+      finalPaymentId = latestPayment.paymentId;
+      console.log(`Using latest payment ID: ${finalPaymentId} for user: ${userId}`);
     }
 
     // Assign user to tournament
-    const assignment = await assignUserToTournamentServer(userId, paymentId);
+    const assignment = await assignUserToTournamentServer(userId, finalPaymentId);
 
     if (!assignment) {
       return NextResponse.json(
@@ -240,7 +284,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'User successfully assigned to tournament',
-      data: assignment
+      data: assignment,
+      paymentId: finalPaymentId
     });
 
   } catch (error) {
