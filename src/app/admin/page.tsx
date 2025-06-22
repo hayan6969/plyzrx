@@ -60,6 +60,7 @@ import {
   updateMatchAssignment,
 } from "@/lib/appwriteDB";
 import { useForm, Controller } from "react-hook-form";
+import Link from "next/link";
 
 // Tournament Form Interface for React Hook Form
 interface TournamentFormData {
@@ -910,6 +911,12 @@ export default function AdminDashboard() {
           >
             Match Logs
           </TabsTrigger>
+             <Link
+            className="border-2 border-gray-800/50 px-2 rounded-md py-1"
+            href="/admin/report"
+          >
+            Report
+          </Link>
         </TabsList>
 
         <TabsContent value="payments">
