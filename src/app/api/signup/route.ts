@@ -17,9 +17,9 @@ export interface Signedupusers {
   $id?: string;
   userId: string;
   paymentId: string;
-  wins: Number;
-  loss: Number;
-  amount: Number;
+  wins: number;
+  loss: number;
+  amount: number;
   username: string;
   email: string;
 }

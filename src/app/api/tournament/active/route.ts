@@ -28,6 +28,8 @@ interface ActiveTournamentResponse {
 export async function GET(request: NextRequest) {
   try {
     // Get all active tournaments across all tiers
+    console.log(request);
+    
     const activeTournamentsResult = await databases.listDocuments(
       DATABASE_ID,
       TOURNAMENT_COLLECTION_ID,
