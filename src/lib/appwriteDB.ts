@@ -67,14 +67,20 @@ export interface MatchLog {
 }
 
 // Update the TournamentAssignment interface to use string for tier
+// Update the TournamentAssignment interface to include earnings and rank
 export interface TournamentAssignment {
   $id?: string;
   userId: string;
   tournamentId: string;
   assignedAt: string;
-  tier: '1' | '2' | '3'; // Changed from number to string
+  tier: '1' | '2' | '3';
   PaymentId?: string;
-  AccessStatus: 'Awaiting' | 'Active' | 'Completed' | "Expired" ;
+  AccessStatus: 'Awaiting' | 'Active' | 'Completed' | "Expired";
+  TournamentScore?: number;
+  wins?: number;
+  loss?: number;
+  earnings?: number; // Add earnings field
+  rank?: number; // Add rank field
 }
 
 export interface MatchAssignment{
@@ -423,6 +429,12 @@ export const startTournament = async (
     const tournament = await getTournament(tournamentId);
     if (!tournament) {
       throw new Error("Tournament not found");
+    }
+
+    // Check if there's already an active tournament in this tier
+    const activeTournaments = await getActiveTournamentsByTier(tournament.tier);
+    if (activeTournaments.length > 0) {
+      throw new Error(`Cannot start tournament. There is already an active Tier ${tournament.tier} tournament: ${activeTournaments[0].name} (${activeTournaments[0].tournamentId})`);
     }
 
     return await updateTournament(tournament.$id!, {
@@ -1165,5 +1177,222 @@ export const isUserBanned = async (userId: string): Promise<boolean> => {
   } catch (error) {
     console.error("Failed to check if user is banned:", error);
     return false;
+  }
+};
+
+// Add helper function to check for active tournaments in a tier
+export const getActiveTournamentsByTier = async (tier: 1 | 2 | 3): Promise<TournamentControl[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch tournaments from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_COLLECTION_ID,
+      [
+        Query.equal("tier", tier),
+        Query.equal("status", "active")
+      ]
+    );
+
+    return result.documents.map((doc) => ({
+      ...doc,
+      scheduledStartDate: new Date(doc.scheduledStartDate),
+      scheduledEndDate: new Date(doc.scheduledEndDate),
+      actualStartDate: doc.actualStartDate ? new Date(doc.actualStartDate) : undefined,
+      actualEndDate: doc.actualEndDate ? new Date(doc.actualEndDate) : undefined,
+    })) as unknown as TournamentControl[];
+  } catch (error) {
+    console.error("Failed to fetch active tournaments by tier:", error);
+    return [];
+  }
+};
+
+// Tournament payout configuration
+const PAYOUT_AMOUNTS = {
+  tier1: {
+    top10: 5000,
+    remaining: 555
+  },
+  tier2: {
+    top10: 12500,
+    remaining: 1388
+  },
+  tier3: {
+    top10: 250000,
+    remaining: 28000
+  }
+};
+
+// Function to calculate and distribute tournament payouts
+export const distributeTournamentPayouts = async (
+  tournamentId: string
+): Promise<{
+  success: number;
+  failed: number;
+  totalPayout: number;
+  errors: string[];
+  payouts: Array<{ userId: string; amount: number; rank: number }>;
+}> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot distribute payouts from server side");
+    }
+
+    // Get all assignments for this tournament
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+      [
+        Query.equal("tournamentId", tournamentId),
+        Query.equal("AccessStatus", "Active")
+      ]
+    );
+
+    const assignments = result.documents as unknown as TournamentAssignment[];
+
+    if (assignments.length === 0) {
+      return {
+        success: 0,
+        failed: 0,
+        totalPayout: 0,
+        errors: ["No active tournament assignments found for this tournament"],
+        payouts: []
+      };
+    }
+
+    // Get tournament details to determine tier
+    const tournament = await getTournament(tournamentId);
+    if (!tournament) {
+      return {
+        success: 0,
+        failed: 0,
+        totalPayout: 0,
+        errors: ["Tournament not found"],
+        payouts: []
+      };
+    }
+
+    // Sort assignments by TournamentScore (descending order)
+    const sortedAssignments = assignments
+      .filter(assignment => assignment.TournamentScore !== undefined)
+      .sort((a, b) => (b.TournamentScore || 0) - (a.TournamentScore || 0));
+
+    if (sortedAssignments.length === 0) {
+      return {
+        success: 0,
+        failed: 0,
+        totalPayout: 0,
+        errors: ["No tournament scores found for ranking"],
+        payouts: []
+      };
+    }
+
+    // Get payout amounts based on tier
+    const tierKey = `tier${tournament.tier}` as keyof typeof PAYOUT_AMOUNTS;
+    const payoutConfig = PAYOUT_AMOUNTS[tierKey];
+
+    let successCount = 0;
+    let failedCount = 0;
+    let totalPayout = 0;
+    const errors: string[] = [];
+    const payouts: Array<{ userId: string; amount: number; rank: number }> = [];
+
+    // Calculate payouts for each player
+    for (let i = 0; i < sortedAssignments.length && i < 100; i++) {
+      try {
+        const assignment = sortedAssignments[i];
+        const rank = i + 1;
+        let payoutAmount = 0;
+
+        // Determine payout amount based on rank
+        if (rank <= 10) {
+          payoutAmount = payoutConfig.top10;
+        } else if (rank <= 100) {
+          payoutAmount = payoutConfig.remaining;
+        }
+
+        if (payoutAmount > 0) {
+          // Update the assignment with earnings
+          await databases.updateDocument(
+            DATABASE_ID,
+            TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+            assignment.$id!,
+            {
+              earnings: payoutAmount,
+              rank: rank,
+              AccessStatus: "Completed"
+            }
+          );
+
+          payouts.push({
+            userId: assignment.userId,
+            amount: payoutAmount,
+            rank: rank
+          });
+
+          totalPayout += payoutAmount;
+          successCount++;
+        }
+      } catch (error) {
+        errors.push(`Failed to process payout for user ${sortedAssignments[i].userId}: ${error}`);
+        failedCount++;
+      }
+    }
+
+    return {
+      success: successCount,
+      failed: failedCount,
+      totalPayout,
+      errors,
+      payouts
+    };
+  } catch (error) {
+    console.error("Failed to distribute tournament payouts:", error);
+    throw error;
+  }
+};
+
+// Function to get tournament leaderboard
+export const getTournamentLeaderboard = async (
+  tournamentId: string
+): Promise<Array<{
+  userId: string;
+  score: number;
+  rank: number;
+  earnings?: number;
+}>> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch leaderboard from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+      [
+        Query.equal("tournamentId", tournamentId),
+        Query.equal("AccessStatus", ["Active", "Completed"])
+      ]
+    );
+
+    const assignments = result.documents as unknown as (TournamentAssignment & { earnings?: number; rank?: number })[];
+
+    // Sort by score and assign ranks
+    const sortedAssignments = assignments
+      .filter(assignment => assignment.TournamentScore !== undefined)
+      .sort((a, b) => (b.TournamentScore || 0) - (a.TournamentScore || 0))
+      .map((assignment, index) => ({
+        userId: assignment.userId,
+        score: assignment.TournamentScore || 0,
+        rank: index + 1,
+        earnings: assignment.earnings || 0
+      }));
+
+    return sortedAssignments;
+  } catch (error) {
+    console.error("Failed to fetch tournament leaderboard:", error);
+    return [];
   }
 };

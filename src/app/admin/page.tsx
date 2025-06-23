@@ -58,6 +58,7 @@ import {
   createAutomaticMatches,
   getActiveUsersByTier,
   updateMatchAssignment,
+  distributeTournamentPayouts,
 } from "@/lib/appwriteDB";
 import { useForm, Controller } from "react-hook-form";
 import Link from "next/link";
@@ -137,6 +138,7 @@ export default function AdminDashboard() {
     "2": [],
     "3": [],
   });
+  const [isDistributingPayouts, setIsDistributingPayouts] = useState(false);
 
   // Helper function to add one week to a date
   const addOneWeek = (dateString: string): string => {
@@ -640,7 +642,13 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Failed to start tournament:", error);
-      toast.error("Failed to start tournament");
+      // Check if the error is about an active tournament
+      const errorMessage = error instanceof Error ? error.message : "Failed to start tournament";
+      if (errorMessage.includes("already an active")) {
+        toast.error(errorMessage);
+      } else {
+        toast.error("Failed to start tournament");
+      }
     }
   };
 
@@ -805,6 +813,43 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Failed to update match result:", error);
       toast.error("Failed to update match result");
+    }
+  };
+
+  // Distribute tournament payouts
+  const handleDistributePayouts = async (tournamentId: string) => {
+    setIsDistributingPayouts(true);
+    try {
+      const result = await distributeTournamentPayouts(tournamentId);
+
+      if (result.success > 0) {
+        toast.success(
+          `Successfully distributed payouts to ${result.success} players. Total: $${result.totalPayout.toLocaleString()}`
+        );
+
+        // Log payout details
+        console.log("Payout distribution results:", result.payouts);
+
+        // Refresh the data to show updated assignments
+        await fetchAppwriteData();
+      }
+
+      if (result.failed > 0) {
+        toast.error(
+          `Failed to distribute payouts to ${result.failed} players. Check console for details.`
+        );
+        console.error("Payout errors:", result.errors);
+      }
+
+      if (result.success === 0) {
+        toast.info("No eligible players found for payout distribution");
+      }
+    } catch (error) {
+      console.error("Payout distribution failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to distribute payouts";
+      toast.error(errorMessage);
+    } finally {
+      setIsDistributingPayouts(false);
     }
   };
 
@@ -1333,6 +1378,33 @@ export default function AdminDashboard() {
                           }
                         >
                           ✎
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleDistributePayouts(control.tournamentId)
+                          }
+                          disabled={
+                            control.status !== "ended" ||
+                            isDistributingPayouts
+                          }
+                          className={`${
+                            control.status !== "ended"
+                              ? "opacity-50 cursor-not-allowed"
+                              : "hover:bg-gray-100"
+                          }`}
+                          title={
+                            control.status !== "ended"
+                              ? "Payouts can only be distributed for ended tournaments"
+                              : "Distribute Payouts"
+                          }
+                        >
+                          {isDistributingPayouts ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-custompink"></div>
+                          ) : (
+                            "💰"
+                          )}
                         </Button>
                       </TableCell>
                     </TableRow>
