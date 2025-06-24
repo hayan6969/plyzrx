@@ -57,6 +57,7 @@ import {
   uploadRewardImage,
   deleteRewardImage
 } from '@/lib/rewardsappwrite.db';
+import Image from 'next/image';
 
 
 export default function AdminRewardsPage() {
@@ -535,11 +536,12 @@ export default function AdminRewardsPage() {
                     <Card key={product.$id} className="overflow-hidden">
                       <div className="relative h-48 bg-gray-100">
                         {product.image ? (
-                          <img 
+                          <Image 
                             src={`${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_REWARD_BUCKET_ID}/files/${product.image}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`}
                             alt={product.rewardname}
-                           
-                            className="object-cover w-[100%] h-full"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
