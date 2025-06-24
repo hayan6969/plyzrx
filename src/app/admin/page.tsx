@@ -962,6 +962,14 @@ export default function AdminDashboard() {
           >
             Report
           </Link>
+
+    <Link
+            className="border-2 border-gray-800/50 px-2 rounded-md py-1"
+            href="/admin/rewards"
+          >
+            Rewards
+          </Link>
+
         </TabsList>
 
         <TabsContent value="payments">
