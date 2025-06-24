@@ -13,6 +13,64 @@ const MATCH_ASSIGNMENTS_COLLECTION_ID =
 const USERS_COLLECTION_ID =
   process.env.NEXT_PUBLIC_APPWRITE_USER || "";
 
+const updateSignedupUserStatsServer = async (
+  userId: string,
+  updates: {
+    wins?: number;
+    losses?: number;
+    earnings?: number;
+  }
+): Promise<void> => {
+  try {
+    const SIGNEDUP_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || "";
+    
+    // Find the user in signed up collection
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      SIGNEDUP_COLLECTION_ID,
+      [Query.equal("userId", userId)]
+    );
+
+    if (result.documents.length === 0) {
+      console.warn(`User ${userId} not found in signed up users collection`);
+      return;
+    }
+
+    const user = result.documents[0];
+    const updateData: any = {};
+
+    // Update wins (add to existing)
+    if (updates.wins !== undefined) {
+      updateData.wins = (user.wins || 0) + updates.wins;
+    }
+
+    // Update losses (add to existing)
+    if (updates.losses !== undefined) {
+      updateData.loss = (user.loss || 0) + updates.losses;
+    }
+
+    // Update earnings (add to existing total)
+    if (updates.earnings !== undefined) {
+      updateData.amount = (user.amount || 0) + updates.earnings;
+    }
+
+    // Only update if there are changes
+    if (Object.keys(updateData).length > 0) {
+      await databases.updateDocument(
+        DATABASE_ID,
+        SIGNEDUP_COLLECTION_ID,
+        user.$id,
+        updateData
+      );
+      
+      console.log(`Updated signed up user ${userId}:`, updateData);
+    }
+  } catch (error) {
+    console.error("Failed to update signed up user stats:", error);
+    // Don't throw error to avoid breaking the main flow
+  }
+};
+
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -126,6 +184,9 @@ export async function POST(request: NextRequest) {
       }
     );
 
+
+    await updateSignedupUserStatsServer(WinnerId, { wins: 1 });
+
     // 3. Find and update loser user
     const loserResult = await databases.listDocuments(
       DATABASE_ID,
@@ -156,6 +217,9 @@ export async function POST(request: NextRequest) {
         loss: loserPrevLosses + 1
       }
     );
+
+
+    await updateSignedupUserStatsServer(LoserId, { losses: 1 });
 
     return NextResponse.json({
       success: true,

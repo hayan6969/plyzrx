@@ -127,6 +127,9 @@ const REPORT_COLLECTION_ID =
   const BanUsers=
 process.env.NEXT_PUBLIC_APPWRITE_BAN_USERS_COLLECTION_ID || ""
 
+// Add collection ID for signed up users
+const SIGNEDUP_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || "";
+
 // Payment Logs Functions
 export const createPaymentLog = async (
   paymentLog: PaymentLog
@@ -1236,10 +1239,6 @@ export const distributeTournamentPayouts = async (
   payouts: Array<{ userId: string; amount: number; rank: number }>;
 }> => {
   try {
-    if (typeof window === "undefined") {
-      throw new Error("Cannot distribute payouts from server side");
-    }
-
     // Get all assignments for this tournament
     const result = await databases.listDocuments(
       DATABASE_ID,
@@ -1326,6 +1325,9 @@ export const distributeTournamentPayouts = async (
             }
           );
 
+          // Update earnings in signed up users collection
+          await updateSignedupUserStats(assignment.userId, { earnings: payoutAmount });
+
           payouts.push({
             userId: assignment.userId,
             amount: payoutAmount,
@@ -1394,5 +1396,78 @@ export const getTournamentLeaderboard = async (
   } catch (error) {
     console.error("Failed to fetch tournament leaderboard:", error);
     return [];
+  }
+};
+
+// Add interface for signed up users
+export interface Signedupusers {
+  $id?: string;
+  userId: string;
+  paymentId: string;
+  wins: number;
+  loss: number;
+  amount: number; // Total earnings
+  username: string;
+  email: string;
+}
+
+// Function to update signed up user stats
+export const updateSignedupUserStats = async (
+  userId: string,
+  updates: {
+    wins?: number;
+    losses?: number;
+    earnings?: number;
+  }
+): Promise<void> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot update signed up user from server side");
+    }
+
+    // Find the user in signed up collection
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      SIGNEDUP_COLLECTION_ID,
+      [Query.equal("userId", userId)]
+    );
+
+    if (result.documents.length === 0) {
+      console.warn(`User ${userId} not found in signed up users collection`);
+      return;
+    }
+
+    const user = result.documents[0] as unknown as Signedupusers;
+    const updateData: Partial<Signedupusers> = {};
+
+    // Update wins (add to existing)
+    if (updates.wins !== undefined) {
+      updateData.wins = (user.wins || 0) + updates.wins;
+    }
+
+    // Update losses (add to existing)
+    if (updates.losses !== undefined) {
+      updateData.loss = (user.loss || 0) + updates.losses;
+    }
+
+    // Update earnings (add to existing total)
+    if (updates.earnings !== undefined) {
+      updateData.amount = (user.amount || 0) + updates.earnings;
+    }
+
+    // Only update if there are changes
+    if (Object.keys(updateData).length > 0) {
+      await databases.updateDocument(
+        DATABASE_ID,
+        SIGNEDUP_COLLECTION_ID,
+        user.$id!,
+        updateData
+      );
+      
+      console.log(`Updated signed up user ${userId}:`, updateData);
+    }
+  } catch (error) {
+    console.error("Failed to update signed up user stats:", error);
+    // Don't throw error to avoid breaking the main flow
   }
 };

@@ -1,9 +1,23 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { cookies } from "next/headers";
+
 export async function POST(request: Request) {
-  const { username, password } = await request.json();
+  let username, password;
+
+  try {
+    const body = await request.json();
+    username = body.username;
+    password = body.password;
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Invalid JSON format" },
+      { status: 400 }
+    );
+  }
+
   const cookiesStore = cookies();
+
   if (!username || !password) {
     return NextResponse.json({ error: "Fields required" }, { status: 400 });
   }
@@ -19,6 +33,7 @@ export async function POST(request: Request) {
         },
       }
     );
+
     (await cookiesStore).set({
       name: "token",
       value: api.data.idToken,
@@ -32,8 +47,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: "User logged in successfully",
-      username:api.data.user.username,
-      userid:api.data.user.id
+      username: api.data.user.username,
+      userid: api.data.user.id,
     });
   } catch (error: any) {
     console.log("Error Response:", error.response?.data || error.message);

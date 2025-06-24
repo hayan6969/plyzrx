@@ -11,6 +11,7 @@ const databases = new Databases(client);
 // Database and Collection IDs
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || '';
 const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || '';
+const SIGNEDUP_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || '';
 const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USER || '';
 
 interface UserData {
@@ -19,6 +20,19 @@ interface UserData {
   tier1?: boolean;
   tier2?: boolean;
   tier3?: boolean;
+  $createdAt?: string;
+  $updatedAt?: string;
+}
+
+interface Signedupusers {
+  $id?: string;
+  userId: string;
+  paymentId: string;
+  wins: number;
+  loss: number;
+  amount: number;
+  username: string;
+  email: string;
   $createdAt?: string;
   $updatedAt?: string;
 }
@@ -51,14 +65,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch user data from the users collection
-    const userResult = await databases.listDocuments(
+    // Fetch user data from the signed up users collection (for wins, losses, amount, etc.)
+    const signedUpUserResult = await databases.listDocuments(
       DATABASE_ID,
-      USERS_COLLECTION_ID,
+      SIGNEDUP_COLLECTION_ID,
       [Query.equal("userId", userId)]
     );
 
-    if (userResult.documents.length === 0) {
+    if (signedUpUserResult.documents.length === 0) {
       return NextResponse.json(
         { 
           success: false,
@@ -69,21 +83,71 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch tournament assignments for the user (contains scores, wins, losses)
+    // Fetch tier data from the users collection
+    const userResult = await databases.listDocuments(
+      DATABASE_ID,
+      USERS_COLLECTION_ID,
+      [Query.equal("userId", userId)]
+    );
+
+    // Fetch tournament assignments for the user
     const tournamentAssignmentsResult = await databases.listDocuments(
       DATABASE_ID,
       TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
       [Query.equal("userId", userId)]
     );
 
-    // Get the user document
-    const userData = userResult.documents[0] as unknown as UserData;
+    // Get the documents
+    const signedUpUserData = signedUpUserResult.documents[0] as unknown as Signedupusers;
+    const userData = userResult.documents.length > 0 ? userResult.documents[0] as unknown as UserData : null;
     const tournamentAssignments = tournamentAssignmentsResult.documents as unknown as TournamentAssignment[];
 
-    // Calculate total game stats from tournament assignments
-    const totalWins = tournamentAssignments.reduce((sum, assignment) => sum + (assignment.wins || 0), 0);
-    const totalLosses = tournamentAssignments.reduce((sum, assignment) => sum + (assignment.loss || 0), 0);
-    const totalTournamentScore = tournamentAssignments.reduce((sum, assignment) => sum + (assignment.TournamentScore || 0), 0);
+    // Check if user has tournament assignments
+    if (tournamentAssignments.length === 0) {
+      const formattedUserData = {
+        id: signedUpUserData.$id,
+        userId: signedUpUserData.userId,
+        username: signedUpUserData.username,
+        email: signedUpUserData.email,
+        tiers: {
+          tier1: userData?.tier1 || false,
+          tier2: userData?.tier2 || false,
+          tier3: userData?.tier3 || false
+        },
+        gameStats: {
+          tournamentScore: 0,
+          wins: signedUpUserData.wins,
+          losses: signedUpUserData.loss,
+          earnings: signedUpUserData.amount,
+          winRate: signedUpUserData.wins && signedUpUserData.loss ? 
+            Math.round((signedUpUserData.wins / (signedUpUserData.wins + signedUpUserData.loss)) * 100) : 0
+        },
+        tournamentAssignments: {
+          total: 0,
+          message: 'User not assigned to any tournaments',
+          active: [],
+          awaiting: [],
+          completed: [],
+          expired: [],
+          allAssignments: []
+        },
+        metadata: {
+          createdAt: signedUpUserData.$createdAt,
+          updatedAt: signedUpUserData.$updatedAt
+        }
+      };
+
+      return NextResponse.json({
+        success: true,
+        message: 'User data retrieved successfully - No tournament assignments found',
+        userId: signedUpUserData.userId,
+        username: signedUpUserData.username,
+        data: formattedUserData
+      });
+    }
+
+    // Calculate total tournament score from tournament assignments (can be negative)
+    const totalTournamentScore = tournamentAssignments.reduce((sum, assignment) => sum + (assignment.TournamentScore ?? 0), 0);
 
     // Separate assignments by status
     const activeAssignments = tournamentAssignments.filter(assignment => assignment.AccessStatus === 'Active');
@@ -91,21 +155,24 @@ export async function GET(request: NextRequest) {
     const completedAssignments = tournamentAssignments.filter(assignment => assignment.AccessStatus === 'Completed');
     const expiredAssignments = tournamentAssignments.filter(assignment => assignment.AccessStatus === 'Expired');
 
-    // Format the response with all user data including tournament assignments
+    // Format the response with all user data
     const formattedUserData = {
-      id: userData.$id,
-      userId: userData.userId,
+      id: signedUpUserData.$id,
+      userId: signedUpUserData.userId,
+      username: signedUpUserData.username,
+      email: signedUpUserData.email,
       tiers: {
-        tier1: userData.tier1 || false,
-        tier2: userData.tier2 || false,
-        tier3: userData.tier3 || false
+        tier1: userData?.tier1 || false,
+        tier2: userData?.tier2 || false,
+        tier3: userData?.tier3 || false
       },
       gameStats: {
         tournamentScore: totalTournamentScore,
-        wins: totalWins,
-        losses: totalLosses,
-        winRate: totalWins && totalLosses ? 
-          Math.round((totalWins / (totalWins + totalLosses)) * 100) : 0
+        wins: signedUpUserData.wins,
+        losses: signedUpUserData.loss,
+        earnings: signedUpUserData.amount,
+        winRate: signedUpUserData.wins && signedUpUserData.loss ? 
+          Math.round((signedUpUserData.wins / (signedUpUserData.wins + signedUpUserData.loss)) * 100) : 0
       },
       tournamentAssignments: {
         total: tournamentAssignments.length,
@@ -116,9 +183,9 @@ export async function GET(request: NextRequest) {
           assignedAt: assignment.assignedAt,
           paymentId: assignment.PaymentId,
           status: assignment.AccessStatus,
-          tournamentScore: assignment.TournamentScore || 0,
-          wins: assignment.wins || 0,
-          losses: assignment.loss || 0
+          tournamentScore: assignment.TournamentScore ?? 0,
+          wins: assignment.wins ?? 0,
+          losses: assignment.loss ?? 0
         })),
         awaiting: awaitingAssignments.map(assignment => ({
           id: assignment.$id,
@@ -127,9 +194,9 @@ export async function GET(request: NextRequest) {
           assignedAt: assignment.assignedAt,
           paymentId: assignment.PaymentId,
           status: assignment.AccessStatus,
-          tournamentScore: assignment.TournamentScore || 0,
-          wins: assignment.wins || 0,
-          losses: assignment.loss || 0
+          tournamentScore: assignment.TournamentScore ?? 0,
+          wins: assignment.wins ?? 0,
+          losses: assignment.loss ?? 0
         })),
         completed: completedAssignments.map(assignment => ({
           id: assignment.$id,
@@ -138,9 +205,9 @@ export async function GET(request: NextRequest) {
           assignedAt: assignment.assignedAt,
           paymentId: assignment.PaymentId,
           status: assignment.AccessStatus,
-          tournamentScore: assignment.TournamentScore || 0,
-          wins: assignment.wins || 0,
-          losses: assignment.loss || 0
+          tournamentScore: assignment.TournamentScore ?? 0,
+          wins: assignment.wins ?? 0,
+          losses: assignment.loss ?? 0
         })),
         expired: expiredAssignments.map(assignment => ({
           id: assignment.$id,
@@ -149,9 +216,9 @@ export async function GET(request: NextRequest) {
           assignedAt: assignment.assignedAt,
           paymentId: assignment.PaymentId,
           status: assignment.AccessStatus,
-          tournamentScore: assignment.TournamentScore || 0,
-          wins: assignment.wins || 0,
-          losses: assignment.loss || 0
+          tournamentScore: assignment.TournamentScore ?? 0,
+          wins: assignment.wins ?? 0,
+          losses: assignment.loss ?? 0
         })),
         allAssignments: tournamentAssignments.map(assignment => ({
           id: assignment.$id,
@@ -160,20 +227,22 @@ export async function GET(request: NextRequest) {
           assignedAt: assignment.assignedAt,
           paymentId: assignment.PaymentId,
           status: assignment.AccessStatus,
-          tournamentScore: assignment.TournamentScore || 0,
-          wins: assignment.wins || 0,
-          losses: assignment.loss || 0
+          tournamentScore: assignment.TournamentScore ?? 0,
+          wins: assignment.wins ?? 0,
+          losses: assignment.loss ?? 0
         }))
       },
       metadata: {
-        createdAt: userData.$createdAt,
-        updatedAt: userData.$updatedAt
+        createdAt: signedUpUserData.$createdAt,
+        updatedAt: signedUpUserData.$updatedAt
       }
     };
 
     return NextResponse.json({
       success: true,
       message: 'User data retrieved successfully',
+      userId: signedUpUserData.userId,
+      username: signedUpUserData.username,
       data: formattedUserData
     });
 
