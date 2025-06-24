@@ -10,6 +10,8 @@ export async function POST(request: Request) {
     username = body.username;
     password = body.password;
   } catch (error) {
+    console.log(error);
+    
     return NextResponse.json(
       { error: "Invalid JSON format" },
       { status: 400 }
