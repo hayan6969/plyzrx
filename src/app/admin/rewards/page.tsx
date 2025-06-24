@@ -57,6 +57,7 @@ import {
   uploadRewardImage,
   deleteRewardImage
 } from '@/lib/rewardsappwrite.db';
+import Image from 'next/image';
 
 export default function AdminRewardsPage() {
   const router = useRouter();
@@ -477,7 +478,7 @@ export default function AdminRewardsPage() {
                           />
                           {imagePreview && (
                             <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
-                              <img 
+                              <Image 
                                 src={imagePreview} 
                                 alt="Preview" 
                                 className="w-full h-full object-cover"
@@ -515,7 +516,7 @@ export default function AdminRewardsPage() {
                     <Card key={product.$id} className="overflow-hidden">
                       <div className="relative h-48 bg-gray-100">
                         {product.image ? (
-                          <img 
+                          <Image 
                             src={`${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_REWARD_BUCKET_ID}/files/${product.image}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`}
                             alt={product.rewardname}
                             className="w-full h-full object-cover"
