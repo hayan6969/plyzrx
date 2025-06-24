@@ -59,6 +59,8 @@ export async function POST(request: NextRequest) {
       );
       reward = rewardDoc as unknown as Reward;
     } catch (error) {
+        console.log(error);
+        
       return NextResponse.json(
         { error: 'Reward not found' },
         { status: 404 }
@@ -106,7 +108,8 @@ export async function POST(request: NextRequest) {
       user.$id!,
       { amount: newBalance }
     );
-
+ console.log(updatedUser);
+ 
     // 6. Return success response with purchase details
     return NextResponse.json({
       success: true,
@@ -131,83 +134,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to process reward purchase',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// Optional: GET method to check if user can afford a reward
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const rewardId = searchParams.get('rewardId');
-
-    if (!userId || !rewardId) {
-      return NextResponse.json(
-        { error: 'Missing required parameters: userId and rewardId' },
-        { status: 400 }
-      );
-    }
-
-    // Fetch the reward details
-    let reward: Reward;
-    try {
-      const rewardDoc = await databases.getDocument(
-        DATABASE_ID,
-        REWARDS_COLLECTION_ID,
-        rewardId
-      );
-      reward = rewardDoc as unknown as Reward;
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'Reward not found' },
-        { status: 404 }
-      );
-    }
-
-    // Fetch the user balance
-    const userResult = await databases.listDocuments(
-      DATABASE_ID,
-      SIGNEDUP_COLLECTION_ID,
-      [Query.equal("userId", userId)]
-    );
-
-    if (userResult.documents.length === 0) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const user = userResult.documents[0] as unknown as SignedupUser;
-    const currentBalance = user.amount || 0;
-    const rewardPrice = reward.price;
-    const canAfford = currentBalance >= rewardPrice;
-
-    return NextResponse.json({
-      success: true,
-      canAfford,
-      user: {
-        userId: user.userId,
-        username: user.username,
-        currentBalance
-      },
-      reward: {
-        id: reward.$id,
-        name: reward.rewardname,
-        price: rewardPrice
-      },
-      shortfall: canAfford ? 0 : rewardPrice - currentBalance
-    });
-
-  } catch (error) {
-    console.error('Reward affordability check API Error:', error);
-    return NextResponse.json(
-      { 
-        error: 'Failed to check reward affordability',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

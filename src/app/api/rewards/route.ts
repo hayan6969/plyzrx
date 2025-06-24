@@ -39,6 +39,8 @@ interface FormattedReward {
 
 export async function GET(request: NextRequest) {
   try {
+    console.log(request);
+    
     // Fetch categories and rewards from Appwrite
     const [categoriesResponse, rewardsResponse] = await Promise.all([
       databases.listDocuments(DATABASE_ID, REWARDS_CATEGORY_COLLECTION_ID),
