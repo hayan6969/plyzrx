@@ -60,12 +60,36 @@ export interface PaymentRequest {
   $updatedAt?: string;
 }
 
+// Add Signedupusers interface
+export interface Signedupusers {
+  $id?: string;
+  userId: string;
+  paymentId: string;
+  wins: number;
+  loss: number;
+  amount: number;
+  username: string;
+  email: string;
+  $createdAt?: string;
+  $updatedAt?: string;
+}
+
 // Combined user data with tournament stats
 export interface UserWithStats extends UserData {
   tournamentStats: {
     totalScore: number;
     totalWins: number;
     totalLosses: number;
+    winRate: number;
+    activeAssignments: number;
+    completedAssignments: number;
+  };
+}
+
+// Combined signed up user data with additional stats
+export interface SignedupUserWithStats extends Signedupusers {
+  tournamentStats: {
+    totalScore: number;
     winRate: number;
     activeAssignments: number;
     completedAssignments: number;
@@ -407,5 +431,118 @@ export const getPaymentsByStatus = async (status: 'pending' | 'completed' | 'rej
   } catch (error) {
     console.error("Failed to fetch payments by status:", error);
     return [];
+  }
+};
+
+// Get all signed up users with tournament stats
+export const getAllSignedupUsers = async (): Promise<SignedupUserWithStats[]> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch signed up users from server side");
+    }
+
+    // Fetch users from the signed up users collection
+    const usersResult = await databases.listDocuments(
+      DATABASE_ID,
+      SIGNEDUP_COLLECTION_ID
+    );
+
+    const users = usersResult.documents as unknown as Signedupusers[];
+    const usersWithStats: SignedupUserWithStats[] = [];
+
+    // For each user, fetch their tournament assignments to get additional stats
+    for (const user of users) {
+      try {
+        const tournamentAssignmentsResult = await databases.listDocuments(
+          DATABASE_ID,
+          TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+          [Query.equal("userId", user.userId)]
+        );
+
+        const assignments = tournamentAssignmentsResult.documents as unknown as TournamentAssignment[];
+
+        // Calculate stats from tournament assignments
+        const totalScore = assignments.reduce((sum, assignment) => sum + (assignment.TournamentScore || 0), 0);
+        const winRate = user.wins && user.loss ? Math.round((user.wins / (user.wins + user.loss)) * 100) : 0;
+        const activeAssignments = assignments.filter(a => a.AccessStatus === 'Active').length;
+        const completedAssignments = assignments.filter(a => a.AccessStatus === 'Completed').length;
+
+        usersWithStats.push({
+          ...user,
+          tournamentStats: {
+            totalScore,
+            winRate,
+            activeAssignments,
+            completedAssignments
+          }
+        });
+      } catch (error) {
+        console.error(`Failed to fetch tournament stats for user ${user.userId}:`, error);
+        // Add user with zero stats if tournament data fetch fails
+        usersWithStats.push({
+          ...user,
+          tournamentStats: {
+            totalScore: 0,
+            winRate: 0,
+            activeAssignments: 0,
+            completedAssignments: 0
+          }
+        });
+      }
+    }
+
+    return usersWithStats;
+  } catch (error) {
+    console.error("Failed to fetch signed up users:", error);
+    return [];
+  }
+};
+
+// Get signed up user by ID
+export const getSignedupUserById = async (userId: string): Promise<SignedupUserWithStats | null> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot fetch signed up user from server side");
+    }
+
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      SIGNEDUP_COLLECTION_ID,
+      [Query.equal("userId", userId)]
+    );
+
+    if (result.documents.length === 0) {
+      return null;
+    }
+
+    const user = result.documents[0] as unknown as Signedupusers;
+
+    // Fetch tournament assignments for this user
+    const tournamentAssignmentsResult = await databases.listDocuments(
+      DATABASE_ID,
+      TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+      [Query.equal("userId", userId)]
+    );
+
+    const assignments = tournamentAssignmentsResult.documents as unknown as TournamentAssignment[];
+
+    // Calculate stats
+    const totalScore = assignments.reduce((sum, assignment) => sum + (assignment.TournamentScore || 0), 0);
+    const winRate = user.wins && user.loss ? Math.round((user.wins / (user.wins + user.loss)) * 100) : 0;
+    const activeAssignments = assignments.filter(a => a.AccessStatus === 'Active').length;
+    const completedAssignments = assignments.filter(a => a.AccessStatus === 'Completed').length;
+
+    return {
+      ...user,
+      tournamentStats: {
+        totalScore,
+        winRate,
+        activeAssignments,
+        completedAssignments
+      }
+    };
+  } catch (error) {
+    console.error("Failed to fetch signed up user:", error);
+    return null;
   }
 };

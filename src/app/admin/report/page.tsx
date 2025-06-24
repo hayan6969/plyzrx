@@ -17,7 +17,9 @@ import {
   UserWithStats, 
   getAllPaymentRequests, 
   updatePaymentStatus, 
-  PaymentRequest 
+  PaymentRequest,
+  getAllSignedupUsers,
+  SignedupUserWithStats
 } from '@/lib/userdataappwrite.db';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,14 +64,14 @@ export default function AdminReportPage() {
   const router = useRouter();
   const [reports, setReports] = useState<Report[]>([]);
   const [bannedUsers, setBannedUsers] = useState<BanUser[]>([]);
-  const [users, setUsers] = useState<UserWithStats[]>([]);
+  const [users, setUsers] = useState<SignedupUserWithStats[]>([]);
   const [payments, setPayments] = useState<PaymentRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [bannedUsersLoading, setBannedUsersLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [selectedUser, setSelectedUser] = useState<UserWithStats | null>(null);
+  const [selectedUser, setSelectedUser] = useState<SignedupUserWithStats | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<PaymentRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
@@ -130,7 +132,7 @@ export default function AdminReportPage() {
   const fetchUsers = async () => {
     try {
       setUsersLoading(true);
-      const usersData = await getAllUsers();
+      const usersData = await getAllSignedupUsers();
       setUsers(usersData);
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -325,29 +327,49 @@ export default function AdminReportPage() {
     return payments.filter(p => p.Status === status).length;
   };
 
-  // Helper function to get tier badges for users - FIXED STYLING
-  const getTierBadges = (user: UserWithStats) => {
+  // Helper function to get tier badges for users - UPDATED for signed up users with tier display
+  const getTierBadges = (user: SignedupUserWithStats) => {
     const badges = [];
-    if (user.tier1) badges.push(
-      <Badge key="tier1" className="bg-amber-600 text-white hover:bg-amber-700 border-amber-600">
-        Tier 1
-      </Badge>
-    );
-    if (user.tier2) badges.push(
-      <Badge key="tier2" className="bg-gray-600 text-white hover:bg-gray-700 border-gray-600">
-        Tier 2
-      </Badge>
-    );
-    if (user.tier3) badges.push(
-      <Badge key="tier3" className="bg-yellow-600 text-white hover:bg-yellow-700 border-yellow-600">
-        Tier 3
-      </Badge>
-    );
-    return badges.length > 0 ? badges : [
-      <Badge key="none" variant="outline" className="border-gray-300 text-gray-700">
-        No Tiers
-      </Badge>
-    ];
+    
+    // Determine tier based on amount and performance
+    if (user.amount >= 100) {
+      badges.push(
+        <Badge key="tier3" className="bg-purple-600 text-white hover:bg-purple-700 border-purple-600">
+          Tier 3
+        </Badge>
+      );
+    } else if (user.amount >= 50 || user.wins >= 10) {
+      badges.push(
+        <Badge key="tier2" className="bg-blue-600 text-white hover:bg-blue-700 border-blue-600">
+          Tier 2
+        </Badge>
+      );
+    } else {
+      badges.push(
+        <Badge key="tier1" className="bg-green-600 text-white hover:bg-green-700 border-green-600">
+          Tier 1
+        </Badge>
+      );
+    }
+    
+    // Add additional status badges if applicable
+    if (user.tournamentStats.activeAssignments > 0) {
+      badges.push(
+        <Badge key="active" className="bg-orange-500 text-white hover:bg-orange-600 border-orange-500">
+          Active
+        </Badge>
+      );
+    }
+    
+    if (user.wins >= 20) {
+      badges.push(
+        <Badge key="champion" className="bg-yellow-500 text-white hover:bg-yellow-600 border-yellow-500">
+          Champion
+        </Badge>
+      );
+    }
+    
+    return badges;
   };
 
   if (loading && activeTab === 'reports') {
@@ -742,7 +764,7 @@ export default function AdminReportPage() {
             )}
           </TabsContent>
 
-          {/* FIXED Users Tab */}
+          {/* UPDATED Users Tab for Signed Up Users */}
           <TabsContent value="users" className="space-y-6">
             {usersLoading ? (
               <div className="flex items-center justify-center py-12">
@@ -755,31 +777,31 @@ export default function AdminReportPage() {
                   <Card className="bg-white border-gray-200 shadow-sm">
                     <CardContent className="p-4">
                       <div className="text-2xl font-bold text-blue-600">{users.length}</div>
-                      <div className="text-sm text-gray-600">Total Users</div>
+                      <div className="text-sm text-gray-600">Total Registered Users</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white border-gray-200 shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="text-2xl font-bold text-green-600">
+                        {users.filter(u => u.tournamentStats.activeAssignments > 0).length}
+                      </div>
+                      <div className="text-sm text-gray-600">Active Players</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white border-gray-200 shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {users.filter(u => u.wins > 0).length}
+                      </div>
+                      <div className="text-sm text-gray-600">Winners</div>
                     </CardContent>
                   </Card>
                   <Card className="bg-white border-gray-200 shadow-sm">
                     <CardContent className="p-4">
                       <div className="text-2xl font-bold text-amber-600">
-                        {users.filter(u => u.tier1).length}
+                        {users.reduce((sum, u) => sum + u.amount, 0).toFixed(2)}
                       </div>
-                      <div className="text-sm text-gray-600">Tier 1 Users</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-white border-gray-200 shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold text-gray-600">
-                        {users.filter(u => u.tier2).length}
-                      </div>
-                      <div className="text-sm text-gray-600">Tier 2 Users</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-white border-gray-200 shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold text-yellow-600">
-                        {users.filter(u => u.tier3).length}
-                      </div>
-                      <div className="text-sm text-gray-600">Tier 3 Users</div>
+                      <div className="text-sm text-gray-600">Total Earnings</div>
                     </CardContent>
                   </Card>
                 </div>
@@ -800,7 +822,7 @@ export default function AdminReportPage() {
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
                               <Users className="w-5 h-5 text-blue-500" />
-                              User: {user.userId}
+                              {user.username} ({user.userId})
                             </CardTitle>
                             <div className="flex gap-2">
                               {getTierBadges(user)}
@@ -824,7 +846,7 @@ export default function AdminReportPage() {
                                 Wins
                               </div>
                               <div className="text-xl font-bold text-green-600">
-                                {user.tournamentStats.totalWins}
+                                {user.wins}
                               </div>
                             </div>
                             <div>
@@ -833,7 +855,7 @@ export default function AdminReportPage() {
                                 Losses
                               </div>
                               <div className="text-xl font-bold text-red-600">
-                                {user.tournamentStats.totalLosses}
+                                {user.loss}
                               </div>
                             </div>
                             <div>
@@ -843,9 +865,12 @@ export default function AdminReportPage() {
                               </div>
                             </div>
                             <div>
-                              <div className="text-sm font-medium text-gray-600">Active</div>
-                              <div className="text-xl font-bold text-purple-600">
-                                {user.tournamentStats.activeAssignments}
+                              <div className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                                <DollarSign className="w-4 h-4 text-green-500" />
+                                Earnings
+                              </div>
+                              <div className="text-xl font-bold text-green-600">
+                                ${user.amount.toFixed(2)}
                               </div>
                             </div>
                           </div>
@@ -853,7 +878,7 @@ export default function AdminReportPage() {
                           <div className="flex items-center justify-between">
                             <div className="text-sm text-gray-500 flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
-                              Created: {user.$createdAt ? formatDate(user.$createdAt) : 'N/A'}
+                              Registered: {user.$createdAt ? formatDate(user.$createdAt) : 'N/A'}
                             </div>
                             
                             <Dialog>
@@ -872,27 +897,42 @@ export default function AdminReportPage() {
                                 <DialogHeader>
                                   <DialogTitle className="text-gray-900 flex items-center gap-2">
                                     <Users className="w-5 h-5 text-blue-500" />
-                                    User Details: {user.userId}
+                                    User Details: {user.username}
                                   </DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-6">
                                   <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-700 mb-1">Username</div>
+                                      <div className="font-mono text-gray-900 bg-gray-100 px-3 py-2 rounded border text-sm">
+                                        {user.username}
+                                      </div>
+                                    </div>
                                     <div>
                                       <div className="text-sm font-medium text-gray-700 mb-1">User ID</div>
                                       <div className="font-mono text-gray-900 bg-gray-100 px-3 py-2 rounded border text-sm">
                                         {user.userId}
                                       </div>
                                     </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                      <div className="text-sm font-medium text-gray-700 mb-1">Document ID</div>
+                                      <div className="text-sm font-medium text-gray-700 mb-1">Email</div>
+                                      <div className="font-mono text-gray-900 bg-gray-100 px-3 py-2 rounded border text-sm break-all">
+                                        {user.email}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-700 mb-1">Payment ID</div>
                                       <div className="font-mono text-gray-900 bg-gray-100 px-3 py-2 rounded border text-sm">
-                                        {user.$id?.slice(-8) || 'N/A'}
+                                        {user.paymentId || 'N/A'}
                                       </div>
                                     </div>
                                   </div>
 
                                   <div>
-                                    <div className="text-sm font-medium text-gray-700 mb-2">Tier Access</div>
+                                    <div className="text-sm font-medium text-gray-700 mb-2">Player Status</div>
                                     <div className="flex gap-2">
                                       {getTierBadges(user)}
                                     </div>
@@ -901,36 +941,36 @@ export default function AdminReportPage() {
                                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     <div className="text-center p-4 bg-gray-100 border rounded-lg">
                                       <div className="text-2xl font-bold text-gray-900">{user.tournamentStats.totalScore}</div>
-                                      <div className="text-sm text-gray-600">Total Score</div>
+                                      <div className="text-sm text-gray-600">Tournament Score</div>
                                     </div>
                                     <div className="text-center p-4 bg-green-100 border border-green-200 rounded-lg">
-                                      <div className="text-2xl font-bold text-green-700">{user.tournamentStats.totalWins}</div>
-                                      <div className="text-sm text-gray-600">Total Wins</div>
+                                      <div className="text-2xl font-bold text-green-700">{user.wins}</div>
+                                      <div className="text-sm text-gray-600">Wins</div>
                                     </div>
                                     <div className="text-center p-4 bg-red-100 border border-red-200 rounded-lg">
-                                      <div className="text-2xl font-bold text-red-700">{user.tournamentStats.totalLosses}</div>
-                                      <div className="text-sm text-gray-600">Total Losses</div>
+                                      <div className="text-2xl font-bold text-red-700">{user.loss}</div>
+                                      <div className="text-sm text-gray-600">Losses</div>
                                     </div>
                                     <div className="text-center p-4 bg-blue-100 border border-blue-200 rounded-lg">
                                       <div className="text-2xl font-bold text-blue-700">{user.tournamentStats.winRate}%</div>
                                       <div className="text-sm text-gray-600">Win Rate</div>
                                     </div>
-                                    <div className="text-center p-4 bg-purple-100 border border-purple-200 rounded-lg">
-                                      <div className="text-2xl font-bold text-purple-700">{user.tournamentStats.activeAssignments}</div>
-                                      <div className="text-sm text-gray-600">Active</div>
+                                    <div className="text-center p-4 bg-green-100 border border-green-200 rounded-lg">
+                                      <div className="text-2xl font-bold text-green-700">${user.amount.toFixed(2)}</div>
+                                      <div className="text-sm text-gray-600">Earnings</div>
                                     </div>
                                   </div>
 
                                   <div>
-                                    <div className="text-sm font-medium text-gray-700 mb-2">Tournament Statistics</div>
+                                    <div className="text-sm font-medium text-gray-700 mb-2">Tournament Activity</div>
                                     <div className="grid grid-cols-2 gap-4">
+                                      <div className="bg-purple-100 border border-purple-200 p-3 rounded">
+                                        <div className="text-lg font-bold text-purple-700">{user.tournamentStats.activeAssignments}</div>
+                                        <div className="text-sm text-gray-600">Active Tournaments</div>
+                                      </div>
                                       <div className="bg-gray-100 border p-3 rounded">
                                         <div className="text-lg font-bold text-gray-900">{user.tournamentStats.completedAssignments}</div>
                                         <div className="text-sm text-gray-600">Completed Tournaments</div>
-                                      </div>
-                                      <div className="bg-gray-100 border p-3 rounded">
-                                        <div className="text-lg font-bold text-gray-900">{user.tournamentStats.activeAssignments}</div>
-                                        <div className="text-sm text-gray-600">Active Tournaments</div>
                                       </div>
                                     </div>
                                   </div>
@@ -938,7 +978,7 @@ export default function AdminReportPage() {
                                   <div className="border-t border-gray-200 pt-4">
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                       <div>
-                                        <span className="font-medium text-gray-700">Created:</span>
+                                        <span className="font-medium text-gray-700">Registered:</span>
                                         <div className="text-gray-900 mt-1">
                                           {user.$createdAt ? formatDate(user.$createdAt) : 'N/A'}
                                         </div>

@@ -13,6 +13,7 @@ const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || '';
 const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || '';
 const SIGNEDUP_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || '';
 const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USER || '';
+const PAYMENT_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_PAYMENT_COLLECTION || '';
 
 interface UserData {
   $id?: string;
@@ -48,6 +49,17 @@ interface TournamentAssignment {
   TournamentScore?: number;
   wins?: number;
   loss?: number;
+}
+
+interface PaymentRequest {
+  $id?: string;
+  userId: string;
+  paymentValue: number;
+  paypalAccount?: string;
+  RequestedAt: string;
+  Status: 'pending' | 'completed' | 'rejected';
+  $createdAt?: string;
+  $updatedAt?: string;
 }
 
 export async function GET(request: NextRequest) {
@@ -97,10 +109,21 @@ export async function GET(request: NextRequest) {
       [Query.equal("userId", userId)]
     );
 
+    // Fetch payment/withdrawal requests for the user
+    const paymentRequestsResult = await databases.listDocuments(
+      DATABASE_ID,
+      PAYMENT_COLLECTION_ID,
+      [
+        Query.equal("userId", userId),
+        Query.orderDesc("$createdAt")
+      ]
+    );
+
     // Get the documents
     const signedUpUserData = signedUpUserResult.documents[0] as unknown as Signedupusers;
     const userData = userResult.documents.length > 0 ? userResult.documents[0] as unknown as UserData : null;
     const tournamentAssignments = tournamentAssignmentsResult.documents as unknown as TournamentAssignment[];
+    const paymentRequests = paymentRequestsResult.documents as unknown as PaymentRequest[];
 
     // Check if user has tournament assignments
     if (tournamentAssignments.length === 0) {
@@ -118,9 +141,28 @@ export async function GET(request: NextRequest) {
           tournamentScore: 0,
           wins: signedUpUserData.wins,
           losses: signedUpUserData.loss,
-          earnings: signedUpUserData.amount,
+          earnings: signedUpUserData.amount, // Earnings from signedup collection
           winRate: signedUpUserData.wins && signedUpUserData.loss ? 
             Math.round((signedUpUserData.wins / (signedUpUserData.wins + signedUpUserData.loss)) * 100) : 0
+        },
+        financialData: {
+          totalEarnings: signedUpUserData.amount,
+          availableBalance: signedUpUserData.amount,
+          withdrawalRequests: {
+            total: paymentRequests.length,
+            pending: paymentRequests.filter(req => req.Status === 'pending').length,
+            completed: paymentRequests.filter(req => req.Status === 'completed').length,
+            rejected: paymentRequests.filter(req => req.Status === 'rejected').length,
+            requests: paymentRequests.map(request => ({
+              id: request.$id,
+              amount: request.paymentValue,
+              paypalAccount: request.paypalAccount,
+              status: request.Status,
+              requestedAt: request.RequestedAt,
+              createdAt: request.$createdAt,
+              updatedAt: request.$updatedAt
+            }))
+          }
         },
         tournamentAssignments: {
           total: 0,
@@ -170,9 +212,35 @@ export async function GET(request: NextRequest) {
         tournamentScore: totalTournamentScore,
         wins: signedUpUserData.wins,
         losses: signedUpUserData.loss,
-        earnings: signedUpUserData.amount,
+        earnings: signedUpUserData.amount, // Earnings from signedup collection
         winRate: signedUpUserData.wins && signedUpUserData.loss ? 
           Math.round((signedUpUserData.wins / (signedUpUserData.wins + signedUpUserData.loss)) * 100) : 0
+      },
+      financialData: {
+        totalEarnings: signedUpUserData.amount,
+        availableBalance: signedUpUserData.amount,
+        withdrawalRequests: {
+          total: paymentRequests.length,
+          pending: paymentRequests.filter(req => req.Status === 'pending').length,
+          completed: paymentRequests.filter(req => req.Status === 'completed').length,
+          rejected: paymentRequests.filter(req => req.Status === 'rejected').length,
+          hasWithdrawalRequests: paymentRequests.length > 0,
+          latestRequest: paymentRequests.length > 0 ? {
+            id: paymentRequests[0].$id,
+            amount: paymentRequests[0].paymentValue,
+            status: paymentRequests[0].Status,
+            requestedAt: paymentRequests[0].RequestedAt
+          } : null,
+          requests: paymentRequests.map(request => ({
+            id: request.$id,
+            amount: request.paymentValue,
+            paypalAccount: request.paypalAccount,
+            status: request.Status,
+            requestedAt: request.RequestedAt,
+            createdAt: request.$createdAt,
+            updatedAt: request.$updatedAt
+          }))
+        }
       },
       tournamentAssignments: {
         total: tournamentAssignments.length,
