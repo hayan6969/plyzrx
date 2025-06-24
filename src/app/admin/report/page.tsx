@@ -13,8 +13,6 @@ import {
   BanUser
 } from '@/lib/appwriteDB';
 import { 
-  getAllUsers, 
-  UserWithStats, 
   getAllPaymentRequests, 
   updatePaymentStatus, 
   PaymentRequest,
