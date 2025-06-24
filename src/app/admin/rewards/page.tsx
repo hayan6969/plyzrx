@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,8 @@ import {
   ArrowLeft,
   Package,
   Tag,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Loader2
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { isAdminAuthenticated } from '@/lib/authStorage';
@@ -56,7 +57,7 @@ import {
   uploadRewardImage,
   deleteRewardImage
 } from '@/lib/rewardsappwrite.db';
-import Image from 'next/image';
+
 
 export default function AdminRewardsPage() {
   const router = useRouter();
@@ -64,6 +65,7 @@ export default function AdminRewardsPage() {
   const [products, setProducts] = useState<reward[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('products');
+  const [isCreatingReward, setIsCreatingReward] = useState(false);
 
   // Dialog states
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
@@ -85,16 +87,27 @@ export default function AdminRewardsPage() {
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isAdminAuthenticated()) {
-      router.push('/admin/login');
-      return;
+  const fetchCategories = useCallback(async () => {
+    try {
+      const categoriesData = await getRewardCategories();
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast.error('Failed to fetch categories');
     }
-    
-    fetchData();
-  }, [router]);
+  }, []);
 
-  const fetchData = async () => {
+  const fetchProducts = useCallback(async () => {
+    try {
+      const productsData = await getRewards();
+      setProducts(productsData);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Failed to fetch products');
+    }
+  }, []);
+
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       await Promise.all([fetchCategories(), fetchProducts()]);
@@ -104,27 +117,16 @@ export default function AdminRewardsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchCategories, fetchProducts]);
 
-  const fetchCategories = async () => {
-    try {
-      const categoriesData = await getRewardCategories();
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      toast.error('Failed to fetch categories');
+  useEffect(() => {
+    if (!isAdminAuthenticated()) {
+      router.push('/admin/login');
+      return;
     }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      const productsData = await getRewards();
-      setProducts(productsData);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast.error('Failed to fetch products');
-    }
-  };
+    
+    fetchData();
+  }, [router, fetchData]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -187,6 +189,7 @@ export default function AdminRewardsPage() {
         return;
       }
 
+      setIsCreatingReward(true);
       let imageUrl = '';
       
       // Upload image if provided
@@ -203,7 +206,7 @@ export default function AdminRewardsPage() {
 
       await createReward({
         rewardname: productForm.rewardname,
-        categoryName: selectedCategory.category, // Use category name string instead of object
+        categoryName: selectedCategory.category,
         price: productForm.price,
         image: imageUrl
       });
@@ -221,6 +224,8 @@ export default function AdminRewardsPage() {
     } catch (error) {
       console.error('Failed to create product:', error);
       toast.error('Failed to create product');
+    } finally {
+      setIsCreatingReward(false);
     }
   };
 
@@ -228,6 +233,7 @@ export default function AdminRewardsPage() {
     try {
       if (!editingProduct) return;
 
+      setIsCreatingReward(true);
       let imageUrl = editingProduct.image;
       
       // Upload new image if provided
@@ -249,7 +255,7 @@ export default function AdminRewardsPage() {
 
       await updateReward(editingProduct.$id, {
         rewardname: productForm.rewardname,
-        categoryName: selectedCategory.category, // Use category name string instead of object
+        categoryName: selectedCategory.category,
         price: productForm.price,
         image: imageUrl
       });
@@ -268,6 +274,8 @@ export default function AdminRewardsPage() {
     } catch (error) {
       console.error('Failed to update product:', error);
       toast.error('Failed to update product');
+    } finally {
+      setIsCreatingReward(false);
     }
   };
 
@@ -477,10 +485,12 @@ export default function AdminRewardsPage() {
                           />
                           {imagePreview && (
                             <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
-                              <Image 
+                              <img
                                 src={imagePreview} 
                                 alt="Preview" 
-                                className="w-full h-full object-cover"
+                                width={128}
+                                height={128}
+                                className="object-cover"
                               />
                             </div>
                           )}
@@ -501,8 +511,18 @@ export default function AdminRewardsPage() {
                         <Button
                           onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
                           className="bg-purple-600 hover:bg-purple-700"
+                          disabled={isCreatingReward}
                         >
-                          {editingProduct ? 'Update' : 'Create'} Product
+                          {isCreatingReward ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              {editingProduct ? 'Updating...' : 'Creating...'}
+                            </>
+                          ) : (
+                            <>
+                              {editingProduct ? 'Update' : 'Create'} Product
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -515,10 +535,11 @@ export default function AdminRewardsPage() {
                     <Card key={product.$id} className="overflow-hidden">
                       <div className="relative h-48 bg-gray-100">
                         {product.image ? (
-                          <Image 
+                          <img 
                             src={`${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_REWARD_BUCKET_ID}/files/${product.image}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`}
                             alt={product.rewardname}
-                            className="w-full h-full object-cover"
+                           
+                            className="object-cover w-[100%] h-full"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -531,7 +552,7 @@ export default function AdminRewardsPage() {
                           <h3 className="font-semibold text-lg">{product.rewardname}</h3>
                           <div className="flex justify-between items-center">
                             <Badge variant="outline">{product.categoryName}</Badge>
-                            <span className="text-sm font-medium">{product.price} $</span>
+                            <span className="text-sm font-medium">{product.price} pts</span>
                           </div>
                           <div className="flex justify-end items-center">
                             <div className="flex gap-1">
