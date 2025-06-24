@@ -21,6 +21,7 @@ const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || "";
 const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || "";
 const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USER || "";
 const PAYMENT_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_PAYMENT_COLLECTION || "";
+const SIGNEDUP_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || "";
 
 // User interface matching your collection structure
 export interface UserData {
@@ -307,6 +308,45 @@ export const getAllPaymentRequests = async (): Promise<PaymentRequest[]> => {
   }
 };
 
+// Add function to refund payment amount back to user
+export const refundPaymentToUser = async (userId: string, refundAmount: number): Promise<boolean> => {
+  try {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot refund payment from server side");
+    }
+
+    // Find the user in signed up users collection
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      SIGNEDUP_COLLECTION_ID,
+      [Query.equal("userId", userId)]
+    );
+
+    if (result.documents.length === 0) {
+      console.error(`User ${userId} not found in signed up users collection`);
+      return false;
+    }
+
+    const user = result.documents[0];
+    const currentBalance = user.amount || 0;
+    const newBalance = currentBalance + refundAmount;
+
+    // Update user's balance by adding back the refund amount
+    await databases.updateDocument(
+      DATABASE_ID,
+      SIGNEDUP_COLLECTION_ID,
+      user.$id,
+      { amount: newBalance }
+    );
+
+    console.log(`Refunded ${refundAmount} to user ${userId}. Balance: ${currentBalance} -> ${newBalance}`);
+    return true;
+  } catch (error) {
+    console.error("Failed to refund payment to user:", error);
+    return false;
+  }
+};
+
 export const updatePaymentStatus = async (
   paymentId: string,
   status: 'pending' | 'completed' | 'rejected'
@@ -316,6 +356,24 @@ export const updatePaymentStatus = async (
       throw new Error("Cannot update payment from server side");
     }
 
+    // Get the payment details first
+    const paymentDoc = await databases.getDocument(
+      DATABASE_ID,
+      PAYMENT_COLLECTION_ID,
+      paymentId
+    );
+
+    const payment = paymentDoc as unknown as PaymentRequest;
+
+    // If payment is being rejected and was previously pending, refund the amount
+    if (status === 'rejected' && payment.Status === 'pending') {
+      const refunded = await refundPaymentToUser(payment.userId, payment.paymentValue);
+      if (!refunded) {
+        throw new Error('Failed to refund payment amount to user');
+      }
+    }
+
+    // Update payment status
     const result = await databases.updateDocument(
       DATABASE_ID,
       PAYMENT_COLLECTION_ID,
