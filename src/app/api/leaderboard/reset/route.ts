@@ -559,6 +559,7 @@ console.log(request);
 export async function GET(request: NextRequest) {
   try {
     const currentDate = new Date();
+    console.log(request);
     
     // Get all active tournaments
     const tournamentsResult = await databases.listDocuments(
