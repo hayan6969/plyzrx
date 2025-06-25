@@ -73,14 +73,14 @@ interface Signedupusers {
   email: string;
 }
 
-interface Earning {
-  $id?: string;
-  userId: string;
-  amount: number;
-  createdAt?: string;
-  tournamentId?: string;
-  tier?: number;
-}
+// interface Earning {
+//   $id?: string;
+//   userId: string;
+//   amount: number;
+//   createdAt?: string;
+//   tournamentId?: string;
+//   tier?: number;
+// }
 
 // Function to create earning record
 const createEarningRecord = async (
@@ -425,9 +425,9 @@ const resetUnityLeaderboard = async (tier: 1 | 2 | 3): Promise<{
 export async function POST(request: NextRequest) {
   try {
     console.log("Starting tournament end date check and cleanup...");
+console.log(request);
 
     const currentDate = new Date();
-    const currentISOString = currentDate.toISOString();
 
     // Get all tournaments that need processing (both active that have ended and already ended ones)
     const tournamentsResult = await databases.listDocuments(
