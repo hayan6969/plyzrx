@@ -450,7 +450,7 @@ console.log(request);
     }> = [];
 
     let totalProcessed = 0;
-    let totalErrors: string[] = [];
+    const totalErrors: string[] = [];
 
     for (const tournament of tournaments) {
       try {
