@@ -231,53 +231,7 @@ export default function AdminDashboard() {
   // Mock tournament data
   const fetchMockTournaments = () => {
     const mockTournaments: TournamentControl[] = [
-      {
-        tournamentId: "T1_2025_06_01",
-        name: "Weekly Championship Tier 1",
-        tier: 1,
-        isManualMode: false,
-        scheduledStartDate: new Date("2025-06-01T10:00:00"),
-        scheduledEndDate: new Date("2025-06-08T10:00:00"), // One week later
-        status: "scheduled",
-        createdBy: "admin",
-        lastModifiedBy: "admin",
-      },
-      {
-        tournamentId: "T1_2025_06_08",
-        name: "Premium League Tier 1",
-        tier: 1,
-        isManualMode: true,
-        scheduledStartDate: new Date("2025-06-08T15:00:00"),
-        scheduledEndDate: new Date("2025-06-15T15:00:00"), // One week later
-        status: "scheduled",
-        createdBy: "admin",
-        lastModifiedBy: "admin",
-      },
-      {
-        tournamentId: "T2_2025_06_15",
-        name: "Elite Masters Tier 2",
-        tier: 2,
-        isManualMode: true,
-        scheduledStartDate: new Date("2025-06-15T12:00:00"),
-        scheduledEndDate: new Date("2025-06-22T12:00:00"), // One week later
-        actualStartDate: new Date("2025-06-15T12:00:00"),
-        status: "active",
-        createdBy: "admin",
-        lastModifiedBy: "admin",
-      },
-      {
-        tournamentId: "T3_2025_06_10",
-        name: "Champions League Tier 3",
-        tier: 3,
-        isManualMode: true,
-        scheduledStartDate: new Date("2025-06-10T12:00:00"),
-        scheduledEndDate: new Date("2025-06-17T12:00:00"), // One week later
-        actualStartDate: new Date("2025-06-10T12:00:00"),
-        actualEndDate: new Date("2025-06-17T18:30:00"),
-        status: "ended",
-        createdBy: "admin",
-        lastModifiedBy: "admin",
-      },
+ 
     ];
 
     setTournamentControls(mockTournaments);
@@ -290,46 +244,6 @@ export default function AdminDashboard() {
     const fetchMockPaymentLogs = () => {
       // Mock payment logs data
       const mockPaymentLogs: PaymentLog[] = [
-        {
-          userId: "user_789",
-          username: "xXProGamerXx",
-          dateTime: "2023-11-17 18:45:12",
-          platform: "Web",
-          paymentAmount: 29.99,
-          paymentId: "pay_ghi789",
-        },
-        {
-          userId: "user_101",
-          username: "gameMaster42",
-          dateTime: "2023-11-18 22:10:33",
-          platform: "Web",
-          paymentAmount: 99.99,
-          paymentId: "pay_jkl101",
-        },
-        {
-          userId: "user_202",
-          username: "epicPlayer",
-          dateTime: "2023-11-19 11:05:56",
-          platform: "Web",
-          paymentAmount: 14.99,
-          paymentId: "pay_mno202",
-        },
-        {
-          userId: "user_303",
-          username: "gameWizard",
-          dateTime: "2023-11-20 15:30:18",
-          platform: "Web",
-          paymentAmount: 59.99,
-          paymentId: "pay_pqr303",
-        },
-        {
-          userId: "user_404",
-          username: "legendaryGamer",
-          dateTime: "2023-11-21 08:22:41",
-          platform: "Web",
-          paymentAmount: 39.99,
-          paymentId: "pay_stu404",
-        },
       ];
 
       setPaymentLogs(mockPaymentLogs);
@@ -338,48 +252,7 @@ export default function AdminDashboard() {
     const fetchMockUserTiers = () => {
       // Mock users data
       const mockUsers: UserTier[] = [
-        {
-          userId: "user_123",
-          tier1: true,
-          tier2: true,
-          tier3: false,
-        },
-        {
-          userId: "user_456",
-          tier1: true,
-          tier2: true,
-          tier3: true,
-        },
-        {
-          userId: "user_789",
-          tier1: true,
-          tier2: false,
-          tier3: false,
-        },
-        {
-          userId: "user_101",
-          tier1: true,
-          tier2: true,
-          tier3: true,
-        },
-        {
-          userId: "user_202",
-          tier1: true,
-          tier2: false,
-          tier3: false,
-        },
-        {
-          userId: "user_303",
-          tier1: false,
-          tier2: false,
-          tier3: false,
-        },
-        {
-          userId: "user_404",
-          tier1: true,
-          tier2: true,
-          tier3: false,
-        },
+      
       ];
 
       setUsers(mockUsers);
