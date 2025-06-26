@@ -18,26 +18,59 @@ const BLOCKED_STATES = [
   "ID", // Idaho
 ];
 
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = [
+  "/login",
+  "/signup",
+  "/access-denied",
+  "/", // Homepage
+  "/about",
+  "/termsandcondition",
+  "/privacypolicy",
+  "/refund",
+  "/payoutfaq",
+  "/generalfaq",
+  "/helpcenter",
+  "/howplay",
+  "/dispute",
+  "/eula",
+  "/fraudprevention",
+  "/paymentwithdrawl",
+  "/cookiespolicy",
+  "/disclaimerprovisions",
+];
+
+// API routes that don't require authentication
+const PUBLIC_API_ROUTES = ["/api/signin", "/api/signup"];
+
 export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const { pathname } = request.nextUrl;
 
-  // Handle routes requiring Unity authentication
-  if (pathname.startsWith("/dashboard")) {
-    const token = request.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+  // Check if the current path is a public route
+  const isPublicRoute = PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route)
+  );
+  const isPublicApiRoute = PUBLIC_API_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  // Get authentication token
+  const token = request.cookies.get("token")?.value;
+
+  // Redirect to login if not authenticated and not on a public route
+  // Skip API routes as they have their own authentication handling
+  if (!token && !isPublicRoute && !pathname.startsWith("/api")) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Handle dashboard routes (keeping existing logic for clarity)
+  if (pathname.startsWith("/dashboard") && !token) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // Handle API routes
-  if (
-    pathname.startsWith("/api") &&
-    !pathname.includes("/signin") &&
-    !pathname.includes("/signup")
-  ) {
-    const token = request.cookies.get("token")?.value;
-
+  if (pathname.startsWith("/api") && !isPublicApiRoute) {
     if (!token) {
       return new NextResponse(
         JSON.stringify({ success: false, message: "authentication failed" }),
@@ -71,5 +104,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/check", "/api/paypal","/api/signup","/api/signin","/api/updatepassword"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.ico$|.*\\.svg$|.*\\.webmanifest$|font/).*)",
+  ],
 };
