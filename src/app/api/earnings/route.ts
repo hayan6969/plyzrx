@@ -23,43 +23,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch the specific user
-    const user = await databases.getDocument(
+  
+    const earningsResponse = await databases.listDocuments(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-      process.env.NEXT_PUBLIC_APPWRITE_USER!, // User collection ID
-      userId
-    );
-
-    // Fetch tournaments where this user participated
-    const tournamentsResponse = await databases.listDocuments(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-      process.env.NEXT_PUBLIC_APPWRITE_TOURNAMENTS!, // Tournament collection ID
+      process.env.NEXT_PUBLIC_APPWRITE_EARNING_COLLECTION_ID!, 
       [
-        Query.equal('participants', userId), // Assuming participants field contains user IDs
-        Query.limit(100)
+        Query.equal('userId', userId), 
+        Query.limit(1000), 
+        Query.orderDesc('$createdAt')
       ]
     );
 
-    // Calculate total earnings for this user
-    const earnings = tournamentsResponse.documents.map(tournament => {
-      // Assuming tournament has earnings/prize fields
-      const userEarning = tournament.earnings?.[userId] || tournament.prize || 0;
-      return {
-        tournamentId: tournament.$id,
-        tournamentName: tournament.name,
-        earning: userEarning,
-        date: tournament.$createdAt
-      };
+    const earningsArray = earningsResponse.documents.map(earning => {
+ 
+      return earning.amount || earning.earning || 0;
     });
 
-    const totalEarnings = earnings.reduce((sum, earning) => sum + earning.earning, 0);
+    const totalEarnings = earningsArray.reduce((sum, amount) => sum + amount, 0);
 
     const userEarnings = {
-      userId: user.$id,
-      userName: user.name || user.email,
-      tournaments: earnings,
+      userId: userId,
       totalEarnings: totalEarnings,
-      earningsArray: earnings.map(e => e.earning) // Array of earning values
+      earningsCount: earningsArray.length,
+      earnings: earningsArray 
     };
 
     return NextResponse.json({
@@ -70,15 +56,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching user earnings:', error);
     
-
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'User not found',
-          details: 'The specified user ID does not exist'
-        },
-        { status: 404 }
-      );
-
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to fetch earnings',
+        details: 'Could not retrieve earnings data for the specified user'
+      },
+      { status: 500 }
+    );
   }
 }
