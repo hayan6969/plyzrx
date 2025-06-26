@@ -41,7 +41,19 @@ const PUBLIC_ROUTES = [
 ];
 
 // API routes that don't require authentication
-const PUBLIC_API_ROUTES = ["/api/signin", "/api/signup"];
+const PUBLIC_API_ROUTES = [
+  "/api/signin",
+  "/api/signup",
+  "/api/userdata",
+  "/api/match",
+  "/api/matchlog",
+  "/api/tournament",
+  "/api/leaderboard",
+  "/api/earnings",
+  "/api/rewards",
+  "/api/check",
+  "/api/report",
+];
 
 export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
