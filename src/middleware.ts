@@ -53,6 +53,8 @@ const PUBLIC_API_ROUTES = [
   "/api/rewards",
   "/api/check",
   "/api/report",
+  "/api/banplayers",
+  "/api/:path*"
 ];
 
 export async function middleware(request: NextRequest) {
