@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 export default function PaymentCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState("Processing");
+  const [status] = useState("Processing");
   const [details, setDetails] = useState<Record<string, any>>({});
 
   useEffect(() => {
