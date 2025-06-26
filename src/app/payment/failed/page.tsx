@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function PaymentFailed() {
+function PaymentFailedContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [errorDetails, setErrorDetails] = useState<Record<string, any>>({});
@@ -77,5 +77,21 @@ export default function PaymentFailed() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentFailed() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-50">
+          <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+            <h1 className="text-2xl font-bold text-center mb-4">Loading...</h1>
+          </div>
+        </div>
+      }
+    >
+      <PaymentFailedContent />
+    </Suspense>
   );
 }
