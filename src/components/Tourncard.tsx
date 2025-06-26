@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import PayPalButton from "./PayPalButton";
+import BankfulButton from "./BankfulButton";
+import PaymentSelectionModal from "./PaymentSelectionModal";
 
 type Tournament = {
   tier: string;
@@ -36,7 +38,9 @@ export default function Tourncard(tournament: Tournament) {
     finalprice,
   } = tournament;
 
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPayPal, setShowPayPal] = useState(false);
+  const [showBankful, setShowBankful] = useState(false);
   const [userId, setUserId] = useState<string>("anonymous");
   const [username, setUsername] = useState<string>("guest");
 
@@ -55,7 +59,17 @@ export default function Tourncard(tournament: Tournament) {
   }, []);
 
   const handlePurchase = () => {
+    setShowPaymentModal(true);
+  };
+
+  const handleSelectPayPal = () => {
+    setShowPaymentModal(false);
     setShowPayPal(true);
+  };
+
+  const handleSelectBankful = () => {
+    setShowPaymentModal(false);
+    setShowBankful(true);
   };
 
   return (
@@ -156,6 +170,19 @@ export default function Tourncard(tournament: Tournament) {
             Purchase
           </Button>
         </div>
+
+        {showPaymentModal && (
+          <PaymentSelectionModal
+            onClose={() => setShowPaymentModal(false)}
+            tier={tier}
+            finalprice={finalprice}
+            userId={userId}
+            username={username}
+            onSelectPayPal={handleSelectPayPal}
+            onSelectBankful={handleSelectBankful}
+          />
+        )}
+
         {showPayPal && (
           <div
             className="fixed rounded-3xl inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -186,6 +213,44 @@ export default function Tourncard(tournament: Tournament) {
                   amount={finalprice}
                   userId={userId}
                   username={username}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showBankful && (
+          <div
+            className="fixed rounded-3xl inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => setShowBankful(false)}
+          >
+            <div
+              className="relative p-6 bg-white rounded-lg shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="absolute top-5 right-5 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
+                onClick={() => setShowBankful(false)}
+              >
+                ✕
+              </button>
+
+              <div className="mb-4 text-center">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {tier} Tournament
+                </h2>
+                <p className="text-lg font-semibold text-gray-700 mt-2">
+                  Total: ${finalprice}
+                </p>
+              </div>
+
+              <div className="mt-6">
+                <BankfulButton
+                  amount={finalprice}
+                  userId={userId}
+                  username={username}
+                  tier={tier}
+                  onClose={() => setShowBankful(false)}
                 />
               </div>
             </div>
