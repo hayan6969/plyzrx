@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Client, Databases, ID, Query } from "appwrite";
+import { Client, Databases, Query } from "appwrite";
 
 const client = new Client()
   .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1")

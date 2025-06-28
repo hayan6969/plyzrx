@@ -75,7 +75,6 @@ const createSignedUpUser = async (userId: string, username: string, email: strin
 
 export async function POST(request: Request) {
   const { fullname, username, email, password } = await request.json();
-  const cookiesStore = cookies();
   
   if (!fullname || !username || !email || !password) {
     return NextResponse.json({ error: "Fields required" }, { status: 400 });
