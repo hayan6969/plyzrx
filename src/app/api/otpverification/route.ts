@@ -36,7 +36,7 @@ const savedotp=await databases.listDocuments(
 )
 
 if (savedotp.documents.length>0) {
-    console.log(savedotp.documents[0].otp);
+
     const savedOtp=savedotp.documents[0].otp
 
     if (otp==savedOtp) {
