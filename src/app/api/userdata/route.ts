@@ -69,10 +69,7 @@ export async function GET(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'User ID is required' 
-        },
+        { success: false, error: 'User ID is required' },
         { status: 400 }
       );
     }
@@ -182,67 +179,133 @@ export async function GET(request: NextRequest) {
     const tournamentAssignments = tournamentAssignmentsResult.documents as unknown as TournamentAssignment[];
     const paymentRequests = paymentRequestsResult.documents as unknown as PaymentRequest[];
 
+    // Clean userId - remove newline if present, otherwise use as is
+    const cleanUserId = signedUpUserData.userId.includes('\n') 
+      ? signedUpUserData.userId.replace(/\n/g, '') 
+      : signedUpUserData.userId;
+
     // Check if user has tournament assignments
     if (tournamentAssignments.length === 0) {
-      const formattedUserData = {
-        id: signedUpUserData.$id,
-        userId: signedUpUserData.userId,
-        username: signedUpUserData.username,
-        email: signedUpUserData.email,
-        tiers: {
-          tier1: userData?.tier1 || false,
-          tier2: userData?.tier2 || false,
-          tier3: userData?.tier3 || false
-        },
-        gameStats: {
-          tournamentScore: 0,
-          wins: signedUpUserData.wins,
-          losses: signedUpUserData.loss,
-          earnings: signedUpUserData.amount, // Earnings from signedup collection
-          winRate: signedUpUserData.wins && signedUpUserData.loss ? 
-            Math.round((signedUpUserData.wins / (signedUpUserData.wins + signedUpUserData.loss)) * 100) : 0
-        },
-        financialData: {
-          totalEarnings: signedUpUserData.amount,
-          availableBalance: signedUpUserData.amount,
-          withdrawalRequests: {
-            total: paymentRequests.length,
-            pending: paymentRequests.filter(req => req.Status === 'pending').length,
-            completed: paymentRequests.filter(req => req.Status === 'completed').length,
-            rejected: paymentRequests.filter(req => req.Status === 'rejected').length,
-            requests: paymentRequests.map(request => ({
-              id: request.$id,
-              amount: request.paymentValue,
-              paypalAccount: request.paypalAccount,
-              status: request.Status,
-              requestedAt: request.RequestedAt,
-              createdAt: request.$createdAt,
-              updatedAt: request.$updatedAt
-            }))
-          }
-        },
-        tournamentAssignments: {
-          total: 0,
-          message: 'User not assigned to any tournaments',
-          active: [],
-          awaiting: [],
-          completed: [],
-          expired: [],
-          allAssignments: []
-        },
-        metadata: {
-          createdAt: signedUpUserData.$createdAt,
-          updatedAt: signedUpUserData.$updatedAt
-        }
-      };
+      // If no tournament assignments found, search in NEXT_PUBLIC_APPWRITE_USER collection for user tournament status
+      try {
+        const userTournamentStatusResult = await databases.listDocuments(
+          DATABASE_ID,
+          process.env.NEXT_PUBLIC_APPWRITE_USER || '', // This is the tournament assignments collection
+          [Query.equal("userId", cleanUserId)]
+        );
 
-      return NextResponse.json({
-        success: true,
-        message: 'User data retrieved successfully - No tournament assignments found',
-        userId: signedUpUserData.userId,
-        username: signedUpUserData.username,
-        data: formattedUserData
-      });
+        let tournamentStatus = null;
+        if (userTournamentStatusResult.documents.length > 0) {
+          const latestAssignment = userTournamentStatusResult.documents[0];
+          tournamentStatus = {
+            id: latestAssignment.$id,
+            tournamentId: latestAssignment.tournamentId || '',
+            tier: latestAssignment.tier || '',
+            status: latestAssignment.AccessStatus || 'Unknown',
+            assignedAt: latestAssignment.assignedAt || '',
+            paymentId: latestAssignment.PaymentId || '',
+            tournamentScore: latestAssignment.TournamentScore || 0,
+            wins: latestAssignment.wins || 0,
+            losses: latestAssignment.loss || 0
+          };
+        }
+
+        const formattedUserData = {
+          id: signedUpUserData.$id,
+          userId: cleanUserId,
+          username: signedUpUserData.username,
+          email: signedUpUserData.email,
+          tiers: {
+            tier1: userData?.tier1 || false,
+            tier2: userData?.tier2 || false,
+            tier3: userData?.tier3 || false
+          },
+          gameStats: {
+            tournamentScore: 0,
+            wins: signedUpUserData.wins,
+            losses: signedUpUserData.loss,
+            earnings: signedUpUserData.amount,
+            winRate: signedUpUserData.wins && signedUpUserData.loss ? 
+              Math.round((signedUpUserData.wins / (signedUpUserData.wins + signedUpUserData.loss)) * 100) : 0
+          },
+          financialData: {
+            paymentId: signedUpUserData.paymentId,
+            totalEarnings: signedUpUserData.amount
+          },
+          tournamentData: {
+            active: [],
+            awaiting: [],
+            completed: [],
+            expired: [],
+            allAssignments: [],
+            totalAssignments: 0
+          },
+          tournamentStatus: tournamentStatus, // Include the tournament status from APPWRITE_USER collection
+          timestamps: {
+            createdAt: signedUpUserData.$createdAt,
+            updatedAt: signedUpUserData.$updatedAt
+          }
+        };
+
+        return NextResponse.json({
+          success: true,
+          message: tournamentStatus ? 
+            'User data retrieved successfully - Tournament status found in assignments collection' : 
+            'User data retrieved successfully - No tournament assignments found',
+          userId: cleanUserId,
+          username: signedUpUserData.username,
+          data: formattedUserData
+        });
+
+      } catch (tournamentStatusError) {
+        console.error("Error fetching tournament status from APPWRITE_USER collection:", tournamentStatusError);
+        
+        // Return user data without tournament status if there's an error
+        const formattedUserData = {
+          id: signedUpUserData.$id,
+          userId: cleanUserId,
+          username: signedUpUserData.username,
+          email: signedUpUserData.email,
+          tiers: {
+            tier1: userData?.tier1 || false,
+            tier2: userData?.tier2 || false,
+            tier3: userData?.tier3 || false
+          },
+          gameStats: {
+            tournamentScore: 0,
+            wins: signedUpUserData.wins,
+            losses: signedUpUserData.loss,
+            earnings: signedUpUserData.amount,
+            winRate: signedUpUserData.wins && signedUpUserData.loss ? 
+              Math.round((signedUpUserData.wins / (signedUpUserData.wins + signedUpUserData.loss)) * 100) : 0
+          },
+          financialData: {
+            paymentId: signedUpUserData.paymentId,
+            totalEarnings: signedUpUserData.amount
+          },
+          tournamentData: {
+            active: [],
+            awaiting: [],
+            completed: [],
+            expired: [],
+            allAssignments: [],
+            totalAssignments: 0
+          },
+          tournamentStatus: null,
+          timestamps: {
+            createdAt: signedUpUserData.$createdAt,
+            updatedAt: signedUpUserData.$updatedAt
+          }
+        };
+
+        return NextResponse.json({
+          success: true,
+          message: 'User data retrieved successfully - No tournament assignments found',
+          userId: cleanUserId,
+          username: signedUpUserData.username,
+          data: formattedUserData
+        });
+      }
     }
 
     // Calculate total tournament score from tournament assignments (can be negative)
@@ -257,7 +320,7 @@ export async function GET(request: NextRequest) {
     // Format the response with all user data
     const formattedUserData = {
       id: signedUpUserData.$id,
-      userId: signedUpUserData.userId,
+      userId: cleanUserId,
       username: signedUpUserData.username,
       email: signedUpUserData.email,
       tiers: {
@@ -366,17 +429,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'User data retrieved successfully',
-      userId: signedUpUserData.userId,
+      userId: cleanUserId,
       username: signedUpUserData.username,
       data: formattedUserData
     });
 
   } catch (error) {
-    console.error('Failed to fetch user data:', error);
+    console.error('Error in GET /api/userdata:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: 'Failed to fetch user data',
+        error: 'Failed to retrieve user data',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
