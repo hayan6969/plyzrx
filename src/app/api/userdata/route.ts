@@ -95,12 +95,65 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch tier data from the users collection
+
+
+    // Fetch tier data from the users collection - try with trimmed userId
     const userResult = await databases.listDocuments(
       DATABASE_ID,
       USERS_COLLECTION_ID,
-      [Query.equal("userId", userId)]
+      [Query.equal("userId", userId.trim())]
     );
+
+    // If still not found, try searching for userId with newline
+    if (userResult.documents.length === 0) {
+      console.log('Trying with newline character...');
+      const userResultWithNewline = await databases.listDocuments(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        [Query.equal("userId", userId + '\n')]
+      );
+      
+      if (userResultWithNewline.documents.length > 0) {
+        console.log('Found user with newline character');
+        // Use this result instead
+        Object.assign(userResult, userResultWithNewline);
+      }
+    }
+
+    // Enhanced debugging
+    console.log('User tier query result:', {
+      documentsCount: userResult.documents.length,
+      documents: userResult.documents,
+      total: userResult.total
+    });
+
+    // Try alternative queries to debug
+    console.log('Attempting to list all documents in users collection (first 10):');
+    const allUsersResult = await databases.listDocuments(
+      DATABASE_ID,
+      USERS_COLLECTION_ID,
+      [Query.limit(10)]
+    );
+    console.log('All users sample:', allUsersResult.documents.map(doc => ({ 
+      id: doc.$id, 
+      userId: doc.userId,
+      userIdType: typeof doc.userId 
+    })));
+
+    // Try query with string conversion
+    console.log('Trying with string conversion:');
+    const userResultString = await databases.listDocuments(
+      DATABASE_ID,
+      USERS_COLLECTION_ID,
+      [Query.equal("userId", String(userId))]
+    );
+    console.log('String query result count:', userResultString.documents.length);
+
+    // Debug: Log what we got from the users collection
+    console.log('User tier query result:', {
+      documentsCount: userResult.documents.length,
+      documents: userResult.documents
+    });
 
     // Fetch tournament assignments for the user
     const tournamentAssignmentsResult = await databases.listDocuments(
@@ -122,6 +175,10 @@ export async function GET(request: NextRequest) {
     // Get the documents
     const signedUpUserData = signedUpUserResult.documents[0] as unknown as Signedupusers;
     const userData = userResult.documents.length > 0 ? userResult.documents[0] as unknown as UserData : null;
+    
+    // Debug: Log the actual userData
+    console.log('Parsed userData:', userData);
+    
     const tournamentAssignments = tournamentAssignmentsResult.documents as unknown as TournamentAssignment[];
     const paymentRequests = paymentRequestsResult.documents as unknown as PaymentRequest[];
 
