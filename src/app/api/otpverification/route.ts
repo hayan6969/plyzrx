@@ -27,12 +27,12 @@ export interface Signedupusers {
 
 export async function POST(request: Request) {
 
-const {otp,userId}= await request.json()
+const {otp,username}= await request.json()
 
 const savedotp=await databases.listDocuments(
     DATABASE_ID,
     SIGNEDUP_COLLECTION_ID,
-       [Query.equal("userId", userId)]
+       [Query.equal("username", username)]
 )
 
 if (savedotp.documents.length>0) {
