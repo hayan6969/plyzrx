@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import axios from "axios";
 import { Client, Databases, ID, Query } from "appwrite";
 import generateotp from "@/lib/generateOtp";
