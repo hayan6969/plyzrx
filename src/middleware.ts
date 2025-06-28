@@ -60,8 +60,9 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Get authentication token
-  const token = request.cookies.get("token")?.value;
+  // Get authentication token from Authorization header
+  const authHeader = request.headers.get("authorization");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
 
   // Redirect to login if not authenticated and not on a public route
   // Skip API routes as they have their own authentication handling
