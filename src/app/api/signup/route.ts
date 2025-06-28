@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import axios from "axios";
 import { Client, Databases, ID, Query } from "appwrite";
+import generateotp from "@/lib/generateOtp";
+import { sendOTPEmail } from "@/lib/otpemail";
 
 // Server-side Appwrite client
 const client = new Client()
@@ -22,6 +24,8 @@ export interface Signedupusers {
   amount: number;
   username: string;
   email: string;
+  otp:string,
+  isVerified:boolean
 }
 
 // Function to create signed up user in Appwrite
@@ -39,6 +43,8 @@ const createSignedUpUser = async (userId: string, username: string, email: strin
       return existingUserResult.documents[0];
     }
 
+    const otpgen = await generateotp(); // Remove Number() since it's already a string
+    
     // Create new signed up user
     const signedUpUserData: Partial<Signedupusers> = {
       userId: userId,
@@ -47,7 +53,9 @@ const createSignedUpUser = async (userId: string, username: string, email: strin
       paymentId: "",
       wins: 0,
       loss: 0,
-      amount: 0
+      amount: 0,
+      otp: otpgen, // Convert to number for storage
+      isVerified: false
     };
 
     const result = await databases.createDocument(
@@ -58,7 +66,7 @@ const createSignedUpUser = async (userId: string, username: string, email: strin
     );
 
     console.log(`Created signed up user in Appwrite: ${userId}`);
-    return result;
+    return { ...result, otpString: otpgen }; // Return both document and OTP string
   } catch (error) {
     console.error("Failed to create signed up user in Appwrite:", error);
     throw error;
@@ -86,35 +94,27 @@ export async function POST(request: Request) {
       }
     );
 
-    // Set authentication cookie
-    (await cookiesStore).set({
-      name: "token",
-      value: api.data.idToken,
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-      maxAge: api.data.expiresIn,
-    });
-
     // Save user data to Appwrite after successful Unity sign-up
     try {
-      await createSignedUpUser(
+      const userDoc = await createSignedUpUser(
         api.data.user.id,      // Unity user ID
         api.data.user.username, // Unity username
         email                   // Email from form
       );
+      
+      // Send OTP email using EmailJS
+      await sendOTPEmail(email, (userDoc as any).otpString, username);
+      
     } catch (appwriteError) {
-      console.error("Failed to save user to Appwrite:", appwriteError);
-      // Continue with success response even if Appwrite fails
-      // You might want to log this for manual intervention
+      console.error("Failed to save user to Appwrite or send email:", appwriteError);
     }
 
     return NextResponse.json({
       success: true,
-      message: "User created successfully",
+      message: "User created successfully. Please check your email for OTP verification.",
       username: api.data.user.username,
-      userId: api.data.user.id
+      userId: api.data.user.id,
+      requiresVerification: true,
     });
   } catch (error: any) {
     console.log("Error Response:", error.response?.data || error.message);
