@@ -44,17 +44,8 @@ const PUBLIC_ROUTES = [
 const PUBLIC_API_ROUTES = [
   "/api/signin",
   "/api/signup",
-  "/api/userdata",
-  "/api/match/:path*",
-  "/api/matchlog",
-  "/api/tournament/:path*",
-  "/api/leaderboard",
-  "/api/earnings",
-  "/api/rewards",
-  "/api/check",
-  "/api/report",
-  "/api/rewards/:path*",
-  "/api/banplayers",
+"/api/leaderboard/reset"
+
 ];
 
 export async function middleware(request: NextRequest) {
