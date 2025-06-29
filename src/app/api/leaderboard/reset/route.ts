@@ -73,15 +73,6 @@ interface Signedupusers {
   email: string;
 }
 
-// interface Earning {
-//   $id?: string;
-//   userId: string;
-//   amount: number;
-//   createdAt?: string;
-//   tournamentId?: string;
-//   tier?: number;
-// }
-
 // Function to create earning record
 const createEarningRecord = async (
   userId: string,
@@ -96,9 +87,9 @@ const createEarningRecord = async (
       'unique()',
       {
         userId,
-        amount,
+        amount: amount.toString(), // Convert number to string
         tournamentId,
-        tier,
+        tier: tier.toString(), // Also convert tier to string if needed
         createdAt: new Date().toISOString()
       }
     );
@@ -158,42 +149,51 @@ const distributeTournamentPayouts = async (
   earningRecords: number;
 }> => {
   try {
+    console.log(`Starting payout distribution for tournament ${tournamentId}, tier ${tier}`);
+
+    // Get ALL tournament assignments for this specific ended tournament (regardless of AccessStatus)
     const result = await databases.listDocuments(
       DATABASE_ID,
       TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
-      [
-        Query.equal("tournamentId", tournamentId),
-        Query.equal("AccessStatus", "ended")
-      ]
+      [Query.equal("tournamentId", tournamentId)]
     );
 
     const assignments = result.documents as unknown as TournamentAssignment[];
+
+    console.log(`Found ${assignments.length} total assignments for ended tournament ${tournamentId}`);
 
     if (assignments.length === 0) {
       return {
         success: 0,
         failed: 0,
         totalPayout: 0,
-        errors: ["No active tournament assignments found for this tournament"],
+        errors: [`No users participated in tournament ${tournamentId}`],
         payouts: [],
         earningRecords: 0
       };
     }
 
-    const sortedAssignments = assignments
-      .filter(assignment => assignment.TournamentScore !== undefined)
-      .sort((a, b) => (b.TournamentScore || 0) - (a.TournamentScore || 0));
+    // Log each assignment for debugging
+    assignments.forEach((assignment, index) => {
+      console.log(`User ${index + 1}: ${assignment.userId}, Status: ${assignment.AccessStatus}, Score: ${assignment.TournamentScore}`);
+    });
 
-    if (sortedAssignments.length === 0) {
-      return {
-        success: 0,
-        failed: 0,
-        totalPayout: 0,
-        errors: ["No tournament scores found for ranking"],
-        payouts: [],
-        earningRecords: 0
-      };
-    }
+    // Separate users with scores and users without scores
+    const usersWithScores = assignments.filter(assignment => {
+      const hasScore = assignment.TournamentScore !== undefined && assignment.TournamentScore !== null && assignment.TournamentScore > 0;
+      return hasScore;
+    });
+
+    const usersWithoutScores = assignments.filter(assignment => {
+      const hasScore = assignment.TournamentScore !== undefined && assignment.TournamentScore !== null && assignment.TournamentScore > 0;
+      return !hasScore;
+    });
+
+    console.log(`Users with valid scores: ${usersWithScores.length}`);
+    console.log(`Users without scores: ${usersWithoutScores.length}`);
+
+    // Sort users with scores by tournament score (highest first)
+    const sortedAssignments = usersWithScores.sort((a, b) => (b.TournamentScore || 0) - (a.TournamentScore || 0));
 
     // Get payout amounts based on tier
     const tierKey = `tier${tier}` as keyof typeof PAYOUT_AMOUNTS;
@@ -206,30 +206,37 @@ const distributeTournamentPayouts = async (
     const errors: string[] = [];
     const payouts: Array<{ userId: string; amount: number; rank: number }> = [];
 
+    console.log(`Processing payouts for ${sortedAssignments.length} users with scores in tier ${tier}`);
+    console.log(`Payout config: Top 10 = $${payoutConfig.top10}, Remaining = $${payoutConfig.remaining}`);
+
+    // Process users with scores for payouts (up to 100)
     for (let i = 0; i < sortedAssignments.length && i < 100; i++) {
       try {
         const assignment = sortedAssignments[i];
         const rank = i + 1;
         let payoutAmount = 0;
 
+        // Determine payout amount based on rank
         if (rank <= 10) {
           payoutAmount = payoutConfig.top10;
         } else if (rank <= 100) {
           payoutAmount = payoutConfig.remaining;
         }
 
-        if (payoutAmount > 0) {
-          // Update tournament assignment (removed rank field)
-          await databases.updateDocument(
-            DATABASE_ID,
-            TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
-            assignment.$id!,
-            {
-              earnings: payoutAmount,
-              AccessStatus: "Completed"
-            }
-          );
+        console.log(`Processing User ${assignment.userId} - Rank: ${rank}, Score: ${assignment.TournamentScore}, Payout: $${payoutAmount}`);
 
+        // Update tournament assignment with earnings and mark as completed
+        await databases.updateDocument(
+          DATABASE_ID,
+          TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+          assignment.$id!,
+          {
+            earnings: payoutAmount,
+            AccessStatus: "Completed"
+          }
+        );
+
+        if (payoutAmount > 0) {
           // Update earnings in signed up users collection
           await updateSignedupUserEarnings(assignment.userId, payoutAmount);
 
@@ -244,23 +251,47 @@ const distributeTournamentPayouts = async (
           });
 
           totalPayout += payoutAmount;
-          successCount++;
+          console.log(`✅ Successfully processed payout for user ${assignment.userId}: $${payoutAmount}`);
         } else {
-          // Mark as completed even if no payout (removed rank field)
-          await databases.updateDocument(
-            DATABASE_ID,
-            TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
-            assignment.$id!,
-            {
-              AccessStatus: "Completed"
-            }
-          );
+          console.log(`ℹ️ User ${assignment.userId} marked as completed (no payout for rank ${rank})`);
         }
+
+        successCount++;
       } catch (error) {
+        console.error(`❌ Failed to process payout for user ${sortedAssignments[i].userId}:`, error);
         errors.push(`Failed to process payout for user ${sortedAssignments[i].userId}: ${error}`);
         failedCount++;
       }
     }
+
+    // Process users without scores - mark them as completed but no payouts
+    console.log(`Processing ${usersWithoutScores.length} users without scores (marking as completed, no payouts)`);
+    for (const assignment of usersWithoutScores) {
+      try {
+        await databases.updateDocument(
+          DATABASE_ID,
+          TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+          assignment.$id!,
+          {
+            earnings: 0,
+            AccessStatus: "Completed"
+          }
+        );
+        console.log(`ℹ️ User ${assignment.userId} marked as completed (no score, no payout)`);
+        successCount++;
+      } catch (error) {
+        console.error(`❌ Failed to mark user ${assignment.userId} as completed:`, error);
+        errors.push(`Failed to mark user ${assignment.userId} as completed: ${error}`);
+        failedCount++;
+      }
+    }
+
+    console.log(`Payout distribution completed for tournament ${tournamentId}:`);
+    console.log(`- Total users processed: ${successCount}`);
+    console.log(`- Failed: ${failedCount}`);
+    console.log(`- Users with payouts: ${payouts.length}`);
+    console.log(`- Total Payout: $${totalPayout}`);
+    console.log(`- Earning Records Created: ${earningRecords}`);
 
     return {
       success: successCount,

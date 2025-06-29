@@ -693,34 +693,61 @@ export default function AdminDashboard() {
   const handleDistributePayouts = async (tournamentId: string) => {
     setIsDistributingPayouts(true);
     try {
-      const result = await distributeTournamentPayouts(tournamentId);
+      // Call the leaderboard reset API instead of the client-side function
+      const response = await fetch('/api/leaderboard/reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // The API will process all ended tournaments, including the one we want
+      });
 
-      if (result.success > 0) {
-        toast.success(
-          `Successfully distributed payouts to ${result.success} players. Total: $${result.totalPayout.toLocaleString()}`
+      if (!response.ok) {
+        throw new Error(`API call failed with status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Find the processed tournament in the results
+        const processedTournament = result.data.processedTournaments?.find(
+          (t: any) => t.tournamentId === tournamentId
         );
 
-        // Log payout details
-        console.log("Payout distribution results:", result.payouts);
+        if (processedTournament) {
+          const payoutResult = processedTournament.payoutResult;
+          
+          if (payoutResult.success > 0) {
+            toast.success(
+              `Successfully distributed payouts to ${payoutResult.success} players. Total: $${payoutResult.totalPayout.toLocaleString()}`
+            );
+
+            // Log payout details
+            console.log("Payout distribution results:", payoutResult.payouts);
+            console.log("Earning records created:", payoutResult.earningRecords);
+          } else {
+            toast.info("No eligible players found for payout distribution");
+          }
+
+          if (payoutResult.failed > 0) {
+            toast.error(
+              `Failed to distribute payouts to ${payoutResult.failed} players. Check console for details.`
+            );
+            console.error("Payout errors:", payoutResult.errors);
+          }
+        } else {
+          toast.info(`Tournament ${tournamentId} was not processed. It may not have ended yet or already been processed.`);
+        }
 
         // Refresh the data to show updated assignments
         await fetchAppwriteData();
-      }
-
-      if (result.failed > 0) {
-        toast.error(
-          `Failed to distribute payouts to ${result.failed} players. Check console for details.`
-        );
-        console.error("Payout errors:", result.errors);
-      }
-
-      if (result.success === 0) {
-        toast.info("No eligible players found for payout distribution");
+      } else {
+        throw new Error(result.error || 'Unknown error occurred');
       }
     } catch (error) {
       console.error("Payout distribution failed:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to distribute payouts";
-      toast.error(errorMessage);
+      toast.error(`Failed to distribute payouts: ${errorMessage}`);
     } finally {
       setIsDistributingPayouts(false);
     }

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import axios from "axios";
 import { Client, Databases, ID, Query } from "appwrite";
 import generateotp from "@/lib/generateOtp";
 import { sendOTPEmail } from "@/lib/otpemail";
@@ -24,24 +23,13 @@ export interface Signedupusers {
   username: string;
   email: string;
   otp:string,
-  isVerified:boolean
+  isVerified:boolean,
+  password?: string;
 }
 
-// Function to create signed up user in Appwrite
-const createSignedUpUser = async (userId: string, username: string, email: string) => {
+// Function to create signed up user in Appwrite (before Unity signup)
+const createPendingUser = async (username: string, email: string, password: string) => {
   try {
-    // Check if user already exists by userId
-    const existingUserResult = await databases.listDocuments(
-      DATABASE_ID,
-      SIGNEDUP_COLLECTION_ID,
-      [Query.equal("userId", userId)]
-    );
-
-    if (existingUserResult.documents.length > 0) {
-      console.log(`User ${userId} already exists in signed up users collection`);
-      return existingUserResult.documents[0];
-    }
-
     // Check if email already exists
     const existingEmailResult = await databases.listDocuments(
       DATABASE_ID,
@@ -53,18 +41,19 @@ const createSignedUpUser = async (userId: string, username: string, email: strin
       throw new Error("EMAIL_ALREADY_EXISTS");
     }
 
-    const otpgen = await generateotp(); // Remove Number() since it's already a string
+    const otpgen = await generateotp();
     
-    // Create new signed up user
-    const signedUpUserData: Partial<Signedupusers> = {
-      userId: userId,
+    // Create new pending user (without Unity ID)
+    const pendingUserData: Partial<Signedupusers> = {
+      userId: "", // Will be set after Unity signup
       username: username,
       email: email,
+      password: password, // Store temporarily for Unity signup
       paymentId: "",
       wins: 0,
       loss: 0,
       amount: 0,
-      otp: otpgen, // Convert to number for storage
+      otp: otpgen,
       isVerified: false
     };
 
@@ -72,13 +61,13 @@ const createSignedUpUser = async (userId: string, username: string, email: strin
       DATABASE_ID,
       SIGNEDUP_COLLECTION_ID,
       ID.unique(),
-      signedUpUserData
+      pendingUserData
     );
 
-    console.log(`Created signed up user in Appwrite: ${userId}`);
-    return { ...result, otpString: otpgen }; // Return both document and OTP string
+    console.log(`Created pending user in Appwrite: ${username}`);
+    return { ...result, otpString: otpgen };
   } catch (error) {
-    console.error("Failed to create signed up user in Appwrite:", error);
+    console.error("Failed to create pending user in Appwrite:", error);
     throw error;
   }
 };
@@ -90,7 +79,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Fields required" }, { status: 400 });
   }
 
-  // Check if email already exists before calling Unity API
+  // Check if email already exists
   try {
     const existingEmailResult = await databases.listDocuments(
       DATABASE_ID,
@@ -113,53 +102,32 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Sign up with Unity
-    const api = await axios.post(
-      "https://player-auth.services.api.unity.com/v1/authentication/usernamepassword/sign-up",
-      { username, password },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          ProjectId: process.env.NEXT_PUBLIC_PROJECTID ?? "",
-        },
-      }
-    );
-
-    // Save user data to Appwrite after successful Unity sign-up
-    try {
-      const userDoc = await createSignedUpUser(
-        api.data.user.id,      // Unity user ID
-        api.data.user.username, // Unity username
-        email                   // Email from form
-      );
-      
-      // Send OTP email using EmailJS
-      await sendOTPEmail(email, (userDoc as any).otpString, username);
-      
-    } catch (appwriteError: any) {
-      console.error("Failed to save user to Appwrite or send email:", appwriteError);
-      
-      // Handle specific email already exists error
-      if (appwriteError.message === "EMAIL_ALREADY_EXISTS") {
-        return NextResponse.json({
-          success: false,
-          message: "An account with this email already exists. Please use a different email.",
-        }, { status: 409 });
-      }
-    }
+    // Create pending user in Appwrite (without Unity signup)
+    const userDoc = await createPendingUser(username, email, password);
+    
+    // Send OTP email using EmailJS
+    await sendOTPEmail(email, (userDoc as any).otpString, username);
 
     return NextResponse.json({
       success: true,
-      message: "User created successfully. Please check your email for OTP verification.",
-      username: api.data.user.username,
+      message: "Please check your email for OTP verification to complete your account creation.",
+      username: username,
       requiresVerification: true,
     });
   } catch (error: any) {
-    console.log("Error Response:", error.response?.data || error.message);
+    console.log("Error:", error.message);
+
+    // Handle specific email already exists error
+    if (error.message === "EMAIL_ALREADY_EXISTS") {
+      return NextResponse.json({
+        success: false,
+        message: "An account with this email already exists. Please use a different email.",
+      }, { status: 409 });
+    }
 
     return NextResponse.json({
       success: false,
-      message: error.response?.data.detail || "Can't Create Account",
-    });
+      message: "Failed to create account. Please try again.",
+    }, { status: 500 });
   }
 }

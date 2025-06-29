@@ -48,7 +48,8 @@ const PUBLIC_API_ROUTES = [
 "/api/otpverification",
 "/api/resendotp",
 "/api/resetpassword",
-"/api/resetpassword/updatepassword"
+"/api/resetpassword/updatepassword",
+"/api/match/update"
 
 
 
