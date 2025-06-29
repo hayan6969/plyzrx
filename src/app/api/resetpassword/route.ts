@@ -28,26 +28,26 @@ export interface Signedupusers {
 
 export async function POST(request: Request) {
   try {
-    const { username } = await request.json();
+    const { email } = await request.json();
 
     // Validate required field
-    if (!username) {
+    if (!email) {
       return NextResponse.json(
-        { success: false, message: "Username is required" },
+        { success: false, message: "Email is required" },
         { status: 400 }
       );
     }
 
-    // Find user by username in signed up users collection
+    // Find user by email in signed up users collection
     const userResult = await databases.listDocuments(
       DATABASE_ID,
       SIGNEDUP_COLLECTION_ID,
-      [Query.equal("username", username)]
+      [Query.equal("email", email)]
     );
 
     if (userResult.documents.length === 0) {
       return NextResponse.json(
-        { success: false, message: "Username not found in our records" },
+        { success: false, message: "Email not found in our records" },
         { status: 404 }
       );
     }

@@ -27,26 +27,26 @@ export interface Signedupusers {
 
 export async function POST(request: Request) {
   try {
-    const { username, newPassword } = await request.json();
+    const { email, newPassword } = await request.json();
 
     // Validate required fields
-    if (!username || !newPassword) {
+    if (!email || !newPassword) {
       return NextResponse.json(
-        { success: false, message: "Username and new password are required" },
+        { success: false, message: "Email and new password are required" },
         { status: 400 }
       );
     }
 
-    // Find user by username in signed up users collection
+    // Find user by email in signed up users collection
     const userResult = await databases.listDocuments(
       DATABASE_ID,
       SIGNEDUP_COLLECTION_ID,
-      [Query.equal("username", username)]
+      [Query.equal("email", email)]
     );
 
     if (userResult.documents.length === 0) {
       return NextResponse.json(
-        { success: false, message: "Username not found in our records" },
+        { success: false, message: "Email not found in our records" },
         { status: 404 }
       );
     }
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
 
     try {
       // Call Unity API to change password
- await axios.post(
+      await axios.post(
         `https://services.api.unity.com/player-identity/v1/projects/${process.env.NEXT_PUBLIC_PROJECTID}/users/${user.userId}/change-password`,
         { newPassword },
         {
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
         { 
           success: true, 
           message: "Password updated successfully. You can now login with your new password.",
-          username: user.username
+          email: user.email
         },
         { status: 200 }
       );

@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     if (!user.isVerified) {
       return NextResponse.json({
         success: false,
-        message: "Account not verified. Please check your email for OTP verification."
+        message: "Please check your email for OTP verification."
       }, { status: 403 });
     }
 

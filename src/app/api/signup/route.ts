@@ -30,7 +30,7 @@ export interface Signedupusers {
 // Function to create signed up user in Appwrite
 const createSignedUpUser = async (userId: string, username: string, email: string) => {
   try {
-    // Check if user already exists
+    // Check if user already exists by userId
     const existingUserResult = await databases.listDocuments(
       DATABASE_ID,
       SIGNEDUP_COLLECTION_ID,
@@ -40,6 +40,17 @@ const createSignedUpUser = async (userId: string, username: string, email: strin
     if (existingUserResult.documents.length > 0) {
       console.log(`User ${userId} already exists in signed up users collection`);
       return existingUserResult.documents[0];
+    }
+
+    // Check if email already exists
+    const existingEmailResult = await databases.listDocuments(
+      DATABASE_ID,
+      SIGNEDUP_COLLECTION_ID,
+      [Query.equal("email", email)]
+    );
+
+    if (existingEmailResult.documents.length > 0) {
+      throw new Error("EMAIL_ALREADY_EXISTS");
     }
 
     const otpgen = await generateotp(); // Remove Number() since it's already a string
@@ -79,6 +90,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Fields required" }, { status: 400 });
   }
 
+  // Check if email already exists before calling Unity API
+  try {
+    const existingEmailResult = await databases.listDocuments(
+      DATABASE_ID,
+      SIGNEDUP_COLLECTION_ID,
+      [Query.equal("email", email)]
+    );
+
+    if (existingEmailResult.documents.length > 0) {
+      return NextResponse.json({
+        success: false,
+        message: "An account with this email already exists. Please use a different email or sign in.",
+      }, { status: 409 });
+    }
+  } catch (emailCheckError) {
+    console.error("Failed to check email existence:", emailCheckError);
+    return NextResponse.json({
+      success: false,
+      message: "Unable to verify email. Please try again.",
+    }, { status: 500 });
+  }
+
   try {
     // Sign up with Unity
     const api = await axios.post(
@@ -103,8 +136,16 @@ export async function POST(request: Request) {
       // Send OTP email using EmailJS
       await sendOTPEmail(email, (userDoc as any).otpString, username);
       
-    } catch (appwriteError) {
+    } catch (appwriteError: any) {
       console.error("Failed to save user to Appwrite or send email:", appwriteError);
+      
+      // Handle specific email already exists error
+      if (appwriteError.message === "EMAIL_ALREADY_EXISTS") {
+        return NextResponse.json({
+          success: false,
+          message: "An account with this email already exists. Please use a different email.",
+        }, { status: 409 });
+      }
     }
 
     return NextResponse.json({
