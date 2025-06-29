@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate new OTP for password reset
+
     const resetOtp = await generateotp();
 
     // Update user with reset OTP in Appwrite
@@ -73,7 +73,6 @@ export async function POST(request: Request) {
       { otp: resetOtp }
     );
 
-    // Send password reset OTP email to the user's email address
     await sendOTPEmail(user.email, resetOtp, user.username);
 
     return NextResponse.json(

@@ -71,7 +71,7 @@ export async function POST(request: Request) {
 
     try {
       // Call Unity API to change password
-      const unityResponse = await axios.post(
+ await axios.post(
         `https://services.api.unity.com/player-identity/v1/projects/${process.env.NEXT_PUBLIC_PROJECTID}/users/${user.userId}/change-password`,
         { newPassword },
         {
