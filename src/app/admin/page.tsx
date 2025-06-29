@@ -58,7 +58,6 @@ import {
   createAutomaticMatches,
   getActiveUsersByTier,
   updateMatchAssignment,
-  distributeTournamentPayouts,
 } from "@/lib/appwriteDB";
 import { useForm, Controller } from "react-hook-form";
 import Link from "next/link";
