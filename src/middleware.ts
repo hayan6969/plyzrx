@@ -46,7 +46,10 @@ const PUBLIC_API_ROUTES = [
   "/api/signup",
 "/api/leaderboard/reset",
 "/api/otpverification",
-"/api/resendotp"
+"/api/resendotp",
+"/api/resetpassword",
+"/api/resetpassword/updatepassword"
+
 
 
 ];

@@ -111,7 +111,6 @@ export async function POST(request: Request) {
       success: true,
       message: "User created successfully. Please check your email for OTP verification.",
       username: api.data.user.username,
-      userId: api.data.user.id,
       requiresVerification: true,
     });
   } catch (error: any) {
