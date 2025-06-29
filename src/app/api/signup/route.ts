@@ -30,17 +30,6 @@ export interface Signedupusers {
 // Function to create signed up user in Appwrite (before Unity signup)
 const createPendingUser = async (username: string, email: string, password: string) => {
   try {
-    // Check if email already exists
-    const existingEmailResult = await databases.listDocuments(
-      DATABASE_ID,
-      SIGNEDUP_COLLECTION_ID,
-      [Query.equal("email", email)]
-    );
-
-    if (existingEmailResult.documents.length > 0) {
-      throw new Error("EMAIL_ALREADY_EXISTS");
-    }
-
     const otpgen = await generateotp();
     
     // Create new pending user (without Unity ID)
@@ -88,10 +77,31 @@ export async function POST(request: Request) {
     );
 
     if (existingEmailResult.documents.length > 0) {
-      return NextResponse.json({
-        success: false,
-        message: "An account with this email already exists. Please use a different email or sign in.",
-      }, { status: 409 });
+      const existingUser = existingEmailResult.documents[0] as unknown as Signedupusers;
+      
+      // Check if user is verified
+      if (existingUser.isVerified) {
+        return NextResponse.json({
+          success: false,
+          message: "An account with this email is already registered and verified. Please sign in instead.",
+        }, { status: 409 });
+      } else {
+        // User is not verified, delete the previous unverified data
+        try {
+          await databases.deleteDocument(
+            DATABASE_ID,
+            SIGNEDUP_COLLECTION_ID,
+            existingUser.$id!
+          );
+          console.log(`Deleted unverified user data for email: ${email}`);
+        } catch (deleteError) {
+          console.error("Failed to delete unverified user:", deleteError);
+          return NextResponse.json({
+            success: false,
+            message: "Unable to process signup. Please try again.",
+          }, { status: 500 });
+        }
+      }
     }
   } catch (emailCheckError) {
     console.error("Failed to check email existence:", emailCheckError);
@@ -116,14 +126,6 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     console.log("Error:", error.message);
-
-    // Handle specific email already exists error
-    if (error.message === "EMAIL_ALREADY_EXISTS") {
-      return NextResponse.json({
-        success: false,
-        message: "An account with this email already exists. Please use a different email.",
-      }, { status: 409 });
-    }
 
     return NextResponse.json({
       success: false,
