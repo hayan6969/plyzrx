@@ -145,8 +145,10 @@ const distributeTournamentPayouts = async (
   failed: number;
   totalPayout: number;
   errors: string[];
-  payouts: Array<{ userId: string; amount: number; rank: number }>;
+  payouts: Array<{ userId: string; amount: number; score: number }>; // Removed rank
   earningRecords: number;
+  usersWithScores: number;
+  usersWithoutScores: number;
 }> => {
   try {
     console.log(`Starting payout distribution for tournament ${tournamentId}, tier ${tier}`);
@@ -169,7 +171,9 @@ const distributeTournamentPayouts = async (
         totalPayout: 0,
         errors: [`No users participated in tournament ${tournamentId}`],
         payouts: [],
-        earningRecords: 0
+        earningRecords: 0,
+        usersWithScores: 0,
+        usersWithoutScores: 0
       };
     }
 
@@ -204,7 +208,7 @@ const distributeTournamentPayouts = async (
     let totalPayout = 0;
     let earningRecords = 0;
     const errors: string[] = [];
-    const payouts: Array<{ userId: string; amount: number; rank: number }> = [];
+    const payouts: Array<{ userId: string; amount: number; score: number }> = []; // Removed rank
 
     console.log(`Processing payouts for ${sortedAssignments.length} users with scores in tier ${tier}`);
     console.log(`Payout config: Top 10 = $${payoutConfig.top10}, Remaining = $${payoutConfig.remaining}`);
@@ -247,7 +251,7 @@ const distributeTournamentPayouts = async (
           payouts.push({
             userId: assignment.userId,
             amount: payoutAmount,
-            rank: rank
+            score: assignment.TournamentScore || 0 // Only userId, amount, and score
           });
 
           totalPayout += payoutAmount;
@@ -292,6 +296,8 @@ const distributeTournamentPayouts = async (
     console.log(`- Users with payouts: ${payouts.length}`);
     console.log(`- Total Payout: $${totalPayout}`);
     console.log(`- Earning Records Created: ${earningRecords}`);
+    console.log(`- Users with scores: ${usersWithScores.length}`);
+    console.log(`- Users without scores: ${usersWithoutScores.length}`);
 
     return {
       success: successCount,
@@ -299,7 +305,9 @@ const distributeTournamentPayouts = async (
       totalPayout,
       errors,
       payouts,
-      earningRecords
+      earningRecords,
+      usersWithScores: usersWithScores.length,
+      usersWithoutScores: usersWithoutScores.length
     };
   } catch (error) {
     console.error("Failed to distribute tournament payouts:", error);

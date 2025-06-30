@@ -87,6 +87,26 @@ interface ManualMatchForm {
   player2Id: string;
 }
 
+// Payout Details Interfaces
+interface PayoutDetails {
+  userId: string;
+  amount: number;
+  rank: number;
+  score: number;
+}
+
+interface PayoutModalData {
+  tournamentId: string;
+  tournamentName: string;
+  tier: number;
+  totalPayout: number;
+  payouts: PayoutDetails[];
+  usersWithScores: number;
+  usersWithoutScores: number;
+  earningRecords: number;
+  errors: string[];
+}
+
 // Initialize Appwrite Client directly in the component
 const client = new Client()
   .setEndpoint(
@@ -138,6 +158,10 @@ export default function AdminDashboard() {
     "3": [],
   });
   const [isDistributingPayouts, setIsDistributingPayouts] = useState(false);
+
+  // New state for payout modal
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [payoutModalData, setPayoutModalData] = useState<PayoutModalData | null>(null);
 
   // Helper function to add one week to a date
   const addOneWeek = (dateString: string): string => {
@@ -692,13 +716,11 @@ export default function AdminDashboard() {
   const handleDistributePayouts = async (tournamentId: string) => {
     setIsDistributingPayouts(true);
     try {
-      // Call the leaderboard reset API instead of the client-side function
       const response = await fetch('/api/leaderboard/reset', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        // The API will process all ended tournaments, including the one we want
       });
 
       if (!response.ok) {
@@ -708,22 +730,32 @@ export default function AdminDashboard() {
       const result = await response.json();
 
       if (result.success) {
-        // Find the processed tournament in the results
         const processedTournament = result.data.processedTournaments?.find(
           (t: any) => t.tournamentId === tournamentId
         );
 
         if (processedTournament) {
           const payoutResult = processedTournament.payoutResult;
+          const tournament = tournamentControls.find(t => t.tournamentId === tournamentId);
+          
+          // Set modal data
+          setPayoutModalData({
+            tournamentId,
+            tournamentName: tournament?.name || 'Unknown Tournament',
+            tier: tournament?.tier || 1,
+            totalPayout: payoutResult.totalPayout,
+            payouts: payoutResult.payouts,
+            usersWithScores: payoutResult.usersWithScores || 0,
+            usersWithoutScores: payoutResult.usersWithoutScores || 0,
+            earningRecords: payoutResult.earningRecords,
+            errors: payoutResult.errors || []
+          });
+          setShowPayoutModal(true);
           
           if (payoutResult.success > 0) {
             toast.success(
               `Successfully distributed payouts to ${payoutResult.success} players. Total: $${payoutResult.totalPayout.toLocaleString()}`
             );
-
-            // Log payout details
-            console.log("Payout distribution results:", payoutResult.payouts);
-            console.log("Earning records created:", payoutResult.earningRecords);
           } else {
             toast.info("No eligible players found for payout distribution");
           }
@@ -738,7 +770,6 @@ export default function AdminDashboard() {
           toast.info(`Tournament ${tournamentId} was not processed. It may not have ended yet or already been processed.`);
         }
 
-        // Refresh the data to show updated assignments
         await fetchAppwriteData();
       } else {
         throw new Error(result.error || 'Unknown error occurred');
@@ -752,6 +783,121 @@ export default function AdminDashboard() {
     }
   };
 
+  // Payout Modal Component
+  const PayoutModal = () => {
+    if (!payoutModalData) return null;
+
+    return (
+      <Dialog open={showPayoutModal} onOpenChange={setShowPayoutModal}>
+        <DialogContent className="max-w-4xl bg-white text-black max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">
+              Payout Distribution Results
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Tournament Info */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2">Tournament Details</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div><strong>Tournament ID:</strong> {payoutModalData.tournamentId}</div>
+                <div><strong>Name:</strong> {payoutModalData.tournamentName}</div>
+                <div><strong>Tier:</strong> {payoutModalData.tier}</div>
+                <div><strong>Total Payout:</strong> ${payoutModalData.totalPayout.toLocaleString()}</div>
+              </div>
+            </div>
+
+            {/* Summary Stats */}
+            <div className="grid grid-cols-4 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-blue-600">{payoutModalData.usersWithScores}</div>
+                <div className="text-sm text-gray-600">Users with Scores</div>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-gray-600">{payoutModalData.usersWithoutScores}</div>
+                <div className="text-sm text-gray-600">Users without Scores</div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-green-600">{payoutModalData.payouts.length}</div>
+                <div className="text-sm text-gray-600">Paid Users</div>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-purple-600">{payoutModalData.earningRecords}</div>
+                <div className="text-sm text-gray-600">Earning Records</div>
+              </div>
+            </div>
+
+            {/* Payout Details Table */}
+            {payoutModalData.payouts.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Payout Details</h3>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead>Rank</TableHead>
+                        <TableHead>User ID</TableHead>
+                        <TableHead>Score</TableHead>
+                        <TableHead>Payout Amount</TableHead>
+                        <TableHead>Category</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {payoutModalData.payouts.map((payout, index) => (
+                        <TableRow key={index} className="hover:bg-gray-50">
+                          <TableCell className="font-medium">#{payout.rank}</TableCell>
+                          <TableCell className="font-mono">{payout.userId}</TableCell>
+                          <TableCell>{payout.score.toLocaleString()}</TableCell>
+                          <TableCell className="font-bold text-green-600">
+                            ${payout.amount.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              className={payout.rank <= 10 ? "bg-yellow-500" : "bg-blue-500"}
+                            >
+                              {payout.rank <= 10 ? "Top 10" : "Top 100"}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+
+            {/* Errors Section */}
+            {payoutModalData.errors.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-red-600">Errors</h3>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <ul className="space-y-1">
+                    {payoutModalData.errors.map((error, index) => (
+                      <li key={index} className="text-sm text-red-700">
+                        • {error}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <Button 
+              onClick={() => setShowPayoutModal(false)}
+              className="bg-gray-600 hover:bg-gray-700"
+            >
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  // Fetch data and check auth on mount
   useEffect(() => {
     // Check authentication directly from localStorage
     if (!isAdminAuthenticated()) {
@@ -2127,6 +2273,9 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add the PayoutModal component */}
+      <PayoutModal />
     </div>
   );
 }
