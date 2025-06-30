@@ -139,7 +139,7 @@ const checkAndUpdateTournamentStatus = async (): Promise<{
 // POST method for manual trigger
 export async function POST(request: NextRequest) {
   try {
-    console.log("Manual tournament status check triggered");
+    console.log("Manual tournament status check triggered",request);
 
     const result = await checkAndUpdateTournamentStatus();
 
