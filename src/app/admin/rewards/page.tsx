@@ -174,15 +174,83 @@ export default function AdminRewardsPage() {
 
   const handlePurchaseStatusUpdate = async (purchaseId: string, status: 'approved' | 'rejected') => {
     try {
+      const purchase = purchases.find(p => p.$id === purchaseId);
+      if (!purchase) {
+        toast.error("Purchase not found");
+        return;
+      }
+
+      // Update purchase status
       await databases.updateDocument(
         DATABASE_ID,
         REWARD_BUYING_COLLECTION_ID,
         purchaseId,
         { status }
       );
+
+      // If rejected, refund the user's balance
+      if (status === 'rejected') {
+        try {
+          // First, try to find the user by userId in the signed up users collection
+          const usersResponse = await databases.listDocuments(
+            DATABASE_ID,
+            process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || '',
+            [
+              Query.equal('userId', purchase.userId) // Assuming the field in signedup collection is 'userId'
+            ]
+          );
+
+          if (usersResponse.documents.length === 0) {
+            // If not found by userId, try by username
+            const usersByUsername = await databases.listDocuments(
+              DATABASE_ID,
+              process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || '',
+              [
+                Query.equal('username', purchase.username)
+              ]
+            );
+
+            if (usersByUsername.documents.length === 0) {
+              console.error(`User not found with userId: ${purchase.userId} or username: ${purchase.username}`);
+              toast.error("User not found - cannot process refund");
+              return;
+            }
+
+            const userDoc = usersByUsername.documents[0];
+            const currentBalance = userDoc.amount || 0;
+            const newBalance = currentBalance + purchase.price;
+
+            // Update user balance using the found document ID
+            await databases.updateDocument(
+              DATABASE_ID,
+              process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || '',
+              userDoc.$id,
+              { amount: newBalance }
+            );
+          } else {
+            const userDoc = usersResponse.documents[0];
+            const currentBalance = userDoc.amount || 0;
+            const newBalance = currentBalance + purchase.price;
+
+            // Update user balance using the found document ID
+            await databases.updateDocument(
+              DATABASE_ID,
+              process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || '',
+              userDoc.$id,
+              { amount: newBalance }
+            );
+          }
+          
+          toast.success(`Purchase rejected and ${purchase.price}$ refunded to user`);
+        } catch (balanceError) {
+          console.error("Failed to refund balance:", balanceError);
+          toast.error("Purchase rejected but failed to refund balance");
+        }
+      } else {
+        toast.success(`Purchase ${status} successfully`);
+      }
       
       await fetchPurchases();
-      toast.success(`Purchase ${status} successfully`);
     } catch (error) {
       console.error("Failed to update purchase status:", error);
       toast.error("Failed to update purchase status");
