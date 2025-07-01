@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Client, Databases, Query } from 'appwrite';
+import { Client, Databases, Query, ID } from 'appwrite';
 
 // Initialize Appwrite Client for server-side operations
 const client = new Client()
@@ -12,6 +12,7 @@ const databases = new Databases(client);
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || '';
 const SIGNEDUP_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || '';
 const REWARDS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_REWARD_COLLECTION_ID || '';
+const REWARD_BUYING_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_REWARD_BUYING_COLLECTION_ID || '';
 
 interface PurchaseRequest {
   userId: string;
@@ -108,16 +109,38 @@ export async function POST(request: NextRequest) {
       user.$id!,
       { amount: newBalance }
     );
- console.log(updatedUser);
+    console.log(updatedUser);
+
+    // 6. Create purchase record in reward buying collection
+    const purchaseData = {
+      userId: user.userId,
+      username: user.username,
+      categoryName: reward.categoryName,
+      rewardname: reward.rewardname,
+      price: rewardPrice,
+      image: reward.image,
+      status: "pending" as const // Type-safe enum value
+    };
+
+    console.log('Creating purchase record with data:', purchaseData);
+
+    const purchaseRecord = await databases.createDocument(
+      DATABASE_ID,
+      REWARD_BUYING_COLLECTION_ID,
+      ID.unique(),
+      purchaseData
+    );
  
-    // 6. Return success response with purchase details
+    // 7. Return success response with purchase details
     return NextResponse.json({
       success: true,
       message: 'Reward purchased successfully',
       purchase: {
+        purchaseId: purchaseRecord.$id,
         rewardId: reward.$id,
         rewardName: reward.rewardname,
         price: rewardPrice,
+        status: 'pending',
         purchasedAt: new Date().toISOString()
       },
       user: {

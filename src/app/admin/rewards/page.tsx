@@ -40,6 +40,10 @@ import {
   Tag,
   Image as ImageIcon,
   Loader2,
+  ShoppingCart,
+  Check,
+  X,
+  Clock,
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { isAdminAuthenticated } from "@/lib/authStorage";
@@ -58,11 +62,35 @@ import {
   deleteRewardImage,
 } from "@/lib/rewardsappwrite.db";
 import Image from "next/image";
+import { Client, Databases, Query } from 'appwrite';
+
+// Initialize Appwrite Client
+const client = new Client()
+  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || '')
+  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '');
+
+const databases = new Databases(client);
+
+const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || '';
+const REWARD_BUYING_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_REWARD_BUYING_COLLECTION_ID || '';
+
+interface RewardPurchase {
+  $id: string;
+  userId: string;
+  username: string;
+  categoryName: string;
+  rewardname: string;
+  price: number;
+  image: string;
+  status: 'pending' | 'approved' | 'rejected';
+  $createdAt: string;
+}
 
 export default function AdminRewardsPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<rewardcategory[]>([]);
   const [products, setProducts] = useState<reward[]>([]);
+  const [purchases, setPurchases] = useState<RewardPurchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("products");
   const [isCreatingReward, setIsCreatingReward] = useState(false);
@@ -109,17 +137,31 @@ export default function AdminRewardsPage() {
     }
   }, []);
 
+  const fetchPurchases = useCallback(async () => {
+    try {
+      const purchasesData = await databases.listDocuments(
+        DATABASE_ID,
+        REWARD_BUYING_COLLECTION_ID,
+        [Query.orderDesc('$createdAt')]
+      );
+      setPurchases(purchasesData.documents as unknown as RewardPurchase[]);
+    } catch (error) {
+      console.error("Error fetching purchases:", error);
+      toast.error("Failed to fetch purchases");
+    }
+  }, []);
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      await Promise.all([fetchCategories(), fetchProducts()]);
+      await Promise.all([fetchCategories(), fetchProducts(), fetchPurchases()]);
     } catch (error) {
       console.error("Failed to fetch data:", error);
       toast.error("Failed to load rewards data");
     } finally {
       setLoading(false);
     }
-  }, [fetchCategories, fetchProducts]);
+  }, [fetchCategories, fetchProducts, fetchPurchases]);
 
   useEffect(() => {
     if (!isAdminAuthenticated()) {
@@ -129,6 +171,36 @@ export default function AdminRewardsPage() {
 
     fetchData();
   }, [router, fetchData]);
+
+  const handlePurchaseStatusUpdate = async (purchaseId: string, status: 'approved' | 'rejected') => {
+    try {
+      await databases.updateDocument(
+        DATABASE_ID,
+        REWARD_BUYING_COLLECTION_ID,
+        purchaseId,
+        { status }
+      );
+      
+      await fetchPurchases();
+      toast.success(`Purchase ${status} successfully`);
+    } catch (error) {
+      console.error("Failed to update purchase status:", error);
+      toast.error("Failed to update purchase status");
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="text-yellow-600 border-yellow-600"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+      case 'approved':
+        return <Badge variant="outline" className="text-green-600 border-green-600"><Check className="w-3 h-3 mr-1" />Approved</Badge>;
+      case 'rejected':
+        return <Badge variant="outline" className="text-red-600 border-red-600"><X className="w-3 h-3 mr-1" />Rejected</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -375,6 +447,8 @@ export default function AdminRewardsPage() {
     );
   }
 
+  const pendingPurchases = purchases.filter(p => p.status === 'pending').length;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster />
@@ -408,10 +482,19 @@ export default function AdminRewardsPage() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
               Products ({products.length})
+            </TabsTrigger>
+            <TabsTrigger value="purchases" className="flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              Purchases ({purchases.length})
+              {pendingPurchases > 0 && (
+                <Badge variant="destructive" className="ml-1 text-xs">
+                  {pendingPurchases}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <Tag className="w-4 h-4" />
@@ -595,7 +678,7 @@ export default function AdminRewardsPage() {
                               {product.categoryName}
                             </Badge>
                             <span className="text-sm font-medium">
-                              {product.price} pts
+                              {product.price} $
                             </span>
                           </div>
                           <div className="flex justify-end items-center">
@@ -631,6 +714,106 @@ export default function AdminRewardsPage() {
                     </h3>
                     <p className="text-gray-600">
                       Create your first reward product to get started.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Purchases Tab */}
+          <TabsContent value="purchases" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5" />
+                  Reward Purchases
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Image</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Reward</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {purchases.map((purchase) => (
+                      <TableRow key={purchase.$id}>
+                        <TableCell>
+                          <div className="relative w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
+                            {purchase.image ? (
+                              <Image
+                                src={`${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.NEXT_PUBLIC_APPWRITE_REWARD_BUCKET_ID}/files/${purchase.image}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`}
+                                alt={purchase.rewardname}
+                                fill
+                                className="object-cover"
+                                sizes="48px"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <ImageIcon className="w-6 h-6 text-gray-400" />
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{purchase.username}</div>
+                            <div className="text-sm text-gray-500">{purchase.userId}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{purchase.rewardname}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{purchase.categoryName}</Badge>
+                        </TableCell>
+                        <TableCell>{purchase.price}$</TableCell>
+                        <TableCell>{getStatusBadge(purchase.status)}</TableCell>
+                        <TableCell>
+                          {new Date(purchase.$createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          {purchase.status === 'pending' && (
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handlePurchaseStatusUpdate(purchase.$id, 'approved')}
+                                className="text-green-600 hover:text-green-700"
+                              >
+                                <Check className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handlePurchaseStatusUpdate(purchase.$id, 'rejected')}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+
+                {purchases.length === 0 && (
+                  <div className="text-center py-12">
+                    <ShoppingCart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No purchases found
+                    </h3>
+                    <p className="text-gray-600">
+                      User purchases will appear here.
                     </p>
                   </div>
                 )}
@@ -765,12 +948,12 @@ export default function AdminRewardsPage() {
                       Create your first category to organize rewards.
                     </p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }

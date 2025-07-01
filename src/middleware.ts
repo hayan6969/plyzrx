@@ -49,7 +49,8 @@ const PUBLIC_API_ROUTES = [
 "/api/resendotp",
 "/api/resetpassword",
 "/api/resetpassword/updatepassword",
-"/api/tournament/status"
+"/api/tournament/status",
+"/api/rewards/buy"
 
 
 

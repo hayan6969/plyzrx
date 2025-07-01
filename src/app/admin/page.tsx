@@ -750,6 +750,7 @@ export default function AdminDashboard() {
             earningRecords: payoutResult.earningRecords,
             errors: payoutResult.errors || []
           });
+          
           setShowPayoutModal(true);
           
           if (payoutResult.success > 0) {
