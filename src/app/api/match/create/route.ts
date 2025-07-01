@@ -12,6 +12,7 @@ const databases = new Databases(client);
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || '';
 const MATCH_ASSIGNMENTS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_MATCH_ASSIGNMENTS_COLLECTION_ID || '';
 const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USER || '';
+const TOURNAMENT_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_TOURNAMENT_COLLECTION_ID || '';
 
 interface CreateMatchRequest {
   player1Id: string;
@@ -28,13 +29,6 @@ interface MatchAssignment {
   tournamentid: string;
   StartedAt: string;
 }
-
-// // Generate unique match ID
-// const generateMatchId = (): string => {
-//   const timestamp = Date.now();
-//   const random = Math.floor(Math.random() * 1000);
-//   return `MATCH_${timestamp}_${random}`;
-// };
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,6 +80,54 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+    }
+
+    // Check tournament status - MUST BE ACTIVE to create matches
+    try {
+      const tournamentResult = await databases.listDocuments(
+        DATABASE_ID,
+        TOURNAMENT_COLLECTION_ID,
+        [Query.equal('tournamentId', finalTournamentId!)]
+      );
+
+      if (tournamentResult.documents.length === 0) {
+        return NextResponse.json(
+          { error: 'Tournament not found' },
+          { status: 404 }
+        );
+      }
+
+      const tournament = tournamentResult.documents[0];
+      const tournamentStatus = tournament.status;
+
+      if (tournamentStatus !== 'active') {
+        let statusMessage = '';
+        switch (tournamentStatus) {
+          case 'scheduled':
+            statusMessage = 'Tournament has not started yet. Matches can only be created when the tournament is active.';
+            break;
+          case 'ended':
+            statusMessage = 'Tournament has ended. No new matches can be created.';
+            break;
+          default:
+            statusMessage = `Tournament status is "${tournamentStatus}". Matches can only be created when the tournament is active.`;
+        }
+        
+        return NextResponse.json(
+          { 
+            error: 'Cannot create match', 
+            message: statusMessage,
+            tournamentStatus: tournamentStatus 
+          },
+          { status: 403 }
+        );
+      }
+    } catch (error) {
+      console.error('Error checking tournament status:', error);
+      return NextResponse.json(
+        { error: 'Failed to verify tournament status' },
+        { status: 500 }
+      );
     }
 
     // Validate that both players are in the same tournament (optional check)

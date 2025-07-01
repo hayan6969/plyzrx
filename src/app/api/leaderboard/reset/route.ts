@@ -594,53 +594,133 @@ console.log(request);
   }
 }
 
-// GET method for manual trigger or status check
+// GET method for cron service to process tournaments
 export async function GET(request: NextRequest) {
   try {
-    const currentDate = new Date();
+    console.log("Starting tournament end date check and cleanup via GET (cron)...");
     console.log(request);
-    
-    // Get all active tournaments
+
+    const currentDate = new Date();
+
+    // Get all tournaments that need processing (both active that have ended and already ended ones)
     const tournamentsResult = await databases.listDocuments(
       DATABASE_ID,
       TOURNAMENT_COLLECTION_ID,
-      [Query.equal("status", "active")]
+      [Query.or([
+        Query.equal("status", "active"),
+        Query.equal("status", "ended")
+      ])]
     );
 
     const tournaments = tournamentsResult.documents as unknown as TournamentControl[];
-    const endingSoon = tournaments.filter(t => {
-      const endDate = new Date(t.scheduledEndDate);
-      const timeDiff = endDate.getTime() - currentDate.getTime();
-      return timeDiff <= 24 * 60 * 60 * 1000; // Within 24 hours
-    });
+    const processedTournaments: Array<{
+      tournamentId: string;
+      name: string;
+      tier: number;
+      payoutResult: any;
+      cleanupResult: any;
+      unityLeaderboardReset: any;
+    }> = [];
 
-    const endedTournaments = tournaments.filter(t => {
-      const endDate = new Date(t.scheduledEndDate);
-      return currentDate >= endDate;
-    });
+    let totalProcessed = 0;
+    const totalErrors: string[] = [];
+
+    for (const tournament of tournaments) {
+      try {
+        const endDate = new Date(tournament.actualEndDate || tournament.scheduledEndDate);
+        
+        // Check if tournament has ended (current time >= end time)
+        if (currentDate >= endDate) {
+          console.log(`Processing ended tournament: ${tournament.name} (${tournament.tournamentId})`);
+
+          // Get all users who participated in this tournament
+          const participantsResult = await databases.listDocuments(
+            DATABASE_ID,
+            TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
+            [Query.equal("tournamentId", tournament.tournamentId)]
+          );
+
+          const participants = participantsResult.documents as unknown as TournamentAssignment[];
+          const userIds = participants.map(p => p.userId);
+
+          // 1. Distribute payouts first (this adds earnings to signedupusers collection AND creates earning records)
+          const payoutResult = await distributeTournamentPayouts(
+            tournament.tournamentId,
+            tournament.tier
+          );
+
+          // 2. Clean up tournament data (removes payment logs, deletes user tiers, removes assignments)
+          const cleanupResult = await cleanupTournamentData(
+            tournament.tournamentId,
+            userIds
+          );
+
+          // 3. Reset Unity leaderboard for this tier
+          const unityLeaderboardReset = await resetUnityLeaderboard(tournament.tier);
+          
+          if (!unityLeaderboardReset.success) {
+            totalErrors.push(`Failed to reset Unity leaderboard for Tier ${tournament.tier}: ${unityLeaderboardReset.error}`);
+          }
+
+          // 4. Delete the tournament completely
+          try {
+            await databases.deleteDocument(
+              DATABASE_ID,
+              TOURNAMENT_COLLECTION_ID,
+              tournament.$id!
+            );
+            console.log(`Tournament ${tournament.tournamentId} deleted successfully`);
+          } catch (error) {
+            console.error(`Failed to delete tournament ${tournament.tournamentId}:`, error);
+            totalErrors.push(`Failed to delete tournament ${tournament.tournamentId}: ${error}`);
+          }
+
+          processedTournaments.push({
+            tournamentId: tournament.tournamentId,
+            name: tournament.name,
+            tier: tournament.tier,
+            payoutResult,
+            cleanupResult,
+            unityLeaderboardReset
+          });
+
+          totalProcessed++;
+          totalErrors.push(...payoutResult.errors, ...cleanupResult.errors);
+
+          console.log(`Completed processing and deleting tournament: ${tournament.name}`);
+          console.log(`Cleanup summary: ${cleanupResult.assignmentsRemoved} assignments removed, ${cleanupResult.usersDeleted} users deleted, ${cleanupResult.paymentsRemoved} payments removed`);
+          console.log(`Earning records created: ${payoutResult.earningRecords}`);
+          console.log(`Unity leaderboard reset: ${unityLeaderboardReset.success ? 'Success' : 'Failed'}`);
+        }
+      } catch (error) {
+        const errorMsg = `Failed to process tournament ${tournament.tournamentId}: ${error}`;
+        console.error(errorMsg);
+        totalErrors.push(errorMsg);
+      }
+    }
+
+    const summary = {
+      totalTournamentsChecked: tournaments.length,
+      totalTournamentsProcessed: totalProcessed,
+      processedTournaments,
+      totalErrors: totalErrors.length,
+      errors: totalErrors
+    };
+
+    console.log("Tournament cleanup summary:", summary);
 
     return NextResponse.json({
       success: true,
-      data: {
-        currentTime: currentDate.toISOString(),
-        totalActiveTournaments: tournaments.length,
-        tournamentsEndingSoon: endingSoon.length,
-        tournamentsNeedingProcessing: endedTournaments.length,
-        endedTournaments: endedTournaments.map(t => ({
-          tournamentId: t.tournamentId,
-          name: t.name,
-          tier: t.tier,
-          scheduledEndDate: t.scheduledEndDate
-        }))
-      }
+      message: `Tournament end date check completed via cron. Processed and completely deleted ${totalProcessed} tournaments.`,
+      data: summary
     });
 
   } catch (error) {
-    console.error('Failed to check tournament status:', error);
+    console.error('Tournament end date check failed:', error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to check tournament status',
+        error: 'Failed to check tournament end dates',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

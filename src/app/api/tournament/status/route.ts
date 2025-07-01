@@ -169,13 +169,17 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET method for status check (can be used by monitoring systems)
+// GET method for status check and auto-start (used by cron service)
 export async function GET(request: NextRequest) {
   try {
-    const currentDate = new Date();
-    console.log(request);
+    console.log("Cron tournament status check triggered", request);
 
-    // Get all scheduled tournaments
+    // Perform the tournament status check and updates
+    const result = await checkAndUpdateTournamentStatus();
+
+    const currentDate = new Date();
+
+    // Get remaining scheduled tournaments for status info
     const scheduledTournamentsResult = await databases.listDocuments(
       DATABASE_ID,
       TOURNAMENT_COLLECTION_ID,
@@ -184,12 +188,7 @@ export async function GET(request: NextRequest) {
 
     const scheduledTournaments = scheduledTournamentsResult.documents as unknown as TournamentControl[];
     
-    // Check which tournaments are ready to start
-    const readyToStart = scheduledTournaments.filter(tournament => {
-      const startDate = new Date(tournament.scheduledStartDate);
-      return currentDate >= startDate;
-    });
-
+    // Check upcoming tournaments within 1 hour
     const upcomingStarts = scheduledTournaments.filter(tournament => {
       const startDate = new Date(tournament.scheduledStartDate);
       const timeDiff = startDate.getTime() - currentDate.getTime();
@@ -198,18 +197,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      message: `Tournament status check completed. Started ${result.totalStarted} tournaments out of ${result.totalChecked} checked.`,
       data: {
         currentTime: currentDate.toISOString(),
-        totalScheduledTournaments: scheduledTournaments.length,
-        readyToStart: readyToStart.length,
+        totalChecked: result.totalChecked,
+        totalStarted: result.totalStarted,
+        startedTournaments: result.startedTournaments,
+        errors: result.errors,
+        remainingScheduledTournaments: scheduledTournaments.length,
         upcomingStarts: upcomingStarts.length,
-        readyToStartList: readyToStart.map(t => ({
-          tournamentId: t.tournamentId,
-          name: t.name,
-          tier: t.tier,
-          scheduledStartDate: t.scheduledStartDate,
-          isManualMode: t.isManualMode
-        })),
         upcomingStartsList: upcomingStarts.map(t => ({
           tournamentId: t.tournamentId,
           name: t.name,
@@ -221,11 +217,11 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Failed to get tournament status:', error);
+    console.error('Failed to check and update tournament status:', error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to get tournament status',
+        error: 'Failed to check and update tournament status',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
