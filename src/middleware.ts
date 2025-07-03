@@ -44,6 +44,7 @@ const PUBLIC_ROUTES = [
 const PUBLIC_API_ROUTES = [
   "/api/signin",
   "/api/signup",
+  "/api/check",
 "/api/leaderboard/reset",
 "/api/otpverification",
 "/api/resendotp",
