@@ -44,14 +44,24 @@ function Page() {
         toast.error(responce.data.message);
       } else {
         toast.success(responce.data.message);
-        localStorage.setItem("Login", "true");
-        localStorage.setItem("userName",responce.data.username)
-        router.push("/");
+        
+        // Check if user requires verification
+        if (responce.data.requiresVerification) {
+          // Store email for OTP verification and redirect
+          localStorage.setItem('verificationEmail', data.email);
+          router.push(`/otpverification?email=${encodeURIComponent(data.email)}`);
+        } else {
+          // Direct login (shouldn't happen based on your API, but keeping as fallback)
+          localStorage.setItem("Login", "true");
+          localStorage.setItem("userName", responce.data.username);
+          router.push("/");
+        }
       }
 
       console.log(responce.data);
     } catch (error) {
       console.log(error);
+      toast.error("An error occurred during signup. Please try again.");
     } finally {
       SetButtonState(false);
     }

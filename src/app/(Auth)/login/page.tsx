@@ -139,12 +139,12 @@ function Page() {
                   Remember Me
                 </Label>
               </div> */}
-              {/* <a
-                href="#"
-                className="text-white underline hover:underline mt-2 sm:mt-0"
+              <Link
+                href="/forgotpassword"
+                className="text-blue-500 hover:underline text-sm mt-2 sm:mt-0"
               >
                 Forgot Password?
-              </a> */}
+              </Link>
             </div>
 
             <Button

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Client, Databases, Query } from "appwrite";
 import axios from "axios";
+import { cookies } from "next/headers";
 
 const client = new Client()
   .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1")
@@ -34,7 +35,7 @@ const savedotp=await databases.listDocuments(
     SIGNEDUP_COLLECTION_ID,
        [Query.equal("email", email)]
 )
-
+const cookiesStore = cookies();
 if (savedotp.documents.length>0) {
     const userDoc = savedotp.documents[0];
     const savedOtp = userDoc.otp;
@@ -90,6 +91,17 @@ if (savedotp.documents.length>0) {
                     password: "" // Clear password after successful signup
                 }
             );
+
+
+  (await cookiesStore).set({
+      name: "token",
+      value: unitySignup.data.idToken,
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/",
+      maxAge: unitySignup.data.expiresIn,
+    });
 
             return NextResponse.json(
                 { 
