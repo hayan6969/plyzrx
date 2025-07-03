@@ -184,20 +184,35 @@ const distributeTournamentPayouts = async (
 
     // Separate users with scores and users without scores
     const usersWithScores = assignments.filter(assignment => {
-      const hasScore = assignment.TournamentScore !== undefined && assignment.TournamentScore !== null && assignment.TournamentScore > 0;
+      const hasScore = assignment.TournamentScore !== undefined && assignment.TournamentScore !== null;
       return hasScore;
     });
 
     const usersWithoutScores = assignments.filter(assignment => {
-      const hasScore = assignment.TournamentScore !== undefined && assignment.TournamentScore !== null && assignment.TournamentScore > 0;
+      const hasScore = assignment.TournamentScore !== undefined && assignment.TournamentScore !== null;
       return !hasScore;
     });
 
     console.log(`Users with valid scores: ${usersWithScores.length}`);
     console.log(`Users without scores: ${usersWithoutScores.length}`);
 
+    // Log all users with their scores for debugging
+    usersWithScores.forEach((assignment, index) => {
+      console.log(`User ${index + 1} with score: ${assignment.userId}, Score: ${assignment.TournamentScore}`);
+    });
+
     // Sort users with scores by tournament score (highest first)
-    const sortedAssignments = usersWithScores.sort((a, b) => (b.TournamentScore || 0) - (a.TournamentScore || 0));
+    // This will properly handle negative scores - higher scores (even if negative) rank better
+    const sortedAssignments = usersWithScores.sort((a, b) => {
+      const scoreA = a.TournamentScore || 0;
+      const scoreB = b.TournamentScore || 0;
+      return scoreB - scoreA; // Descending order (highest first)
+    });
+
+    // Log sorted rankings for debugging
+    sortedAssignments.forEach((assignment, index) => {
+      console.log(`Rank ${index + 1}: User ${assignment.userId}, Score: ${assignment.TournamentScore}`);
+    });
 
     // Get payout amounts based on tier
     const tierKey = `tier${tier}` as keyof typeof PAYOUT_AMOUNTS;
@@ -208,23 +223,25 @@ const distributeTournamentPayouts = async (
     let totalPayout = 0;
     let earningRecords = 0;
     const errors: string[] = [];
-    const payouts: Array<{ userId: string; amount: number; score: number }> = []; // Removed rank
+    const payouts: Array<{ userId: string; amount: number; score: number }> = [];
 
     console.log(`Processing payouts for ${sortedAssignments.length} users with scores in tier ${tier}`);
     console.log(`Payout config: Top 10 = $${payoutConfig.top10}, Remaining = $${payoutConfig.remaining}`);
 
-    // Process users with scores for payouts (up to 100)
+    // Process users with scores for payouts (up to 100) - INCLUDING NEGATIVE SCORES
     for (let i = 0; i < sortedAssignments.length && i < 100; i++) {
       try {
         const assignment = sortedAssignments[i];
         const rank = i + 1;
         let payoutAmount = 0;
 
-        // Determine payout amount based on rank
+        // Determine payout amount based on rank (regardless of score being positive or negative)
         if (rank <= 10) {
           payoutAmount = payoutConfig.top10;
+          console.log(`Rank ${rank} (Top 10): Score ${assignment.TournamentScore}, Payout = $${payoutAmount}`);
         } else if (rank <= 100) {
           payoutAmount = payoutConfig.remaining;
+          console.log(`Rank ${rank} (Remaining): Score ${assignment.TournamentScore}, Payout = $${payoutAmount}`);
         }
 
         console.log(`Processing User ${assignment.userId} - Rank: ${rank}, Score: ${assignment.TournamentScore}, Payout: $${payoutAmount}`);
@@ -240,6 +257,7 @@ const distributeTournamentPayouts = async (
           }
         );
 
+        // Process the payout (including for negative scores if they rank in top 100)
         if (payoutAmount > 0) {
           // Update earnings in signed up users collection
           await updateSignedupUserEarnings(assignment.userId, payoutAmount);
@@ -251,13 +269,13 @@ const distributeTournamentPayouts = async (
           payouts.push({
             userId: assignment.userId,
             amount: payoutAmount,
-            score: assignment.TournamentScore || 0 // Only userId, amount, and score
+            score: assignment.TournamentScore || 0
           });
 
           totalPayout += payoutAmount;
-          console.log(`✅ Successfully processed payout for user ${assignment.userId}: $${payoutAmount}`);
+          console.log(`✅ Successfully processed payout for user ${assignment.userId}: $${payoutAmount} (Score: ${assignment.TournamentScore})`);
         } else {
-          console.log(`ℹ️ User ${assignment.userId} marked as completed (no payout for rank ${rank})`);
+          console.log(`ℹ️ User ${assignment.userId} marked as completed with $0 payout for rank ${rank}`);
         }
 
         successCount++;
