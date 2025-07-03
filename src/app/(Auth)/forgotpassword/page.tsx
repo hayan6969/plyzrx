@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { FaEnvelope, FaLock, FaKey } from "react-icons/fa";
 import axios from "axios";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import ButtonLoad from "@/components/ButtonLoad";
 
 type EmailFormData = {
@@ -276,6 +276,20 @@ function Page() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function Page() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
+        <div className="text-white text-center">
+          <p>Loading...</p>
+        </div>
+      </div>
+    }>
+      <ForgotPasswordContent />
+    </Suspense>
   );
 }
 
