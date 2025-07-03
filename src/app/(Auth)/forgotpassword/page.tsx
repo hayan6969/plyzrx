@@ -24,7 +24,7 @@ type OTPFormData = {
   confirmPassword: string;
 };
 
-function Page() {
+function ForgotPasswordContent() {
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [buttonState, setButtonState] = useState(false);
   const [userEmail, setUserEmail] = useState('');
