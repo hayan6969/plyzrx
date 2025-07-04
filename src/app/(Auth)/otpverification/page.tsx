@@ -10,14 +10,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FaShieldAlt, FaEnvelope } from "react-icons/fa";
 import axios from "axios";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import ButtonLoad from "@/components/ButtonLoad";
 
 type FormData = {
   otp: string;
 };
 
-function Page() {
+function OTPVerificationContent() {
   const [buttonState, setButtonState] = useState(false);
   const [resendButtonState, setResendButtonState] = useState(false);
   const [email, setEmail] = useState("");
@@ -75,6 +75,7 @@ function Page() {
         toast.success(response.data.message);
         localStorage.setItem("Login", "true");
         localStorage.setItem("userName", response.data.username);
+        localStorage.setItem("userid", response.data.userid);
         localStorage.removeItem('verificationEmail');
         
         // Small delay before redirect
@@ -227,6 +228,21 @@ function Page() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function Page() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
+        <Toaster />
+        <div className="text-white text-center">
+          <p>Loading...</p>
+        </div>
+      </div>
+    }>
+      <OTPVerificationContent />
+    </Suspense>
   );
 }
 
