@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { cookies } from "next/headers";
 
 const BANKFUL_API_URL =
   "https://api.paybybankful.com/front-calls/go-in/hosted-page-pay";
@@ -35,6 +36,27 @@ interface BankfulPayload {
 
 export async function POST(request: Request) {
   try {
+    // Check authentication using cookies
+    const cookiesList = await cookies();
+    const token = cookiesList.get("token")?.value;
+
+    console.log("Received token:", token ? "Token present" : "No token");
+
+    if (!token) {
+      console.log("Cookie list:", cookiesList.getAll());
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Authentication required",
+          debug: {
+            cookies: cookiesList.getAll().map((c) => c.name),
+            hasToken: !!token,
+          },
+        },
+        { status: 401 }
+      );
+    }
+
     const { amount } = await request.json();
 
     const xtl_order_id = `order-${Date.now()}-${Math.floor(

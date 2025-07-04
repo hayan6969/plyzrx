@@ -45,16 +45,13 @@ const PUBLIC_API_ROUTES = [
   "/api/signin",
   "/api/signup",
   "/api/check",
-"/api/leaderboard/reset",
-"/api/otpverification",
-"/api/resendotp",
-"/api/resetpassword",
-"/api/resetpassword/updatepassword",
-"/api/tournament/status",
-"/api/rewards/buy"
-
-
-
+  "/api/leaderboard/reset",
+  "/api/otpverification",
+  "/api/resendotp",
+  "/api/resetpassword",
+  "/api/resetpassword/updatepassword",
+  "/api/tournament/status",
+  "/api/rewards/buy",
 ];
 
 export async function middleware(request: NextRequest) {
@@ -69,26 +66,37 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Get authentication token from Authorization header
+  
   const authHeader = request.headers.get("authorization");
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.substring(7)
+    : null;
+  const cookieToken = request.cookies.get("token")?.value;
 
-  // Redirect to login if not authenticated and not on a public route
-  // Skip API routes as they have their own authentication handling
-  if (!token && !isPublicRoute && !pathname.startsWith("/api")) {
+  const isAuthenticated = token || cookieToken;
+
+  
+  if (!isAuthenticated && !isPublicRoute && !pathname.startsWith("/api")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Handle dashboard routes (keeping existing logic for clarity)
-  if (pathname.startsWith("/dashboard") && !token) {
+  // Handle dashboard routes
+  if (pathname.startsWith("/dashboard") && !isAuthenticated) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // Handle API routes
   if (pathname.startsWith("/api") && !isPublicApiRoute) {
-    if (!token) {
+    if (!isAuthenticated) {
       return new NextResponse(
-        JSON.stringify({ success: false, message: "authentication failed" }),
+        JSON.stringify({
+          success: false,
+          message: "Authentication failed",
+          debug: {
+            hasBearerToken: !!token,
+            hasCookieToken: !!cookieToken,
+          },
+        }),
         { status: 401 }
       );
     }

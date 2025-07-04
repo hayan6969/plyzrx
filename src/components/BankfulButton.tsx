@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 interface BankfulButtonProps {
   amount: string;
@@ -15,6 +16,8 @@ export default function BankfulButton({
   username,
   tier,
 }: BankfulButtonProps) {
+  const router = useRouter();
+
   const handleBankfulPayment = async () => {
     try {
       const response = await fetch("/api/payment/bankful", {
@@ -28,9 +31,26 @@ export default function BankfulButton({
           username,
           tier,
         }),
+        credentials: "include",
       });
 
       const data = await response.json();
+      console.log("Payment response:", data);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.log("Authentication failed:", data);
+          const isLoggedIn = localStorage.getItem("Login") === "true";
+          if (isLoggedIn) {
+            localStorage.removeItem("Login");
+            localStorage.removeItem("userName");
+            localStorage.removeItem("userid");
+          }
+          router.push("/login");
+          return;
+        }
+        throw new Error(data.message || "Payment failed");
+      }
 
       if (data.redirectUrl) {
         window.location.href = data.redirectUrl;

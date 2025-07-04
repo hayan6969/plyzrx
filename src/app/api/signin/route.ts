@@ -5,13 +5,16 @@ import { Client, Databases, Query } from "appwrite";
 
 // Server-side Appwrite client
 const client = new Client()
-  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1")
+  .setEndpoint(
+    process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1"
+  )
   .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "");
 
 const databases = new Databases(client);
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || "";
-const SIGNEDUP_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || "";
+const SIGNEDUP_COLLECTION_ID =
+  process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || "";
 
 export async function POST(request: Request) {
   let username, password;
@@ -22,11 +25,8 @@ export async function POST(request: Request) {
     password = body.password;
   } catch (error) {
     console.log(error);
-    
-    return NextResponse.json(
-      { error: "Invalid JSON format" },
-      { status: 400 }
-    );
+
+    return NextResponse.json({ error: "Invalid JSON format" }, { status: 400 });
   }
 
   const cookiesStore = cookies();
@@ -44,20 +44,26 @@ export async function POST(request: Request) {
     );
 
     if (userResult.documents.length === 0) {
-      return NextResponse.json({
-        success: false,
-        message: "User not found. Please sign up first."
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          success: false,
+          message: "User not found. Please sign up first.",
+        },
+        { status: 404 }
+      );
     }
 
     const user = userResult.documents[0];
-    
+
     // Check if user is verified
     if (!user.isVerified) {
-      return NextResponse.json({
-        success: false,
-        message: "Please check your email for OTP verification."
-      }, { status: 403 });
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please check your email for OTP verification.",
+        },
+        { status: 403 }
+      );
     }
 
     // If user is verified, proceed with Unity sign-in
@@ -76,17 +82,20 @@ export async function POST(request: Request) {
       name: "token",
       value: api.data.idToken,
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
-      maxAge: api.data.expiresIn,
+      maxAge: 60 * 60 * 24 * 7,
     });
+
+    console.log("Login successful, token set in cookie");
 
     return NextResponse.json({
       success: true,
       message: "User logged in successfully",
       username: api.data.user.username,
       userid: api.data.user.id,
+      expiresIn: api.data.expiresIn,
     });
   } catch (error: any) {
     console.log("Error Response:", error.response?.data || error.message);
