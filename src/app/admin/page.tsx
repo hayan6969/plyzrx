@@ -438,16 +438,22 @@ export default function AdminDashboard() {
 
       setEditingTournamentId(tournamentId);
 
-      // Pre-populate form with existing data
+      // Helper function to convert UTC date to local datetime-local format
+      const convertToLocalDateTime = (date: Date): string => {
+        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return localDate.toISOString().slice(0, 16);
+      };
+
+      // Pre-populate form with existing data (converted to local time)
       editSetValue("name", tournament.name);
       editSetValue("tier", String(tournament.tier));
       editSetValue(
         "scheduledStartDate",
-        tournament.scheduledStartDate.toISOString().slice(0, 16)
+        convertToLocalDateTime(tournament.scheduledStartDate)
       );
       editSetValue(
         "scheduledEndDate",
-        tournament.scheduledEndDate.toISOString().slice(0, 16)
+        convertToLocalDateTime(tournament.scheduledEndDate)
       );
       editSetValue("isManualMode", tournament.isManualMode);
 

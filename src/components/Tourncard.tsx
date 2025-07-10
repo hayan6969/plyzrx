@@ -31,10 +31,6 @@ export default function Tourncard(tournament: Tournament) {
     player,
     payout2,
     time,
-    countdays,
-    counthr,
-    countmin,
-    countsec,
     finalprice,
   } = tournament;
 
@@ -43,10 +39,18 @@ export default function Tourncard(tournament: Tournament) {
   const [showBankful, setShowBankful] = useState(false);
   const [userId, setUserId] = useState<string>("anonymous");
   const [username, setUsername] = useState<string>("guest");
+  
+  // Dynamic timer state
+  const [timerData, setTimerData] = useState({
+    countdays: 0,
+    counthr: 0,
+    countmin: 0,
+    countsec: 0,
+  });
 
   // Retrieve user info from localStorage or another source
   useEffect(() => {
-    // Example of retrieving user info from localStorage
+   
     try {
       const storedUserId = localStorage.getItem("user-id");
       const storedUsername = localStorage.getItem("username");
@@ -57,6 +61,64 @@ export default function Tourncard(tournament: Tournament) {
       console.error("Error retrieving user info:", error);
     }
   }, []);
+
+ 
+  useEffect(() => {
+    const fetchTimerData = async () => {
+      try {
+        const response = await fetch('/api/tournament/timers');
+        const data = await response.json();
+        
+        if (data.success) {
+          const tierNumber = tier.toLowerCase().includes('1') ? 1 : 
+                           tier.toLowerCase().includes('2') ? 2 : 3;
+          
+          const tierKey = `tier${tierNumber}` as keyof typeof data.data;
+          const tournamentTimer = data.data[tierKey];
+          
+          if (tournamentTimer) {
+            const targetDate = new Date(tournamentTimer.targetDate);
+            
+            // Set up countdown timer
+            const interval = setInterval(() => {
+              const currentDate = new Date();
+              const diffMs = targetDate.getTime() - currentDate.getTime();
+
+              if (diffMs <= 0) {
+                clearInterval(interval);
+                setTimerData({
+                  countdays: 0,
+                  counthr: 0,
+                  countmin: 0,
+                  countsec: 0,
+                });
+                return;
+              }
+
+              const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+              const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+              const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+              setTimerData({
+                countdays: days,
+                counthr: hours,
+                countmin: minutes,
+                countsec: seconds,
+              });
+            }, 1000);
+
+            // Cleanup interval on component unmount
+            return () => clearInterval(interval);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching tournament timers:", error);
+      }
+    };
+
+    fetchTimerData();
+  }, [tier]);
 
   const handlePurchase = () => {
     setShowPaymentModal(true);
@@ -125,25 +187,25 @@ export default function Tourncard(tournament: Tournament) {
           <div className="grid grid-cols-4 gap-1">
             <div className="text-center">
               <p className="text-lg lg:text-xl 2xl:text-2xl font-semibold">
-                {countdays}
+                {timerData.countdays}
               </p>
               <p className="text-xs lg:text-sm">Days</p>
             </div>
             <div className="text-center">
               <p className="text-lg lg:text-xl 2xl:text-2xl font-semibold">
-                {counthr}
+                {timerData.counthr}
               </p>
               <p className="text-xs lg:text-sm">Hours</p>
             </div>
             <div className="text-center">
               <p className="text-lg lg:text-xl 2xl:text-2xl font-semibold">
-                {countmin}
+                {timerData.countmin}
               </p>
               <p className="text-xs lg:text-sm">Minutes</p>
             </div>
             <div className="text-center">
               <p className="text-lg lg:text-xl 2xl:text-2xl font-semibold">
-                {countsec}
+                {timerData.countsec}
               </p>
               <p className="text-xs lg:text-sm">Seconds</p>
             </div>

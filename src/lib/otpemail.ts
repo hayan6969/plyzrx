@@ -14,7 +14,7 @@ export const sendOTPEmail = async (email: string, otp: string, username: string)
 
     // Email template
     const mailOptions = {
-      from: "getsmtp77@gmail.com",
+      from: "alerts@plyzrx.com",
       to: email,
       subject: 'PlyzRX - Verify Your Account',
       html: `
