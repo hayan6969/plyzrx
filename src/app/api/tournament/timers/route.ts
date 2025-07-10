@@ -12,6 +12,8 @@ const TOURNAMENT_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_TOURNAMENT_COL
 
 export async function GET(request: NextRequest) {
   try {
+    console.log(request);
+    
     // Get active tournaments for all tiers
     const activeTournamentsResult = await databases.listDocuments(
       DATABASE_ID,
