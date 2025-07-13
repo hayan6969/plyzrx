@@ -2,6 +2,8 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { createPaymentLog, assignUserToTournament } from "@/lib/appwriteDB";
+import { updateUserTierFromPayment } from "@/lib/tierUpdater";
 
 function PaymentSuccessContent() {
   const router = useRouter();
@@ -9,6 +11,8 @@ function PaymentSuccessContent() {
   const [transactionDetails, setTransactionDetails] = useState<
     Record<string, any>
   >({});
+
+
 
   useEffect(() => {
     const params: Record<string, any> = {};
@@ -21,6 +25,39 @@ function PaymentSuccessContent() {
     console.log("Payment success data:", params);
 
     localStorage.setItem("paymentSuccessData", JSON.stringify(params));
+const userId =  localStorage.getItem("userid") || "anonymous";
+    const username =  localStorage.getItem("userName") || "guest";
+    const paymentAmount = parseFloat(params.amount || params.paymentAmount || "0");
+    const paymentId =  searchParams.get("orderId") ||
+    searchParams.get("transaction_id") || params.orderId || params.transaction_id||"";
+
+    if (paymentId && userId) {
+      // 1. Save payment log
+      createPaymentLog({
+        userId,
+        username,
+        dateTime: new Date().toISOString().replace("T", " ").substring(0, 19),
+        platform: "Web",
+        paymentAmount,
+        paymentId,
+      })
+        .then(() => {
+          // 2. Update user tier
+          return updateUserTierFromPayment(userId, paymentAmount);
+        })
+        .then(() => {
+          // 3. Assign user to tournament
+          return assignUserToTournament(userId, paymentId);
+        })
+        .then(() => {
+          console.log("Payment, tier update, and tournament assignment complete.");
+        })
+        .catch((err) => {
+          console.error("Error in post-payment actions:", err);
+        });
+    }
+
+
 
     const timer = setTimeout(() => {
       router.push("/");
