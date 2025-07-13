@@ -27,7 +27,7 @@ interface CaptureOrderResponse {
 
 const PayPalButton: React.FC<PayPalButtonProps> = ({
   amount,
-  userId = localStorage.getItem("userid")|| "anonomus",
+  userId = localStorage.getItem("userid") || "anonomus",
   username = localStorage.getItem("userName") || "guest",
 }) => {
   const [orderID, setOrderID] = useState<string>("");
@@ -77,8 +77,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
 
         // 2. Update user tier information
         await updateUserTierFromPayment(userId, paymentAmount);
-await assignUserToTournament(userId,transactionId)
-
+        await assignUserToTournament(userId, transactionId);
 
         console.log("Payment data saved to Appwrite and user tier updated");
       } catch (appwriteError) {
@@ -102,7 +101,10 @@ await assignUserToTournament(userId,transactionId)
 
   return (
     <PayPalScriptProvider
-      options={{ clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "" }}
+      options={{
+        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
+        "disable-funding": "credit,card",
+      }}
     >
       <PayPalButtons createOrder={createOrder} onApprove={onApprove} />
     </PayPalScriptProvider>
