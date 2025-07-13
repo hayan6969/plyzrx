@@ -27,12 +27,11 @@ function PaymentSuccessContent() {
     localStorage.setItem("paymentSuccessData", JSON.stringify(params));
 const userId =  localStorage.getItem("userid") || "anonymous";
     const username =  localStorage.getItem("userName") || "guest";
-    const paymentAmount = parseFloat(params.amount || params.paymentAmount || "0");
-    const paymentId =  searchParams.get("orderId") ||
-    searchParams.get("transaction_id") || params.orderId || params.transaction_id||"";
+    const paymentAmount = parseFloat(params.TRANS_VALUE  || "0");
+    const paymentId =  params.TRANS_RECORD_ID||"";
 
     if (paymentId && userId) {
-      // 1. Save payment log
+  
       createPaymentLog({
         userId,
         username,
