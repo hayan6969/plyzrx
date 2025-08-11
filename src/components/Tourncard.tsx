@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import PayPalButton from "./PayPalButton";
-import BankfulButton from "./BankfulButton";
+// Replaced TebexButton with PayPal Card (Advanced) component
+import PayPalCardFields from "./paypal/PayPalCardFields";
 import PaymentSelectionModal from "./PaymentSelectionModal";
 
 type Tournament = {
@@ -23,23 +24,15 @@ type Tournament = {
 };
 
 export default function Tourncard(tournament: Tournament) {
-  const {
-    tier,
-    price,
-    player1,
-    payout1,
-    player,
-    payout2,
-    time,
-    finalprice,
-  } = tournament;
+  const { tier, price, player1, payout1, player, payout2, time, finalprice } =
+    tournament;
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPayPal, setShowPayPal] = useState(false);
-  const [showBankful, setShowBankful] = useState(false);
+  const [showCreditCard, setShowCreditCard] = useState(false);
   const [userId, setUserId] = useState<string>("anonymous");
   const [username, setUsername] = useState<string>("guest");
-  
+
   // Dynamic timer state
   const [timerData, setTimerData] = useState({
     countdays: 0,
@@ -50,10 +43,10 @@ export default function Tourncard(tournament: Tournament) {
 
   // Retrieve user info from localStorage or another source
   useEffect(() => {
-   
     try {
-      const storedUserId = localStorage.getItem("user-id");
-      const storedUsername = localStorage.getItem("username");
+      // Use the same keys as set during auth flow
+      const storedUserId = localStorage.getItem("userid");
+      const storedUsername = localStorage.getItem("userName");
 
       if (storedUserId) setUserId(storedUserId);
       if (storedUsername) setUsername(storedUsername);
@@ -62,23 +55,25 @@ export default function Tourncard(tournament: Tournament) {
     }
   }, []);
 
- 
   useEffect(() => {
     const fetchTimerData = async () => {
       try {
-        const response = await fetch('/api/tournament/timers');
+        const response = await fetch("/api/tournament/timers");
         const data = await response.json();
-        
+
         if (data.success) {
-          const tierNumber = tier.toLowerCase().includes('1') ? 1 : 
-                           tier.toLowerCase().includes('2') ? 2 : 3;
-          
+          const tierNumber = tier.toLowerCase().includes("1")
+            ? 1
+            : tier.toLowerCase().includes("2")
+            ? 2
+            : 3;
+
           const tierKey = `tier${tierNumber}` as keyof typeof data.data;
           const tournamentTimer = data.data[tierKey];
-          
+
           if (tournamentTimer) {
             const targetDate = new Date(tournamentTimer.targetDate);
-            
+
             // Set up countdown timer
             const interval = setInterval(() => {
               const currentDate = new Date();
@@ -96,8 +91,12 @@ export default function Tourncard(tournament: Tournament) {
               }
 
               const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-              const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-              const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+              const hours = Math.floor(
+                (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+              );
+              const minutes = Math.floor(
+                (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+              );
               const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
 
               setTimerData({
@@ -129,9 +128,9 @@ export default function Tourncard(tournament: Tournament) {
     setShowPayPal(true);
   };
 
-  const handleSelectBankful = () => {
+  const handleSelectCreditCard = () => {
     setShowPaymentModal(false);
-    setShowBankful(true);
+    setShowCreditCard(true);
   };
 
   return (
@@ -241,7 +240,7 @@ export default function Tourncard(tournament: Tournament) {
             userId={userId}
             username={username}
             onSelectPayPal={handleSelectPayPal}
-            onSelectBankful={handleSelectBankful}
+            onSelectCreditCard={handleSelectCreditCard}
           />
         )}
 
@@ -281,38 +280,37 @@ export default function Tourncard(tournament: Tournament) {
           </div>
         )}
 
-        {showBankful && (
+        {showCreditCard && (
           <div
-            className="fixed rounded-3xl inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setShowBankful(false)}
+            className="fixed inset-0 bg-black/20 flex items-start justify-center z-50 p-4"
+            onClick={() => setShowCreditCard(false)}
           >
             <div
-              className="relative p-6 bg-white rounded-lg shadow-lg"
+              className="relative w-full max-w-lg bg-white  shadow-xl p-5 mt-10 max-h-[70vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <button
-                className="absolute top-5 right-5 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
-                onClick={() => setShowBankful(false)}
+                className="fixed top-5 right-2 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-gray-300 transition"
+                onClick={() => setShowCreditCard(false)}
               >
                 ✕
               </button>
 
-              <div className="mb-4 text-center">
-                <h2 className="text-2xl font-bold text-gray-800">
+              <div className="mb-3 text-center">
+                <h2 className="text-xl font-semibold text-gray-800">
                   {tier} Tournament
                 </h2>
-                <p className="text-lg font-semibold text-gray-700 mt-2">
+                <p className="text-base font-medium text-gray-700 mt-1">
                   Total: ${finalprice}
                 </p>
               </div>
 
-              <div className="mt-6">
-                <BankfulButton
+              <div className="mt-2">
+                <PayPalCardFields
                   amount={finalprice}
                   userId={userId}
                   username={username}
-                  tier={tier}
-                  onClose={() => setShowBankful(false)}
+                  onClose={() => setShowCreditCard(false)}
                 />
               </div>
             </div>

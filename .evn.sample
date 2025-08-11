@@ -1,7 +1,11 @@
-NEXT_PUBLIC_PROJECTID=xxxxxxxx
-NEXT_PUBLIC_SERVICEID=
-NEXT_PUBLIC_TEMPLATEID=
-NEXT_PUBLIC_PUBLICKEY=
-NEXT_PUBLIC_UNITY_KEY=xxxxxxx
-NEXT_PUBLIC_APPWRITE_PROJECT_ID=xxxxxxx
-NEXT_PUBLIC_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+# RagaPay Integration
+RAGAPAY_MERCHANT_KEY=65bb029e-671c-11f0-b63f-9a05f0e3d98a
+RAGAPAY_PASSWORD=207ae01fd4b2a60576979b8f47b2a2b4
+
+# Other environment variables
+# ... (keep existing env vars)
+
+# PayPal Production
+PAYPAL_API=https://api-m.paypal.com
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=your-production-client-id
+PAYPAL_SECRET=your-production-secret

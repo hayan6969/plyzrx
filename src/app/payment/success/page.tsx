@@ -2,17 +2,12 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createPaymentLog, assignUserToTournament } from "@/lib/appwriteDB";
-import { updateUserTierFromPayment } from "@/lib/tierUpdater";
+import { CheckCircle } from "lucide-react";
 
 function PaymentSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [transactionDetails, setTransactionDetails] = useState<
-    Record<string, any>
-  >({});
-
-
+  const [successDetails, setSuccessDetails] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const params: Record<string, any> = {};
@@ -20,43 +15,11 @@ function PaymentSuccessContent() {
       params[key] = value;
     });
 
-    setTransactionDetails(params);
+    setSuccessDetails(params);
 
     console.log("Payment success data:", params);
 
     localStorage.setItem("paymentSuccessData", JSON.stringify(params));
-const userId =  localStorage.getItem("userid") || "anonymous";
-    const username =  localStorage.getItem("userName") || "guest";
-    const paymentAmount = parseFloat(params.TRANS_VALUE  || "0");
-    const paymentId =  params.TRANS_RECORD_ID||"";
-
-    if (paymentId && userId) {
-  
-      createPaymentLog({
-        userId,
-        username,
-        dateTime: new Date().toISOString().replace("T", " ").substring(0, 19),
-        platform: "Web",
-        paymentAmount,
-        paymentId,
-      })
-        .then(() => {
-          // 2. Update user tier
-          return updateUserTierFromPayment(userId, paymentAmount);
-        })
-        .then(() => {
-          // 3. Assign user to tournament
-          return assignUserToTournament(userId, paymentId);
-        })
-        .then(() => {
-          console.log("Payment, tier update, and tournament assignment complete.");
-        })
-        .catch((err) => {
-          console.error("Error in post-payment actions:", err);
-        });
-    }
-
-
 
     const timer = setTimeout(() => {
       router.push("/");
@@ -70,34 +33,22 @@ const userId =  localStorage.getItem("userid") || "anonymous";
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8 text-green-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+            <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
           <h1 className="text-2xl font-bold text-center">
             Payment Successful!
           </h1>
           <p className="text-gray-600 mt-2">
-            Thank you for your payment. Your transaction was successful.
+            Thank you for your purchase. Your payment has been processed
+            successfully.
           </p>
         </div>
 
-        {Object.keys(transactionDetails).length > 0 && (
+        {Object.keys(successDetails).length > 0 && (
           <div className="mt-6 border-t pt-4">
             <h2 className="text-lg font-semibold mb-2">Transaction Details</h2>
             <div className="bg-gray-50 p-3 rounded text-sm">
-              {Object.entries(transactionDetails).map(([key, value]) => (
+              {Object.entries(successDetails).map(([key, value]) => (
                 <div key={key} className="grid grid-cols-2 gap-2 mb-1">
                   <span className="font-medium">{key}:</span>
                   <span>{value as string}</span>
@@ -109,7 +60,10 @@ const userId =  localStorage.getItem("userid") || "anonymous";
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            You will be redirected to the homepage shortly...
+            You will be redirected to your dashboard shortly...
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Your account has been updated with your new tier benefits.
           </p>
         </div>
       </div>
