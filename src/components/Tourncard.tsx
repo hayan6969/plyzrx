@@ -267,6 +267,7 @@ export default function Tourncard(tournament: Tournament) {
                 <p className="text-lg font-semibold text-gray-700 mt-2">
                   Total: ${finalprice}
                 </p>
+                
               </div>
 
               <div className="mt-6">

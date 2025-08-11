@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
+import Image from "next/image";
 import {
   PayPalScriptProvider,
   PayPalCardFieldsProvider,
@@ -85,10 +86,12 @@ function SubmitPaymentButton({
 
   return (
     <button
-      className="w-full bg-gray-900 text-white font-medium rounded-md py-2.5 disabled:opacity-60 disabled:cursor-not-allowed"
+    className="w-full max-w-xs flex items-center justify-center gap-2 px-6 py-3 rounded-md bg-[#0070BA] hover:bg-[#003087] text-white font-semibold text-sm font-sans transition-colors duration-200 shadow-md"
+    style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
       onClick={handleClick}
       disabled={isPaying}
     >
+      <Image src="/img/paypal.jpeg" alt="PayPal" width={20} height={20} />
       {isPaying ? "Processing..." : "Pay now"}
     </button>
   );
@@ -266,6 +269,39 @@ export default function PayPalCardFields({
       >
         <div className="w-[320px] sm:w-[420px] max-w-full space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2 flex justify-center">
+              {/* PayPal Logo */}
+              <table border={0} cellPadding={10} cellSpacing={0} align="center">
+                <tbody>
+                  
+                  <tr>
+                    <td align="center">
+                      <a
+                        href="/digital-wallet/ways-to-pay/add-payment-method"
+                        title="How PayPal Works"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.open(
+                            "/digital-wallet/ways-to-pay/add-payment-method",
+                            "WIPaypal",
+                            "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=1060, height=700"
+                          );
+                          return false;
+                        }}
+                      >
+                        <Image
+                          src="https://www.paypalobjects.com/webstatic/mktg/logo/AM_mc_vs_dc_ae.jpg"
+                          alt="PayPal Acceptance Mark"
+                          width={200}
+                          height={40}
+                          priority
+                        />
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Cardholder Name
@@ -313,7 +349,7 @@ export default function PayPalCardFields({
                 onChange={(e) =>
                   handleBillingAddressChange("addressLine1", e.target.value)
                 }
-                className="w-full border rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             </div>
             <div className="sm:col-span-2">
@@ -326,7 +362,7 @@ export default function PayPalCardFields({
                 onChange={(e) =>
                   handleBillingAddressChange("addressLine2", e.target.value)
                 }
-                className="w-full border rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             </div>
             <div>
@@ -339,7 +375,7 @@ export default function PayPalCardFields({
                 onChange={(e) =>
                   handleBillingAddressChange("adminArea1", e.target.value)
                 }
-                className="w-full border rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             </div>
             <div>
@@ -352,7 +388,7 @@ export default function PayPalCardFields({
                 onChange={(e) =>
                   handleBillingAddressChange("adminArea2", e.target.value)
                 }
-                className="w-full border rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             </div>
             <div>
@@ -365,7 +401,7 @@ export default function PayPalCardFields({
                 onChange={(e) =>
                   handleBillingAddressChange("countryCode", e.target.value)
                 }
-                className="w-full border rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             </div>
             <div>
@@ -378,12 +414,15 @@ export default function PayPalCardFields({
                 onChange={(e) =>
                   handleBillingAddressChange("postalCode", e.target.value)
                 }
-                className="w-full border rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border text-black rounded-md px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             </div>
           </div>
 
           <SubmitPaymentButton isPaying={isPaying} setIsPaying={setIsPaying} />
+          <span className="text-md text-red-500 flex items-center justify-center gap-1">
+            <span className="text-red-500">*</span> No Refund Policy
+          </span>
         </div>
       </PayPalCardFieldsProvider>
 
