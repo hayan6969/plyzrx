@@ -63,18 +63,21 @@ export const updateUserTierFromPayment = async (
       tierUpdates.tier3 = existingTier.tier3;
     }
 
-    // Update tiers based on payment
+    // Update only the purchased tier
     switch (tierLevel) {
       case 3:
         tierUpdates.tier3 = true;
-        tierUpdates.tier2 = true;
-        tierUpdates.tier1 = true;
+        tierUpdates.tier2 = false;
+        tierUpdates.tier1 = false;
         break;
       case 2:
+        tierUpdates.tier3 = false;
         tierUpdates.tier2 = true;
-        tierUpdates.tier1 = true;
+        tierUpdates.tier1 = false;
         break;
       case 1:
+        tierUpdates.tier3 = false;
+        tierUpdates.tier2 = false;
         tierUpdates.tier1 = true;
         break;
     }

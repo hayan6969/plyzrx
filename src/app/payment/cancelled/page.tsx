@@ -21,7 +21,7 @@ function PaymentCancelledContent() {
     localStorage.setItem("paymentCancelledData", JSON.stringify(params));
 
     const timer = setTimeout(() => {
-      router.push("/");
+      router.push("/pricing");
     }, 5000);
 
     return () => clearTimeout(timer);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Clock } from "lucide-react";
 
 function PaymentPendingContent() {
   const router = useRouter();
@@ -21,7 +22,7 @@ function PaymentPendingContent() {
     localStorage.setItem("paymentPendingData", JSON.stringify(params));
 
     const timer = setTimeout(() => {
-      router.push("/");
+      router.push("/dashboard");
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -32,20 +33,7 @@ function PaymentPendingContent() {
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8 text-yellow-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <Clock className="h-8 w-8 text-yellow-600" />
           </div>
           <h1 className="text-2xl font-bold text-center">Payment Pending</h1>
           <p className="text-gray-600 mt-2">
@@ -69,11 +57,10 @@ function PaymentPendingContent() {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            You will be redirected to the homepage shortly...
+            You will be redirected to your dashboard shortly...
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Please check your email for confirmation once the payment is
-            complete.
+            We'll notify you once your payment is confirmed.
           </p>
         </div>
       </div>

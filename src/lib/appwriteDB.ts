@@ -22,8 +22,10 @@ const PAYMENT_LOGS_COLLECTION_ID =
   process.env.NEXT_PUBLIC_APPWRITE_PAYMENT_LOGS_COLLECTION_ID || "";
 const USERS_COLLECTION_ID =
   process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || "";
-const TOURNAMENT_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_TOURNAMENT_COLLECTION_ID || "";
-const MATCH_LOGS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_MATCH_LOGS_COLLECTION_ID || "";
+const TOURNAMENT_COLLECTION_ID =
+  process.env.NEXT_PUBLIC_APPWRITE_TOURNAMENT_COLLECTION_ID || "";
+const MATCH_LOGS_COLLECTION_ID =
+  process.env.NEXT_PUBLIC_APPWRITE_MATCH_LOGS_COLLECTION_ID || "";
 // Payment Logs Types
 export interface PaymentLog {
   $id?: string;
@@ -54,7 +56,7 @@ export interface TournamentControl {
   scheduledEndDate: Date;
   actualStartDate?: Date;
   actualEndDate?: Date;
-  status: 'scheduled' | 'active' | 'ended';
+  status: "scheduled" | "active" | "ended";
   createdBy: string;
   lastModifiedBy: string;
 }
@@ -73,9 +75,9 @@ export interface TournamentAssignment {
   userId: string;
   tournamentId: string;
   assignedAt: string;
-  tier: '1' | '2' | '3';
+  tier: "1" | "2" | "3";
   PaymentId?: string;
-  AccessStatus: 'Awaiting' | 'Active' | 'Completed' | "Expired";
+  AccessStatus: "Awaiting" | "Active" | "Completed" | "Expired";
   TournamentScore?: number;
   wins?: number;
   loss?: number;
@@ -83,17 +85,15 @@ export interface TournamentAssignment {
   rank?: number; // Add rank field
 }
 
-export interface MatchAssignment{
+export interface MatchAssignment {
   $id?: string;
   player1Id: string;
   player2Id: string;
   WinnerId: string;
   WinnerScore: string;
   tournamentid: string; // <-- should be string
-  StartedAt: string;    // <-- should be string (ISO)
+  StartedAt: string; // <-- should be string (ISO)
 }
-
-
 
 // Report interface
 export interface Report {
@@ -103,32 +103,31 @@ export interface Report {
   matchId: string;
   matchLog: string;
   createdAt: string;
-  Status:string
+  Status: string;
 }
 
-
 export interface BanUser {
-  $id?:string,
-  reportedId:string
+  $id?: string;
+  reportedId: string;
 }
 
 // Add collection ID for tournament assignments
-const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID = 
+const TOURNAMENT_ASSIGNMENTS_COLLECTION_ID =
   process.env.NEXT_PUBLIC_APPWRITE_USER || "";
 
 // Add collection ID for match assignments
-const MATCH_ASSIGNMENTS_COLLECTION_ID = 
+const MATCH_ASSIGNMENTS_COLLECTION_ID =
   process.env.NEXT_PUBLIC_APPWRITE_MATCH_ASSIGNMENTS_COLLECTION_ID || "";
 
 // Add collection ID for reports
-const REPORT_COLLECTION_ID = 
+const REPORT_COLLECTION_ID =
   process.env.NEXT_PUBLIC_APPWRITE_REPORT_LOG_COLLECTION || "";
 
-  const BanUsers=
-process.env.NEXT_PUBLIC_APPWRITE_BAN_USERS_COLLECTION_ID || ""
+const BanUsers = process.env.NEXT_PUBLIC_APPWRITE_BAN_USERS_COLLECTION_ID || "";
 
 // Add collection ID for signed up users
-const SIGNEDUP_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || "";
+const SIGNEDUP_COLLECTION_ID =
+  process.env.NEXT_PUBLIC_APPWRITE_SIGNEDUP_COLLECTION_ID || "";
 
 // Payment Logs Functions
 export const createPaymentLog = async (
@@ -137,6 +136,22 @@ export const createPaymentLog = async (
   try {
     if (typeof window === "undefined") {
       throw new Error("Cannot create payment log from server side");
+    }
+
+    // Sanity check: ensure the payment logs collection is not misconfigured
+    if (
+      !DATABASE_ID ||
+      !PAYMENT_LOGS_COLLECTION_ID ||
+      PAYMENT_LOGS_COLLECTION_ID === USERS_COLLECTION_ID
+    ) {
+      console.error("Appwrite collection misconfiguration", {
+        DATABASE_ID,
+        PAYMENT_LOGS_COLLECTION_ID,
+        USERS_COLLECTION_ID,
+      });
+      throw new Error(
+        "Payment logs collection ID is misconfigured. Ensure NEXT_PUBLIC_APPWRITE_PAYMENT_LOGS_COLLECTION_ID points to the Payment Logs collection (not the Users collection)."
+      );
     }
 
     // Convert payment amount to cents (integer) for Appwrite
@@ -293,8 +308,12 @@ export const createTournament = async (
       ...result,
       scheduledStartDate: new Date(result.scheduledStartDate),
       scheduledEndDate: new Date(result.scheduledEndDate),
-      actualStartDate: result.actualStartDate ? new Date(result.actualStartDate) : undefined,
-      actualEndDate: result.actualEndDate ? new Date(result.actualEndDate) : undefined,
+      actualStartDate: result.actualStartDate
+        ? new Date(result.actualStartDate)
+        : undefined,
+      actualEndDate: result.actualEndDate
+        ? new Date(result.actualEndDate)
+        : undefined,
     } as unknown as TournamentControl;
   } catch (error) {
     console.error("Failed to create tournament:", error);
@@ -313,12 +332,14 @@ export const updateTournament = async (
 
     // Convert Date objects to ISO strings for Appwrite storage
     const updateData: any = { ...tournamentData };
-    
+
     if (tournamentData.scheduledStartDate) {
-      updateData.scheduledStartDate = tournamentData.scheduledStartDate.toISOString();
+      updateData.scheduledStartDate =
+        tournamentData.scheduledStartDate.toISOString();
     }
     if (tournamentData.scheduledEndDate) {
-      updateData.scheduledEndDate = tournamentData.scheduledEndDate.toISOString();
+      updateData.scheduledEndDate =
+        tournamentData.scheduledEndDate.toISOString();
     }
     if (tournamentData.actualStartDate) {
       updateData.actualStartDate = tournamentData.actualStartDate.toISOString();
@@ -339,8 +360,12 @@ export const updateTournament = async (
       ...result,
       scheduledStartDate: new Date(result.scheduledStartDate),
       scheduledEndDate: new Date(result.scheduledEndDate),
-      actualStartDate: result.actualStartDate ? new Date(result.actualStartDate) : undefined,
-      actualEndDate: result.actualEndDate ? new Date(result.actualEndDate) : undefined,
+      actualStartDate: result.actualStartDate
+        ? new Date(result.actualStartDate)
+        : undefined,
+      actualEndDate: result.actualEndDate
+        ? new Date(result.actualEndDate)
+        : undefined,
     } as unknown as TournamentControl;
   } catch (error) {
     console.error("Failed to update tournament:", error);
@@ -371,8 +396,12 @@ export const getTournament = async (
       ...doc,
       scheduledStartDate: new Date(doc.scheduledStartDate),
       scheduledEndDate: new Date(doc.scheduledEndDate),
-      actualStartDate: doc.actualStartDate ? new Date(doc.actualStartDate) : undefined,
-      actualEndDate: doc.actualEndDate ? new Date(doc.actualEndDate) : undefined,
+      actualStartDate: doc.actualStartDate
+        ? new Date(doc.actualStartDate)
+        : undefined,
+      actualEndDate: doc.actualEndDate
+        ? new Date(doc.actualEndDate)
+        : undefined,
     } as unknown as TournamentControl;
   } catch (error) {
     console.error("Failed to fetch tournament:", error);
@@ -395,8 +424,12 @@ export const getAllTournaments = async (): Promise<TournamentControl[]> => {
       ...doc,
       scheduledStartDate: new Date(doc.scheduledStartDate),
       scheduledEndDate: new Date(doc.scheduledEndDate),
-      actualStartDate: doc.actualStartDate ? new Date(doc.actualStartDate) : undefined,
-      actualEndDate: doc.actualEndDate ? new Date(doc.actualEndDate) : undefined,
+      actualStartDate: doc.actualStartDate
+        ? new Date(doc.actualStartDate)
+        : undefined,
+      actualEndDate: doc.actualEndDate
+        ? new Date(doc.actualEndDate)
+        : undefined,
     })) as unknown as TournamentControl[];
   } catch (error) {
     console.error("Failed to fetch tournaments:", error);
@@ -404,7 +437,9 @@ export const getAllTournaments = async (): Promise<TournamentControl[]> => {
   }
 };
 
-export const deleteTournament = async (tournamentId: string): Promise<boolean> => {
+export const deleteTournament = async (
+  tournamentId: string
+): Promise<boolean> => {
   try {
     if (typeof window === "undefined") {
       throw new Error("Cannot delete tournament from server side");
@@ -437,12 +472,14 @@ export const startTournament = async (
     // Check if there's already an active tournament in this tier
     const activeTournaments = await getActiveTournamentsByTier(tournament.tier);
     if (activeTournaments.length > 0) {
-      throw new Error(`Cannot start tournament. There is already an active Tier ${tournament.tier} tournament: ${activeTournaments[0].name} (${activeTournaments[0].tournamentId})`);
+      throw new Error(
+        `Cannot start tournament. There is already an active Tier ${tournament.tier} tournament: ${activeTournaments[0].name} (${activeTournaments[0].tournamentId})`
+      );
     }
 
     return await updateTournament(tournament.$id!, {
       actualStartDate: new Date(),
-      status: 'active',
+      status: "active",
       lastModifiedBy: adminId,
     });
   } catch (error) {
@@ -463,7 +500,7 @@ export const endTournament = async (
 
     return await updateTournament(tournament.$id!, {
       actualEndDate: new Date(),
-      status: 'ended',
+      status: "ended",
       lastModifiedBy: adminId,
     });
   } catch (error) {
@@ -472,13 +509,9 @@ export const endTournament = async (
   }
 };
 
-
-
-
-
-
-
-export const getMatchLog = async (matchId: string): Promise<MatchLog | null> => {
+export const getMatchLog = async (
+  matchId: string
+): Promise<MatchLog | null> => {
   try {
     if (typeof window === "undefined") {
       throw new Error("Cannot fetch match log from server side");
@@ -536,13 +569,13 @@ export const assignUserToTournament = async (
     }
 
     // Determine user's highest tier - return as string
-    let tier: '1' | '2' | '3';
+    let tier: "1" | "2" | "3";
     if (userTier.tier3) {
-      tier = '3';
+      tier = "3";
     } else if (userTier.tier2) {
-      tier = '2';
+      tier = "2";
     } else if (userTier.tier1) {
-      tier = '1';
+      tier = "1";
     } else {
       throw new Error("User has no active tier");
     }
@@ -551,18 +584,23 @@ export const assignUserToTournament = async (
     const existingAssignment = await getUserTournamentAssignment(userId);
 
     // If already assigned and active, do not reassign
-    if (existingAssignment && existingAssignment.AccessStatus === 'Active') {
+    if (existingAssignment && existingAssignment.AccessStatus === "Active") {
       throw new Error("User is already assigned to an active tournament");
     }
 
     // Find scheduled tournaments for the user's tier
-    const scheduledTournaments = await getScheduledTournamentsByTier(parseInt(tier) as 1 | 2 | 3);
+    const scheduledTournaments = await getScheduledTournamentsByTier(
+      parseInt(tier) as 1 | 2 | 3
+    );
 
     if (scheduledTournaments.length > 0) {
       const tournamentToAssign = scheduledTournaments[0];
 
       // If user has an awaiting assignment, update it
-      if (existingAssignment && existingAssignment.AccessStatus === 'Awaiting') {
+      if (
+        existingAssignment &&
+        existingAssignment.AccessStatus === "Awaiting"
+      ) {
         const updated = await databases.updateDocument(
           DATABASE_ID,
           TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
@@ -572,7 +610,7 @@ export const assignUserToTournament = async (
             assignedAt: new Date().toISOString(),
             tier,
             PaymentId: transactionId,
-            AccessStatus: 'Active'
+            AccessStatus: "Active",
           }
         );
         return updated as unknown as TournamentAssignment;
@@ -585,7 +623,7 @@ export const assignUserToTournament = async (
         assignedAt: new Date().toISOString(),
         tier,
         PaymentId: transactionId,
-        AccessStatus: 'Active'
+        AccessStatus: "Active",
       };
 
       const result = await databases.createDocument(
@@ -597,7 +635,10 @@ export const assignUserToTournament = async (
       return result as unknown as TournamentAssignment;
     } else {
       // No tournament available, set tournamentId to null/empty and AccessStatus to Awaiting
-      if (existingAssignment && existingAssignment.AccessStatus === 'Awaiting') {
+      if (
+        existingAssignment &&
+        existingAssignment.AccessStatus === "Awaiting"
+      ) {
         // Already awaiting, just return
         return existingAssignment;
       }
@@ -608,7 +649,7 @@ export const assignUserToTournament = async (
         assignedAt: new Date().toISOString(),
         tier,
         PaymentId: transactionId,
-        AccessStatus: 'Awaiting'
+        AccessStatus: "Awaiting",
       };
 
       const result = await databases.createDocument(
@@ -636,18 +677,19 @@ export const getScheduledTournamentsByTier = async (
     const result = await databases.listDocuments(
       DATABASE_ID,
       TOURNAMENT_COLLECTION_ID,
-      [
-        Query.equal("tier", tier),
-        Query.equal("status", "scheduled")
-      ]
+      [Query.equal("tier", tier), Query.equal("status", "scheduled")]
     );
 
     return result.documents.map((doc) => ({
       ...doc,
       scheduledStartDate: new Date(doc.scheduledStartDate),
       scheduledEndDate: new Date(doc.scheduledEndDate),
-      actualStartDate: doc.actualStartDate ? new Date(doc.actualStartDate) : undefined,
-      actualEndDate: doc.actualEndDate ? new Date(doc.actualEndDate) : undefined,
+      actualStartDate: doc.actualStartDate
+        ? new Date(doc.actualStartDate)
+        : undefined,
+      actualEndDate: doc.actualEndDate
+        ? new Date(doc.actualEndDate)
+        : undefined,
     })) as unknown as TournamentControl[];
   } catch (error) {
     console.error("Failed to fetch scheduled tournaments by tier:", error);
@@ -660,7 +702,9 @@ export const getUserTournamentAssignment = async (
 ): Promise<TournamentAssignment | null> => {
   try {
     if (typeof window === "undefined") {
-      throw new Error("Cannot fetch user tournament assignment from server side");
+      throw new Error(
+        "Cannot fetch user tournament assignment from server side"
+      );
     }
 
     const result = await databases.listDocuments(
@@ -704,7 +748,7 @@ export const getTournamentAssignments = async (
 // Update the updateTournamentAssignmentStatus function to use correct field name
 export const updateTournamentAssignmentStatus = async (
   assignmentId: string,
-  status: 'assigned' | 'participating' | 'completed'
+  status: "assigned" | "participating" | "completed"
 ): Promise<TournamentAssignment> => {
   try {
     if (typeof window === "undefined") {
@@ -751,7 +795,10 @@ export const autoAssignUserFromPayment = async (
   paymentLog: PaymentLog
 ): Promise<TournamentAssignment | null> => {
   try {
-    return await assignUserToTournament(paymentLog.userId, paymentLog.paymentId);
+    return await assignUserToTournament(
+      paymentLog.userId,
+      paymentLog.paymentId
+    );
   } catch (error) {
     console.error("Failed to auto-assign user from payment:", error);
     return null;
@@ -759,7 +806,9 @@ export const autoAssignUserFromPayment = async (
 };
 
 // Add function to get all tournament assignments
-export const getAllTournamentAssignments = async (): Promise<TournamentAssignment[]> => {
+export const getAllTournamentAssignments = async (): Promise<
+  TournamentAssignment[]
+> => {
   try {
     if (typeof window === "undefined") {
       throw new Error("Cannot fetch tournament assignments from server side");
@@ -779,7 +828,7 @@ export const getAllTournamentAssignments = async (): Promise<TournamentAssignmen
 
 // Add function to get assignments by status
 export const getTournamentAssignmentsByStatus = async (
-  status: 'Awaiting' | 'Active' | 'Completed' | 'Expired'
+  status: "Awaiting" | "Active" | "Completed" | "Expired"
 ): Promise<TournamentAssignment[]> => {
   try {
     if (typeof window === "undefined") {
@@ -810,7 +859,7 @@ export const bulkAssignAwaitingUsers = async (): Promise<{
       throw new Error("Cannot bulk assign users from server side");
     }
 
-    const awaitingUsers = await getTournamentAssignmentsByStatus('Awaiting');
+    const awaitingUsers = await getTournamentAssignmentsByStatus("Awaiting");
     let successCount = 0;
     let failedCount = 0;
     const errors: string[] = [];
@@ -818,11 +867,13 @@ export const bulkAssignAwaitingUsers = async (): Promise<{
     for (const assignment of awaitingUsers) {
       try {
         // Get available tournaments for this user's tier
-        const scheduledTournaments = await getScheduledTournamentsByTier(parseInt(assignment.tier) as 1 | 2 | 3);
-        
+        const scheduledTournaments = await getScheduledTournamentsByTier(
+          parseInt(assignment.tier) as 1 | 2 | 3
+        );
+
         if (scheduledTournaments.length > 0) {
           const tournamentToAssign = scheduledTournaments[0];
-          
+
           // Update the awaiting assignment to active
           await databases.updateDocument(
             DATABASE_ID,
@@ -831,14 +882,16 @@ export const bulkAssignAwaitingUsers = async (): Promise<{
             {
               tournamentId: tournamentToAssign.tournamentId,
               assignedAt: new Date().toISOString(),
-              AccessStatus: 'Active'
+              AccessStatus: "Active",
             }
           );
-          
+
           successCount++;
         } else {
           // No tournament available for this tier
-          errors.push(`No tournament available for user ${assignment.userId} (Tier ${assignment.tier})`);
+          errors.push(
+            `No tournament available for user ${assignment.userId} (Tier ${assignment.tier})`
+          );
           failedCount++;
         }
       } catch (error) {
@@ -919,7 +972,9 @@ export const updateMatchAssignment = async (
 };
 
 // Get active users by tier for match creation
-export const getActiveUsersByTier = async (tier: '1' | '2' | '3'): Promise<TournamentAssignment[]> => {
+export const getActiveUsersByTier = async (
+  tier: "1" | "2" | "3"
+): Promise<TournamentAssignment[]> => {
   try {
     if (typeof window === "undefined") {
       throw new Error("Cannot fetch active users from server side");
@@ -928,10 +983,7 @@ export const getActiveUsersByTier = async (tier: '1' | '2' | '3'): Promise<Tourn
     const result = await databases.listDocuments(
       DATABASE_ID,
       TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
-      [
-        Query.equal("tier", tier),
-        Query.equal("AccessStatus", "Active")
-      ]
+      [Query.equal("tier", tier), Query.equal("AccessStatus", "Active")]
     );
 
     return result.documents as unknown as TournamentAssignment[];
@@ -942,7 +994,9 @@ export const getActiveUsersByTier = async (tier: '1' | '2' | '3'): Promise<Tourn
 };
 
 // Create automatic matches for a specific tier
-export const createAutomaticMatches = async (tier: '1' | '2' | '3'): Promise<{
+export const createAutomaticMatches = async (
+  tier: "1" | "2" | "3"
+): Promise<{
   success: number;
   failed: number;
   matches: MatchAssignment[];
@@ -954,13 +1008,15 @@ export const createAutomaticMatches = async (tier: '1' | '2' | '3'): Promise<{
     }
 
     const activeUsers = await getActiveUsersByTier(tier);
-    
+
     if (activeUsers.length < 2) {
       return {
         success: 0,
         failed: 0,
         matches: [],
-        errors: [`Not enough active users in Tier ${tier} to create matches (minimum 2 required)`]
+        errors: [
+          `Not enough active users in Tier ${tier} to create matches (minimum 2 required)`,
+        ],
       };
     }
 
@@ -983,28 +1039,36 @@ export const createAutomaticMatches = async (tier: '1' | '2' | '3'): Promise<{
           WinnerId: "", // Empty until match is completed
           WinnerScore: "", // Empty until match is completed
           tournamentid: player1.tournamentId, // Use tournament ID from player assignment
-          StartedAt: new Date().toISOString() // Set current timestamp as start time
+          StartedAt: new Date().toISOString(), // Set current timestamp as start time
         };
 
         const createdMatch = await createMatchAssignment(matchData);
         matches.push(createdMatch);
         successCount++;
       } catch (error) {
-        errors.push(`Failed to create match for users ${shuffledUsers[i].userId} vs ${shuffledUsers[i + 1].userId}: ${error}`);
+        errors.push(
+          `Failed to create match for users ${shuffledUsers[i].userId} vs ${
+            shuffledUsers[i + 1].userId
+          }: ${error}`
+        );
         failedCount++;
       }
     }
 
     // If there's an odd number of users, the last one gets a bye
     if (shuffledUsers.length % 2 !== 0) {
-      errors.push(`User ${shuffledUsers[shuffledUsers.length - 1].userId} gets a bye (odd number of players)`);
+      errors.push(
+        `User ${
+          shuffledUsers[shuffledUsers.length - 1].userId
+        } gets a bye (odd number of players)`
+      );
     }
 
     return {
       success: successCount,
       failed: failedCount,
       matches,
-      errors
+      errors,
     };
   } catch (error) {
     console.error("Failed to create automatic matches:", error);
@@ -1038,7 +1102,9 @@ export const getAllReports = async (): Promise<Report[]> => {
   }
 };
 
-export const getReportById = async (reportId: string): Promise<Report | null> => {
+export const getReportById = async (
+  reportId: string
+): Promise<Report | null> => {
   try {
     if (typeof window === "undefined") {
       throw new Error("Cannot fetch report from server side");
@@ -1096,7 +1162,7 @@ export const createBanUser = async (
     }
 
     const banData: BanUser = {
-      reportedId: reportedUserId
+      reportedId: reportedUserId,
     };
 
     const result = await databases.createDocument(
@@ -1119,10 +1185,7 @@ export const getAllBannedUsers = async (): Promise<BanUser[]> => {
       throw new Error("Cannot fetch banned users from server side");
     }
 
-    const result = await databases.listDocuments(
-      DATABASE_ID,
-      BanUsers
-    );
+    const result = await databases.listDocuments(DATABASE_ID, BanUsers);
 
     return result.documents as unknown as BanUser[];
   } catch (error) {
@@ -1131,17 +1194,17 @@ export const getAllBannedUsers = async (): Promise<BanUser[]> => {
   }
 };
 
-export const getBanUserById = async (reportedUserId: string): Promise<BanUser | null> => {
+export const getBanUserById = async (
+  reportedUserId: string
+): Promise<BanUser | null> => {
   try {
     if (typeof window === "undefined") {
       throw new Error("Cannot fetch ban user from server side");
     }
 
-    const result = await databases.listDocuments(
-      DATABASE_ID,
-      BanUsers,
-      [Query.equal("reportedId", reportedUserId)]
-    );
+    const result = await databases.listDocuments(DATABASE_ID, BanUsers, [
+      Query.equal("reportedId", reportedUserId),
+    ]);
 
     if (result.documents.length === 0) {
       return null;
@@ -1160,11 +1223,7 @@ export const unbanUser = async (banId: string): Promise<boolean> => {
       throw new Error("Cannot unban user from server side");
     }
 
-    await databases.deleteDocument(
-      DATABASE_ID,
-      BanUsers,
-      banId
-    );
+    await databases.deleteDocument(DATABASE_ID, BanUsers, banId);
 
     return true;
   } catch (error) {
@@ -1184,7 +1243,9 @@ export const isUserBanned = async (userId: string): Promise<boolean> => {
 };
 
 // Add helper function to check for active tournaments in a tier
-export const getActiveTournamentsByTier = async (tier: 1 | 2 | 3): Promise<TournamentControl[]> => {
+export const getActiveTournamentsByTier = async (
+  tier: 1 | 2 | 3
+): Promise<TournamentControl[]> => {
   try {
     if (typeof window === "undefined") {
       throw new Error("Cannot fetch tournaments from server side");
@@ -1193,18 +1254,19 @@ export const getActiveTournamentsByTier = async (tier: 1 | 2 | 3): Promise<Tourn
     const result = await databases.listDocuments(
       DATABASE_ID,
       TOURNAMENT_COLLECTION_ID,
-      [
-        Query.equal("tier", tier),
-        Query.equal("status", "active")
-      ]
+      [Query.equal("tier", tier), Query.equal("status", "active")]
     );
 
     return result.documents.map((doc) => ({
       ...doc,
       scheduledStartDate: new Date(doc.scheduledStartDate),
       scheduledEndDate: new Date(doc.scheduledEndDate),
-      actualStartDate: doc.actualStartDate ? new Date(doc.actualStartDate) : undefined,
-      actualEndDate: doc.actualEndDate ? new Date(doc.actualEndDate) : undefined,
+      actualStartDate: doc.actualStartDate
+        ? new Date(doc.actualStartDate)
+        : undefined,
+      actualEndDate: doc.actualEndDate
+        ? new Date(doc.actualEndDate)
+        : undefined,
     })) as unknown as TournamentControl[];
   } catch (error) {
     console.error("Failed to fetch active tournaments by tier:", error);
@@ -1216,16 +1278,16 @@ export const getActiveTournamentsByTier = async (tier: 1 | 2 | 3): Promise<Tourn
 const PAYOUT_AMOUNTS = {
   tier1: {
     top10: 5000,
-    remaining: 555
+    remaining: 555,
   },
   tier2: {
     top10: 12500,
-    remaining: 1388
+    remaining: 1388,
   },
   tier3: {
     top10: 250000,
-    remaining: 28000
-  }
+    remaining: 28000,
+  },
 };
 
 // Function to calculate and distribute tournament payouts
@@ -1245,7 +1307,7 @@ export const distributeTournamentPayouts = async (
       TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
       [
         Query.equal("tournamentId", tournamentId),
-        Query.equal("AccessStatus", "Active")
+        Query.equal("AccessStatus", "Active"),
       ]
     );
 
@@ -1257,7 +1319,7 @@ export const distributeTournamentPayouts = async (
         failed: 0,
         totalPayout: 0,
         errors: ["No active tournament assignments found for this tournament"],
-        payouts: []
+        payouts: [],
       };
     }
 
@@ -1269,13 +1331,13 @@ export const distributeTournamentPayouts = async (
         failed: 0,
         totalPayout: 0,
         errors: ["Tournament not found"],
-        payouts: []
+        payouts: [],
       };
     }
 
     // Sort assignments by TournamentScore (descending order)
     const sortedAssignments = assignments
-      .filter(assignment => assignment.TournamentScore !== undefined)
+      .filter((assignment) => assignment.TournamentScore !== undefined)
       .sort((a, b) => (b.TournamentScore || 0) - (a.TournamentScore || 0));
 
     if (sortedAssignments.length === 0) {
@@ -1284,7 +1346,7 @@ export const distributeTournamentPayouts = async (
         failed: 0,
         totalPayout: 0,
         errors: ["No tournament scores found for ranking"],
-        payouts: []
+        payouts: [],
       };
     }
 
@@ -1321,24 +1383,28 @@ export const distributeTournamentPayouts = async (
             {
               earnings: payoutAmount,
               rank: rank,
-              AccessStatus: "Completed"
+              AccessStatus: "Completed",
             }
           );
 
           // Update earnings in signed up users collection
-          await updateSignedupUserStats(assignment.userId, { earnings: payoutAmount });
+          await updateSignedupUserStats(assignment.userId, {
+            earnings: payoutAmount,
+          });
 
           payouts.push({
             userId: assignment.userId,
             amount: payoutAmount,
-            rank: rank
+            rank: rank,
           });
 
           totalPayout += payoutAmount;
           successCount++;
         }
       } catch (error) {
-        errors.push(`Failed to process payout for user ${sortedAssignments[i].userId}: ${error}`);
+        errors.push(
+          `Failed to process payout for user ${sortedAssignments[i].userId}: ${error}`
+        );
         failedCount++;
       }
     }
@@ -1348,7 +1414,7 @@ export const distributeTournamentPayouts = async (
       failed: failedCount,
       totalPayout,
       errors,
-      payouts
+      payouts,
     };
   } catch (error) {
     console.error("Failed to distribute tournament payouts:", error);
@@ -1359,12 +1425,14 @@ export const distributeTournamentPayouts = async (
 // Function to get tournament leaderboard
 export const getTournamentLeaderboard = async (
   tournamentId: string
-): Promise<Array<{
-  userId: string;
-  score: number;
-  rank: number;
-  earnings?: number;
-}>> => {
+): Promise<
+  Array<{
+    userId: string;
+    score: number;
+    rank: number;
+    earnings?: number;
+  }>
+> => {
   try {
     if (typeof window === "undefined") {
       throw new Error("Cannot fetch leaderboard from server side");
@@ -1375,21 +1443,24 @@ export const getTournamentLeaderboard = async (
       TOURNAMENT_ASSIGNMENTS_COLLECTION_ID,
       [
         Query.equal("tournamentId", tournamentId),
-        Query.equal("AccessStatus", ["Active", "Completed"])
+        Query.equal("AccessStatus", ["Active", "Completed"]),
       ]
     );
 
-    const assignments = result.documents as unknown as (TournamentAssignment & { earnings?: number; rank?: number })[];
+    const assignments = result.documents as unknown as (TournamentAssignment & {
+      earnings?: number;
+      rank?: number;
+    })[];
 
     // Sort by score and assign ranks
     const sortedAssignments = assignments
-      .filter(assignment => assignment.TournamentScore !== undefined)
+      .filter((assignment) => assignment.TournamentScore !== undefined)
       .sort((a, b) => (b.TournamentScore || 0) - (a.TournamentScore || 0))
       .map((assignment, index) => ({
         userId: assignment.userId,
         score: assignment.TournamentScore || 0,
         rank: index + 1,
-        earnings: assignment.earnings || 0
+        earnings: assignment.earnings || 0,
       }));
 
     return sortedAssignments;
@@ -1463,7 +1534,7 @@ export const updateSignedupUserStats = async (
         user.$id!,
         updateData
       );
-      
+
       console.log(`Updated signed up user ${userId}:`, updateData);
     }
   } catch (error) {

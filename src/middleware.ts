@@ -52,6 +52,11 @@ const PUBLIC_API_ROUTES = [
   "/api/resetpassword/updatepassword",
   "/api/tournament/status",
   "/api/rewards/buy",
+  "/api/paypal/create-order",
+  "/api/paypal/capture-order",
+  "/api/paypal/card/create-order",
+  "/api/paypal/card/capture-order",
+  // Removed Tebex public API routes
 ];
 
 export async function middleware(request: NextRequest) {
@@ -66,7 +71,6 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  
   const authHeader = request.headers.get("authorization");
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -75,7 +79,6 @@ export async function middleware(request: NextRequest) {
 
   const isAuthenticated = token || cookieToken;
 
-  
   if (!isAuthenticated && !isPublicRoute && !pathname.startsWith("/api")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }

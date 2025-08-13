@@ -9,17 +9,15 @@ interface PaymentSelectionModalProps {
   userId: string;
   username: string;
   onSelectPayPal: () => void;
-  onSelectBankful: () => void;
+  onSelectCreditCard: () => void;
 }
 
-const PaymentSelectionModal: React.FC<PaymentSelectionModalProps> = ({
-  onClose,
-  tier,
-  finalprice,
-
-  onSelectPayPal,
-  onSelectBankful,
-}) => {
+const PaymentSelectionModal: React.FC<
+  Omit<PaymentSelectionModalProps, "userId" | "username"> & {
+    userId?: string;
+    username?: string;
+  }
+> = ({ onClose, tier, finalprice, onSelectPayPal, onSelectCreditCard }) => {
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -61,9 +59,9 @@ const PaymentSelectionModal: React.FC<PaymentSelectionModalProps> = ({
 
           <Button
             className="w-full py-4 bg-[#4CAF50] hover:bg-[#388E3C] text-white font-medium rounded-md"
-            onClick={onSelectBankful}
+            onClick={onSelectCreditCard}
           >
-            Bankful e-checks
+            Credit / Debit Card
           </Button>
         </div>
       </div>
