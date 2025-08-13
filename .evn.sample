@@ -9,3 +9,5 @@ RAGAPAY_PASSWORD=207ae01fd4b2a60576979b8f47b2a2b4
 PAYPAL_API=https://api-m.paypal.com
 NEXT_PUBLIC_PAYPAL_CLIENT_ID=your-production-client-id
 PAYPAL_SECRET=your-production-secret
+FIRSTPROMPT_ACCOUNT_ID=your-production-account-id
+FIRSTPROMPT_API_KEY=your-production-api-key

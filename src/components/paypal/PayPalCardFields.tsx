@@ -86,6 +86,8 @@ function SubmitPaymentButton({
 
   return (
     <button
+      className="w-full max-w-xs flex items-center justify-center gap-2 px-6 py-3 rounded-md bg-[#0070BA] hover:bg-[#003087] text-white font-semibold text-sm font-sans transition-colors duration-200 shadow-md"
+      style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
       onClick={handleClick}
       disabled={isPaying}
     >

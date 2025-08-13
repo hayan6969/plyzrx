@@ -45,7 +45,7 @@ function Page() {
         toast.success(response.data.message);
         localStorage.setItem("Login", "true");
         localStorage.setItem("userName", response.data.username);
-        localStorage.setItem("userid",response.data.userid)
+        localStorage.setItem("userid", response.data.userid);
         router.push("/");
       }
     } catch (error) {
