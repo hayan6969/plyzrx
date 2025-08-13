@@ -10,4 +10,4 @@ const generateNumber = () => {
   return id;
 };
 
-export default generateNumber ;
+export default generateNumber;
