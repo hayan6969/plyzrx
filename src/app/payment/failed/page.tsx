@@ -1,30 +1,3 @@
-"use client";
-import { Suspense, useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-function FailedContent() {
-  const router = useRouter();
-  useEffect(() => {
-    const t = setTimeout(() => router.push("/"), 5000);
-    return () => clearTimeout(t);
-  }, [router]);
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-50">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg text-center">
-        <h1 className="text-2xl font-bold mb-2">Payment Failed</h1>
-        <p className="text-gray-600">Your payment could not be completed.</p>
-      </div>
-    </div>
-  );
-}
-
-export default function PaymentFailed() {
-  return (
-    <Suspense fallback={<div />}>
-      <FailedContent />
-    </Suspense>
-  );
-}
 
 ("use client");
 
