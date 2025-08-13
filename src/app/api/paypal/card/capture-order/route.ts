@@ -45,17 +45,44 @@ export async function POST(request: Request): Promise<NextResponse> {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
+          // Request full representation so we reliably get captures in the response
+          Prefer: "return=representation",
         },
       }
     );
 
     const captureData = await captureResponse.json();
 
+    // If PayPal returned a non-2xx status, forward details back to the client
+    if (!captureResponse.ok) {
+      return NextResponse.json(
+        {
+          error: {
+            message:
+              captureData?.message ||
+              captureData?.details?.[0]?.description ||
+              "PayPal capture failed",
+            status: captureData?.name || captureData?.status,
+          },
+          details: captureData?.details,
+          debug_id: captureData?.debug_id,
+        },
+        { status: captureResponse.status }
+      );
+    }
+
     // Check if there's a capture and its status
     const capture = captureData.purchase_units?.[0]?.payments?.captures?.[0];
     if (!capture) {
       return NextResponse.json(
-        { error: "No capture information found in response" },
+        {
+          error: {
+            message: "No capture information found in response",
+            status: captureData?.status,
+          },
+          details: captureData?.details,
+          debug_id: captureData?.debug_id,
+        },
         { status: 400 }
       );
     }
@@ -80,6 +107,8 @@ export async function POST(request: Request): Promise<NextResponse> {
             status: capture.status,
             message: "Payment capture failed. Please try again.",
           },
+          details: captureData?.details,
+          debug_id: captureData?.debug_id,
         },
         { status: 400 }
       );
