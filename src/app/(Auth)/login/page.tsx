@@ -56,7 +56,7 @@ function Page() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[url('/img/stars.webp')] bg-cover bg-center px-4">
       <Toaster />
       <Card className="w-full max-w-md bg-formcolor text-white p-6 rounded-2xl shadow-lg">
         <CardContent className="space-y-4">
