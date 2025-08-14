@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Gabarito } from "next/font/google";
 import "./globals.css";
 import Head from "next/head";
+import Script from "next/script";
 
 const gabarito = Gabarito({
   variable: "--font-gabarito",
@@ -47,7 +48,14 @@ export default function RootLayout({
         {/* Site Manifest */}
         <link rel="manifest" href="/site.webmanifest" />
       </Head>
-      <body className={`${gabarito.variable}`}>{children}</body>
+      <body className={`${gabarito.variable}`}>
+        {children}
+        <Script src="/fprmain.js" strategy="afterInteractive" />
+        <Script
+          src="https://cdn.firstpromoter.com/fpr.js"
+          strategy="afterInteractive"
+        />
+      </body>
     </html>
   );
 }

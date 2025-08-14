@@ -46,6 +46,19 @@ function Page() {
         localStorage.setItem("Login", "true");
         localStorage.setItem("userName", response.data.username);
         localStorage.setItem("userid", response.data.userid);
+
+        // Get user email from database for FirstPromoter tracking
+        try {
+          const userDataResponse = await axios.post("/api/userdata", {
+            userId: response.data.userid,
+            username: response.data.username,
+          });
+          if (userDataResponse.data.success && userDataResponse.data.email) {
+            localStorage.setItem("userEmail", userDataResponse.data.email);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user email:", error);
+        }
         router.push("/");
       }
     } catch (error) {

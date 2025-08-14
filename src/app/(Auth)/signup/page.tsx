@@ -44,16 +44,21 @@ function Page() {
         toast.error(responce.data.message);
       } else {
         toast.success(responce.data.message);
-        
+
         // Check if user requires verification
         if (responce.data.requiresVerification) {
-          // Store email for OTP verification and redirect
-          localStorage.setItem('verificationEmail', data.email);
-          router.push(`/otpverification?email=${encodeURIComponent(data.email)}`);
+          // Store email and username for OTP verification and future use
+          localStorage.setItem("verificationEmail", data.email);
+          localStorage.setItem("userEmail", data.email); // Store email for FirstPromoter tracking
+          localStorage.setItem("userName", data.username); // Store username for consistency
+          router.push(
+            `/otpverification?email=${encodeURIComponent(data.email)}`
+          );
         } else {
           // Direct login (shouldn't happen based on your API, but keeping as fallback)
           localStorage.setItem("Login", "true");
           localStorage.setItem("userName", responce.data.username);
+          localStorage.setItem("userEmail", data.email); // Store email for FirstPromoter tracking
           router.push("/");
         }
       }
@@ -68,7 +73,7 @@ function Page() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
+    <div className="flex items-center justify-center min-h-screen bg-[url('/img/stars.webp')] bg-cover bg-center px-4">
       <Toaster />
       <Card className="w-full max-w-md bg-formcolor text-white p-4 rounded-2xl shadow-lg">
         <CardContent className="space-y-3 w-full">
@@ -100,10 +105,10 @@ function Page() {
                   />
                 </div>
                 {errors.fullname && (
-                <p className="text-red-500 text-[.8rem]">
-                  {"*" + errors.fullname.message}
-                </p>
-              )}
+                  <p className="text-red-500 text-[.8rem]">
+                    {"*" + errors.fullname.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -126,10 +131,10 @@ function Page() {
                   />
                 </div>
                 {errors.username && (
-                <p className="text-red-500 text-[.8rem]">
-                  {"*" + errors.username.message}
-                </p>
-              )}
+                  <p className="text-red-500 text-[.8rem]">
+                    {"*" + errors.username.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -155,10 +160,10 @@ function Page() {
                   />
                 </div>
                 {errors.email && (
-                <p className="text-red-500 text-[.8rem]">
-                  {"*" + errors.email.message}
-                </p>
-)}
+                  <p className="text-red-500 text-[.8rem]">
+                    {"*" + errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -194,10 +199,10 @@ function Page() {
                   />
                 </div>
                 {errors.password && (
-                <p className="text-red-500 text-[.8rem]">
-                  {"*" + errors.password.message}
-                </p>
-)}
+                  <p className="text-red-500 text-[.8rem]">
+                    {"*" + errors.password.message}
+                  </p>
+                )}
               </div>
 
               <Button

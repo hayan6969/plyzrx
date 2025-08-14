@@ -1,12 +1,22 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import {
+  FIRSTPROMOTER_PLANS,
+  trackFirstPromoterSale,
+  getFirstPromoterTrackingId,
+} from "@/lib/firstpromoter";
 
 interface PayPalCaptureRequest {
   orderID: string;
+  email?: string;
+  uid?: string;
+  planType?: string; // basic, premium, pro
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const { orderID }: PayPalCaptureRequest = await request.json();
+    const { orderID, email, uid, planType }: PayPalCaptureRequest =
+      await request.json();
 
     if (
       !process.env.PAYPAL_API ||
@@ -45,7 +55,6 @@ export async function POST(request: Request): Promise<NextResponse> {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
-          // Request full representation so we reliably get captures in the response
           Prefer: "return=representation",
         },
       }
@@ -99,23 +108,82 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ error: errorDetail }, { status: 400 });
     }
 
-    // Only return success if capture status is COMPLETED
-    if (capture.status !== "COMPLETED") {
-      return NextResponse.json(
-        {
-          error: {
-            status: capture.status,
-            message: "Payment capture failed. Please try again.",
+    // If capture status is COMPLETED, track the sale with FirstPromoter
+    if (capture.status === "COMPLETED") {
+      // Get transaction details
+      const transactionId = capture.id || orderID;
+      const amount = parseInt(capture.amount?.value || "0") * 100; // Convert to cents
+      const currency = capture.amount?.currency_code || "USD";
+
+      // Determine which plan to use
+      let planId = FIRSTPROMOTER_PLANS.BASIC;
+      if (planType === "premium") {
+        planId = FIRSTPROMOTER_PLANS.PREMIUM;
+      } else if (planType === "pro") {
+        planId = FIRSTPROMOTER_PLANS.PRO;
+      }
+
+      // Get tracking ID from cookies
+      const cookieStore = cookies();
+      const tid = await getFirstPromoterTrackingId(cookieStore);
+
+      // Ensure we have either email or uid for FirstPromoter
+      const fpEmail = email || "customer@example.com"; // Fallback email if none provided
+      const fpUid = uid || transactionId; // Use transaction ID as fallback user ID
+
+      console.log("FirstPromoter tracking data:", {
+        email: fpEmail,
+        uid: fpUid,
+        event_id: transactionId,
+        tid,
+      });
+
+      // Track the sale with FirstPromoter
+      await trackFirstPromoterSale({
+        email: fpEmail,
+        uid: fpUid,
+        event_id: transactionId,
+        amount,
+        plan: planId,
+        currency,
+        tid,
+      });
+
+      // Return success response with the format expected by the client
+      return NextResponse.json({
+        purchase_units: [
+          {
+            payments: {
+              captures: [
+                {
+                  id: capture.id,
+                  status: "COMPLETED",
+                  amount: capture.amount,
+                },
+              ],
+            },
           },
-          details: captureData?.details,
-          debug_id: captureData?.debug_id,
-        },
-        { status: 400 }
-      );
+        ],
+        status: "success",
+        orderId: orderID,
+        captureId: capture.id,
+      });
     }
 
-    return NextResponse.json(captureData, { status: captureResponse.status });
+    // If we get here, the capture status is not COMPLETED
+    return NextResponse.json(
+      {
+        error: {
+          status: capture.status,
+          message: "Payment capture failed. Please try again.",
+        },
+        details: captureData?.details,
+        debug_id: captureData?.debug_id,
+      },
+      { status: 400 }
+    );
   } catch (error) {
+    console.error("PayPal Capture Error:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Error capturing PayPal payment";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
