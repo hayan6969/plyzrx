@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     // Query based on what we have
-    let query = [];
+    const query = [];
     if (userId && userId !== "anonymous") {
       query.push(Query.equal("userId", userId));
     } else if (username && username !== "guest") {
@@ -67,6 +67,7 @@ export async function POST(request: Request) {
       email: user.email,
       username: user.username,
       userId: user.userId,
+      userid: user.userId, // Also include as userid for consistency
     });
   } catch (error) {
     console.error("Error fetching user data:", error);

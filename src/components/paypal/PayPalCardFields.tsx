@@ -208,16 +208,22 @@ export default function PayPalCardFields({
     async (data: OnApproveData) => {
       try {
         // Add the user's email and ID to the request for FirstPromoter tracking
-        // Get the most up-to-date email from localStorage
+        // Get the most up-to-date email and user ID from localStorage
         const currentEmail = localStorage.getItem("userEmail");
-        console.log("Sending payment with email:", currentEmail);
+        const currentUserId = localStorage.getItem("userid");
+        console.log(
+          "Sending payment with email:",
+          currentEmail,
+          "and userid:",
+          currentUserId
+        );
 
         const response = await axios.post<CaptureOrderResponse>(
           "/api/paypal/card/capture-order",
           {
             orderID: data.orderID,
             email: currentEmail || undefined,
-            uid: userId !== "anonymous" ? userId : undefined,
+            uid: currentUserId || (userId !== "anonymous" ? userId : undefined),
             planType: determineUserPlanType(parseFloat(amount)),
           }
         );

@@ -136,6 +136,8 @@ export async function POST(request: Request): Promise<NextResponse> {
         uid: fpUid,
         event_id: transactionId,
         tid,
+        originalEmail: email,
+        originalUid: uid,
       });
 
       // Track the sale with FirstPromoter

@@ -51,6 +51,7 @@ function Page() {
           localStorage.setItem("verificationEmail", data.email);
           localStorage.setItem("userEmail", data.email); // Store email for FirstPromoter tracking
           localStorage.setItem("userName", data.username); // Store username for consistency
+          // Note: userid will be set after OTP verification when Unity account is created
           router.push(
             `/otpverification?email=${encodeURIComponent(data.email)}`
           );
