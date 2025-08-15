@@ -14,6 +14,17 @@ import {
 import axios from "axios";
 import { assignUserToTournament, createPaymentLog } from "@/lib/appwriteDB";
 import { updateUserTierFromPayment } from "@/lib/tierUpdater";
+
+// Helper function to determine plan type based on amount
+function determineUserPlanType(amount: number): string {
+  if (amount >= 50) {
+    return "pro";
+  } else if (amount >= 25) {
+    return "premium";
+  }
+  return "basic";
+}
+
 import PaymentStatusModal from "./PaymentStatusModal";
 
 interface PayPalCardFieldsProps {
@@ -117,6 +128,7 @@ export default function PayPalCardFields({
     return "anonymous";
   }, [userIdProp]);
 
+  // Get user email for FirstPromoter tracking
   const username = useMemo(() => {
     if (usernameProp) return usernameProp;
     if (typeof window !== "undefined") {
@@ -125,6 +137,46 @@ export default function PayPalCardFields({
     }
     return "guest";
   }, [usernameProp]);
+
+  // Ensure we have user email for FirstPromoter tracking
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Try to get email from localStorage
+      const email = localStorage.getItem("userEmail");
+
+      if (!email && userId !== "anonymous") {
+        // If we don't have an email but have a userId, fetch from API
+        const fetchUserEmail = async () => {
+          try {
+            const response = await axios.post("/api/userdata", {
+              userId: userId,
+              username: username,
+            });
+
+            if (response.data.success && response.data.email) {
+              const fetchedEmail = response.data.email;
+              localStorage.setItem("userEmail", fetchedEmail);
+              console.log("Fetched email from API:", fetchedEmail);
+            } else {
+              // Fallback to placeholder if API doesn't return email
+              const placeholderEmail = `${userId}@plyzrx.com`;
+              localStorage.setItem("userEmail", placeholderEmail);
+              console.log("Using placeholder email:", placeholderEmail);
+            }
+          } catch (error) {
+            console.error("Failed to fetch user email:", error);
+            // Use placeholder on error
+            const placeholderEmail = `${userId}@plyzrx.com`;
+            localStorage.setItem("userEmail", placeholderEmail);
+          }
+        };
+
+        fetchUserEmail();
+      } else if (email) {
+        console.log("Using email from localStorage:", email);
+      }
+    }
+  }, [userId, username]);
   const [, setBillingAddress] = useState<Record<string, string>>({
     addressLine1: "",
     addressLine2: "",
@@ -155,9 +207,25 @@ export default function PayPalCardFields({
   const onApprove = useCallback(
     async (data: OnApproveData) => {
       try {
+        // Add the user's email and ID to the request for FirstPromoter tracking
+        // Get the most up-to-date email and user ID from localStorage
+        const currentEmail = localStorage.getItem("userEmail");
+        const currentUserId = localStorage.getItem("userid");
+        console.log(
+          "Sending payment with email:",
+          currentEmail,
+          "and userid:",
+          currentUserId
+        );
+
         const response = await axios.post<CaptureOrderResponse>(
           "/api/paypal/card/capture-order",
-          { orderID: data.orderID }
+          {
+            orderID: data.orderID,
+            email: currentEmail || undefined,
+            uid: currentUserId || (userId !== "anonymous" ? userId : undefined),
+            planType: determineUserPlanType(parseFloat(amount)),
+          }
         );
 
         // Check for error response from our API

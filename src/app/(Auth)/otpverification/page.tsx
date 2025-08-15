@@ -24,7 +24,7 @@ function OTPVerificationContent() {
   const [countdown, setCountdown] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const {
     register,
     handleSubmit,
@@ -33,18 +33,18 @@ function OTPVerificationContent() {
 
   useEffect(() => {
     // Get email from URL params first, then localStorage as fallback
-    const emailFromParams = searchParams.get('email');
-    const emailFromStorage = localStorage.getItem('verificationEmail');
-    
+    const emailFromParams = searchParams.get("email");
+    const emailFromStorage = localStorage.getItem("verificationEmail");
+
     if (emailFromParams) {
       setEmail(emailFromParams);
-      localStorage.setItem('verificationEmail', emailFromParams);
+      localStorage.setItem("verificationEmail", emailFromParams);
     } else if (emailFromStorage) {
       setEmail(emailFromStorage);
     } else {
       // If no email found, redirect to signup
       toast.error("No email found for verification. Please sign up again.");
-      router.push('/signup');
+      router.push("/signup");
       return;
     }
   }, [searchParams, router]);
@@ -60,7 +60,7 @@ function OTPVerificationContent() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     if (!email) {
       toast.error("Email not found. Please sign up again.");
-      router.push('/signup');
+      router.push("/signup");
       return;
     }
 
@@ -68,7 +68,7 @@ function OTPVerificationContent() {
     try {
       const response = await axios.post("/api/otpverification", {
         otp: data.otp,
-        email: email
+        email: email,
       });
 
       if (response.data.success) {
@@ -76,8 +76,19 @@ function OTPVerificationContent() {
         localStorage.setItem("Login", "true");
         localStorage.setItem("userName", response.data.username);
         localStorage.setItem("userid", response.data.userid);
-        localStorage.removeItem('verificationEmail');
-        
+        localStorage.removeItem("verificationEmail");
+
+        // Store email for FirstPromoter tracking
+        const email = localStorage.getItem("userEmail");
+        if (email) {
+          console.log(
+            "User verified with email:",
+            email,
+            "and userid:",
+            response.data.userid
+          );
+        }
+
         // Small delay before redirect
         setTimeout(() => {
           router.push("/");
@@ -87,7 +98,9 @@ function OTPVerificationContent() {
       }
     } catch (error: any) {
       console.error("Error in OTP verification", error);
-      toast.error(error.response?.data?.message || "Invalid OTP. Please try again.");
+      toast.error(
+        error.response?.data?.message || "Invalid OTP. Please try again."
+      );
     } finally {
       setButtonState(false);
     }
@@ -96,14 +109,14 @@ function OTPVerificationContent() {
   const handleResendOTP = async () => {
     if (!email) {
       toast.error("Email not found. Please sign up again.");
-      router.push('/signup');
+      router.push("/signup");
       return;
     }
 
     setResendButtonState(true);
     try {
       const response = await axios.post("/api/resendotp", {
-        email: email
+        email: email,
       });
 
       if (response.data.success) {
@@ -114,13 +127,16 @@ function OTPVerificationContent() {
       }
     } catch (error: any) {
       console.error("Error resending OTP", error);
-      toast.error(error.response?.data?.message || "Failed to resend OTP. Please try again.");
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to resend OTP. Please try again."
+      );
     } finally {
       setResendButtonState(false);
     }
   };
 
-  const maskedEmail = email ? email.replace(/(.{2})(.*)(@.*)/, '$1***$3') : '';
+  const maskedEmail = email ? email.replace(/(.{2})(.*)(@.*)/, "$1***$3") : "";
 
   // Don't render if no email is found
   if (!email) {
@@ -164,7 +180,10 @@ function OTPVerificationContent() {
                 Enter 4-digit OTP
               </Label>
               <div className="relative flex items-center">
-                <FaShieldAlt className="absolute left-3 text-gray-400" size={16} />
+                <FaShieldAlt
+                  className="absolute left-3 text-gray-400"
+                  size={16}
+                />
                 <Input
                   id="otp"
                   type="text"
@@ -192,15 +211,17 @@ function OTPVerificationContent() {
               className="w-full bg-custompink hover:bg-red-500 h-10 text-lg"
               disabled={buttonState}
             >
-              {buttonState ? <ButtonLoad buttonName="Verifying..." /> : "Verify OTP"}
+              {buttonState ? (
+                <ButtonLoad buttonName="Verifying..." />
+              ) : (
+                "Verify OTP"
+              )}
             </Button>
           </form>
 
           <div className="text-center space-y-3">
-            <p className="text-gray-400 text-sm">
-              Didn't receive the code?
-            </p>
-            
+            <p className="text-gray-400 text-sm">Didn't receive the code?</p>
+
             <Button
               onClick={handleResendOTP}
               variant="outline"
@@ -233,14 +254,16 @@ function OTPVerificationContent() {
 
 function Page() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
-        <Toaster />
-        <div className="text-white text-center">
-          <p>Loading...</p>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[url('/img/stars.jpg')] bg-cover bg-center px-4">
+          <Toaster />
+          <div className="text-white text-center">
+            <p>Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <OTPVerificationContent />
     </Suspense>
   );
