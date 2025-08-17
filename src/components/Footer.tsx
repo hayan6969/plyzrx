@@ -1,10 +1,10 @@
 "use client";
 import {
-  // FaFacebookF,
+
   FaInstagram,
-  // FaTwitter,
-  // FaYoutube,
+
 } from "react-icons/fa";
+import { RiDiscordFill } from "react-icons/ri";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -57,7 +57,7 @@ useEffect(()=>
         <div className="w-full sm:w-[45%] md:w-[25%] lg:w-[25%] flex justify-center lg:flex-col lg:justify-end p-4 text-white">
         <h3 className="text-xl mb-5 lg:block hidden">Social Links</h3>
         <div className="flex space-x-4">
-          {/* <FaFacebookF className="text-2xl hover:text-blue-500 transition" /> */}
+       <Link href={"https://discord.gg/RxcUFnKV"}> <RiDiscordFill  className="text-2xl hover:text-blue-500 transition" /></Link>
          <Link href={"https://www.instagram.com/plyzrx?igsh=MTB3dTF2YTBlNHBzZQ=="}> <FaInstagram className="text-2xl hover:text-pink-500 transition" /></Link>
           {/* <FaTwitter className="text-2xl hover:text-blue-400 transition" />
           <FaYoutube className="text-2xl hover:text-red-500 transition" /> */}
